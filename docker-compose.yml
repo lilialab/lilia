@@ -30,7 +30,7 @@ services:
 
   # OSS
   minio:
-    image: minio/minio:latest
+    image: elestio/minio:latest
     container_name: pai-arbor-minio
     restart: unless-stopped
     ports:

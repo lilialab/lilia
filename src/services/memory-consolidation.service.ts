@@ -7,6 +7,12 @@ import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { VectorService } from '@/services/vector.service';
 import { updateConsolidationJob } from '@/services/consolidation-job.service';
+import {
+  mapConsolidationOutput,
+  validateAndMergeIds,
+  type ConsolidationParseResult,
+  type FinishedMemory,
+} from '@/services/memory-consolidation.utils';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
 
 const vectorService = new VectorService();
@@ -77,22 +83,6 @@ const consolidationOutputSchema = z.object({
   ),
 });
 
-type ConsolidationOutput = z.infer<typeof consolidationOutputSchema>;
-
-type MemoryType = ExtractedMemory['type'];
-
-const VALID_MEMORY_TYPES = new Set<MemoryType>(['preference', 'event', 'fact']);
-
-interface FinishedMemory {
-  text: string;
-  type: MemoryType;
-  sourceMessageIds: string[];
-}
-
-interface ConsolidationParseResult {
-  finishedMemories: FinishedMemory[];
-}
-
 interface TranscriptResult {
   transcript: string;
   messageIds: string[];
@@ -103,118 +93,7 @@ interface MemoryRecord {
   id: string;
   userId: string;
   text: string;
-  type: MemoryType;
-}
-
-interface ValidatedConsolidation {
-  finishedMemories: FinishedMemory[];
-  consolidatedIds: string[];
-  deferredIds: string[];
-}
-
-function isMemoryType(value: string): value is MemoryType {
-  return VALID_MEMORY_TYPES.has(value as MemoryType);
-}
-
-function parseStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
-}
-
-function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
-  if (typeof item !== 'object' || item === null) return null;
-
-  const record = item as Record<string, unknown>;
-  const text = typeof record.text === 'string' ? record.text.trim() : '';
-  const type = record.type;
-  const sourceMessageIds = parseStringArray(record.source_message_ids);
-
-  if (!text || typeof type !== 'string' || !isMemoryType(type) || sourceMessageIds.length === 0) {
-    return null;
-  }
-
-  return { text, type, sourceMessageIds };
-}
-
-function mapConsolidationOutput(raw: ConsolidationOutput): ConsolidationParseResult {
-  const finishedMemories = raw.finished_memories
-    .map(parseFinishedMemoryItem)
-    .filter((item): item is FinishedMemory => item !== null);
-
-  return { finishedMemories };
-}
-
-/**
- * 校验模型输出，并按 globalMax 前缀标记 consolidated：
- * globalMax = 时间顺序最后一条 finished_memory 的 source 最大下标；
- * consolidatedIds = messageIds[0..globalMax]。
- */
-function validateAndMergeIds(
-  parsed: ConsolidationParseResult,
-  messageIds: string[],
-): ValidatedConsolidation {
-  const allowedIds = new Set(messageIds);
-  const idToIndex = new Map(messageIds.map((id, index) => [id, index]));
-
-  const finishedMemories: FinishedMemory[] = [];
-
-  for (const memory of parsed.finishedMemories) {
-    const validSourceIds = memory.sourceMessageIds.filter((id) => allowedIds.has(id));
-    const hasInvalidId = validSourceIds.length !== memory.sourceMessageIds.length;
-
-    if (hasInvalidId) {
-      logger.warn(
-        { memoryText: memory.text },
-        '[MemoryConsolidation] 丢弃含非法 source_message_ids 的记忆',
-      );
-      continue;
-    }
-
-    if (validSourceIds.length === 0) continue;
-
-    finishedMemories.push({ ...memory, sourceMessageIds: validSourceIds });
-  }
-
-  if (finishedMemories.length === 0) {
-    return {
-      finishedMemories,
-      consolidatedIds: [],
-      deferredIds: [...messageIds],
-    };
-  }
-
-  const lastMemory = finishedMemories[finishedMemories.length - 1];
-  const indices = lastMemory.sourceMessageIds
-    .map((id) => idToIndex.get(id))
-    .filter((index): index is number => index !== undefined);
-
-  if (indices.length === 0) {
-    return {
-      finishedMemories,
-      consolidatedIds: [],
-      deferredIds: [...messageIds],
-    };
-  }
-
-  const globalMax = Math.max(...indices);
-  const consolidatedIds = messageIds.slice(0, globalMax + 1);
-  const deferredIds = messageIds.slice(globalMax + 1);
-
-  logger.info(
-    {
-      event: 'llm.consolidation.mark',
-      globalMax,
-      consolidatedCount: consolidatedIds.length,
-      deferredCount: deferredIds.length,
-    },
-    '[MemoryConsolidation] globalMax 前缀标记',
-  );
-
-  return {
-    finishedMemories,
-    consolidatedIds,
-    deferredIds,
-  };
+  type: ExtractedMemory['type'];
 }
 
 function formatMessageXml(id: string, seq: number, role: string, parts: unknown): string | null {
@@ -451,10 +330,24 @@ export async function runConsolidation(job: ConsolidationJob): Promise<void> {
       return;
     }
 
-    const { finishedMemories, consolidatedIds, deferredIds } = validateAndMergeIds(
-      extracted.parsed,
-      messageIds,
-    );
+    const { finishedMemories, consolidatedIds, deferredIds, droppedInvalidIdTexts } =
+      validateAndMergeIds(extracted.parsed, messageIds);
+
+    for (const memoryText of droppedInvalidIdTexts) {
+      logger.warn({ memoryText }, '[MemoryConsolidation] 丢弃含非法 source_message_ids 的记忆');
+    }
+
+    if (consolidatedIds.length > 0) {
+      logger.info(
+        {
+          event: 'llm.consolidation.mark',
+          globalMax: consolidatedIds.length - 1,
+          consolidatedCount: consolidatedIds.length,
+          deferredCount: deferredIds.length,
+        },
+        '[MemoryConsolidation] globalMax 前缀标记',
+      );
+    }
 
     if (finishedMemories.length === 0) {
       await completeJob(

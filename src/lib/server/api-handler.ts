@@ -2,10 +2,14 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 
-type RouteHandler = (req: NextRequest, context: any) => Promise<Response> | Response;
+type RouteContext = {
+  params: Promise<Record<string, string | string[]>>;
+};
+
+type RouteHandler = (req: NextRequest, context: RouteContext) => Promise<Response> | Response;
 
 export function withApiHandler(handler: RouteHandler): RouteHandler {
-  return async (req: NextRequest, context: any) => {
+  return async (req: NextRequest, context: RouteContext) => {
     try {
       const response = await handler(req, context);
 
@@ -51,7 +55,7 @@ export function notFound(message: string): never {
 }
 
 /** 快速返回 200 成功响应 */
-export function successResponse(data?: any) {
+export function successResponse<T>(data?: T) {
   return NextResponse.json({
     success: true,
     ...(data ? { data } : {}),

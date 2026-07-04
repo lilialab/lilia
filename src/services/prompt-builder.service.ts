@@ -1,9 +1,8 @@
 import { logger } from '@/lib/server/logger';
 import { VectorService } from '@/services/vector.service';
+import { routeSkill, type PromptSkill } from '@/services/prompt-builder.utils';
 
-const vectorService = new VectorService();
-
-export type PromptSkill = 'chat_mode' | 'goal_mode' | 'general';
+export type { PromptSkill };
 
 export interface SystemPromptMeta {
   activeSkill: PromptSkill;
@@ -36,21 +35,7 @@ const SYSTEM_MANDATE = `
   3. **边界与反向反馈**：我们是平等的伙伴。如果我认为你的某些建议不切实际或不符合我的现状，我会直接反驳。你需要坦然接受我的纠正，并实时修正你的逻辑权重与后续策略。
 `;
 
-const PROMPT_SKILLS: Record<PromptSkill, string> = {
-  chat_mode: `
-    ## 当前运行模式：[深度倾听模式]
-    - 优先进行情绪共情，绝对不要急于给出硬性的解决方案或讲大道理。
-    - 鼓励用户多表达内心的真实感受。
-  `,
-
-  goal_mode: `
-    ## 当前运行模式：[军师/目标追踪模式]
-    - 协助用户梳理行动计划，将大目标拆解为可执行的微小步骤。
-    - 语气要坚定、积极、充满行动力。
-  `,
-
-  general: `## 当前运行模式：[日常闲聊模式]`,
-};
+const vectorService = new VectorService();
 
 // 内部辅助函数：获取用户画像
 async function fetchUserProfile(): Promise<string> {
@@ -66,17 +51,6 @@ async function fetchHistoricalContext(content: string): Promise<string[]> {
     logger.error({ err }, '[Chroma] 知识库检索失败');
     return [];
   }
-}
-
-// 内部辅助函数：意图路由
-function routeSkill(content: string): { skill: PromptSkill; block: string } {
-  if (content.includes('难过') || content.includes('累')) {
-    return { skill: 'chat_mode', block: PROMPT_SKILLS.chat_mode };
-  }
-  if (content.includes('计划') || content.includes('目标')) {
-    return { skill: 'goal_mode', block: PROMPT_SKILLS.goal_mode };
-  }
-  return { skill: 'general', block: PROMPT_SKILLS.general };
 }
 
 /**

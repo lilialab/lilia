@@ -37,7 +37,7 @@ export class OllamaEmbeddingFunction implements EmbeddingFunction {
   }
 
   // 校验配置更新（如无特殊逻辑直接留空或抛错）
-  validateConfigUpdate(config: Record<string, any>) {
+  validateConfigUpdate(config: Record<string, unknown>) {
     if ('model' in config) {
       throw new Error('Model cannot be updated');
     }
