@@ -29,15 +29,18 @@ export interface ConsolidationOutputRaw {
   }[];
 }
 
+/** 判断字符串是否为合法的记忆类型枚举值。 */
 function isMemoryType(value: string): value is MemoryType {
   return VALID_MEMORY_TYPES.has(value as MemoryType);
 }
 
+/** 从未知值解析非空字符串数组，非法输入返回空数组。 */
 function parseStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }
 
+/** 校验并解析单条 LLM finished_memory 输出，不合法时返回 null。 */
 export function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
   if (typeof item !== 'object' || item === null) return null;
 
@@ -53,6 +56,7 @@ export function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
   return { text, type, sourceMessageIds };
 }
 
+/** 批量解析模型输出，过滤掉无效记忆条目。 */
 export function mapConsolidationOutput(raw: ConsolidationOutputRaw): ConsolidationParseResult {
   const finishedMemories = raw.finished_memories
     .map(parseFinishedMemoryItem)

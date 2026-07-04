@@ -37,12 +37,12 @@ const SYSTEM_MANDATE = `
 
 const vectorService = new VectorService();
 
-// 内部辅助函数：获取用户画像
+/** 获取用户画像文本（当前为占位实现）。 */
 async function fetchUserProfile(): Promise<string> {
   return '目前暂无特殊偏好记录。';
 }
 
-// 内部辅助函数：获取向量记忆
+/** 按用户输入从向量记忆库检索相关历史片段。 */
 async function fetchHistoricalContext(content: string): Promise<string[]> {
   if (!content) return [];
   try {

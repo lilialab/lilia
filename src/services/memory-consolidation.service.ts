@@ -96,6 +96,7 @@ interface MemoryRecord {
   type: ExtractedMemory['type'];
 }
 
+/** 将单条消息格式化为 LLM 可读的 XML 片段；无有效文本时返回 null。 */
 function formatMessageXml(id: string, seq: number, role: string, parts: unknown): string | null {
   const messageParts = parts as { type: string; text?: string }[];
   const text = messageParts
@@ -147,6 +148,7 @@ async function buildTranscript(): Promise<TranscriptResult | null> {
   };
 }
 
+/** 为每条提取的记忆生成带 UUID 的持久化记录。 */
 function buildMemoryRecords(memories: FinishedMemory[], userId: string): MemoryRecord[] {
   return memories.map((memory) => ({
     id: randomUUID(),
@@ -156,6 +158,7 @@ function buildMemoryRecords(memories: FinishedMemory[], userId: string): MemoryR
   }));
 }
 
+/** 将内部记忆结构转换为 job 结果中的精简格式。 */
 function toJobMemories(memories: FinishedMemory[]): ExtractedMemory[] {
   return memories.map(({ text, type }) => ({ text, type }));
 }

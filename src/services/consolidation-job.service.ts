@@ -8,10 +8,12 @@ import type {
 
 const MAX_JOBS = 20;
 
+/** 将未知值断言为 Prisma JSON 输入类型。 */
 function toInputJsonValue(value: unknown): InputJsonValue {
   return value as InputJsonValue;
 }
 
+/** 将数据库行映射为 ConsolidationJob 领域对象。 */
 function toConsolidationJob(row: {
   id: string;
   status: string;
@@ -34,6 +36,7 @@ function toConsolidationJob(row: {
   };
 }
 
+/** 创建 pending 状态的记忆整理任务。 */
 export async function createConsolidationJob(id: string): Promise<ConsolidationJob> {
   const row = await prisma.consolidationJob.create({
     data: {
@@ -46,11 +49,13 @@ export async function createConsolidationJob(id: string): Promise<ConsolidationJ
   return toConsolidationJob(row);
 }
 
+/** 按 id 查询整理任务，不存在时返回 undefined。 */
 export async function getConsolidationJob(id: string): Promise<ConsolidationJob | undefined> {
   const row = await prisma.consolidationJob.findUnique({ where: { id } });
   return row ? toConsolidationJob(row) : undefined;
 }
 
+/** 部分更新整理任务字段；任务不存在时静默跳过。 */
 export async function updateConsolidationJob(
   id: string,
   patch: Partial<ConsolidationJob>,

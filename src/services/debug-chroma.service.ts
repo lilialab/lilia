@@ -2,6 +2,7 @@
 import { randomUUID } from 'crypto';
 import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
 
+/** 列出 Chroma 中全部 collection 及其元信息。 */
 export async function listAllCollections() {
   const collections = await chromaClient.listCollections();
   return {
@@ -14,6 +15,7 @@ export async function listAllCollections() {
   };
 }
 
+/** 查看指定 collection 的文档数量与抽样预览。 */
 export async function getCollectionInfo(collectionName: string, limit: number) {
   const collection = await chromaClient.getCollection({
     name: collectionName,
@@ -35,6 +37,7 @@ export async function getCollectionInfo(collectionName: string, limit: number) {
   };
 }
 
+/** 向指定 collection 批量插入调试用的测试文档。 */
 export async function insertTestData(collectionName: string, dataArray: string[]) {
   const collection = await chromaClient.getOrCreateCollection({
     name: collectionName,
@@ -62,11 +65,14 @@ export async function insertTestData(collectionName: string, dataArray: string[]
     insertedIds: ids,
   };
 }
+
+/** 彻底删除指定 collection。 */
 export async function deleteCollection(collectionName: string) {
   await chromaClient.deleteCollection({ name: collectionName });
   return { message: `集合 ${collectionName} 已彻底删除` };
 }
 
+/** 删除并重建指定 collection（清空全部向量数据）。 */
 export async function resetCollection(collectionName: string) {
   await chromaClient.deleteCollection({ name: collectionName });
   await chromaClient.createCollection({

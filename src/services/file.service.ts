@@ -44,6 +44,7 @@ export async function createFileRecord(params: {
   });
 }
 
+/** 删除 MinIO 对象与 MySQL 文件记录（chunks 级联删除）。 */
 export async function deleteFileRecord(fileId: string) {
   const file = await prisma.file.findUnique({ where: { id: fileId } });
   if (!file) return;

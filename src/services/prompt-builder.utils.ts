@@ -16,6 +16,7 @@ const PROMPT_SKILLS: Record<PromptSkill, string> = {
   general: `## 当前运行模式：[日常闲聊模式]`,
 };
 
+/** 根据用户输入关键词路由到对应的 Prompt 技能块。 */
 export function routeSkill(content: string): { skill: PromptSkill; block: string } {
   if (content.includes('难过') || content.includes('累')) {
     return { skill: 'chat_mode', block: PROMPT_SKILLS.chat_mode };

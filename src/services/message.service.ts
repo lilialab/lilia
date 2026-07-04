@@ -8,6 +8,7 @@ export const CONTEXT_MESSAGE_LIMIT = 10;
 
 const activeMessageFilter = { isDeleted: false };
 
+/** 将数据库消息行映射为前端历史消息格式。 */
 function mapMessageRow(row: {
   id: string;
   role: string;
@@ -22,6 +23,10 @@ function mapMessageRow(row: {
   };
 }
 
+/**
+ * 获取会话最近 N 条消息，按时间正序返回，供 LLM 上下文使用。
+ * @param limit 条数上限，默认 CONTEXT_MESSAGE_LIMIT
+ */
 export async function getContextMessages(
   sessionId: string,
   limit = CONTEXT_MESSAGE_LIMIT,
@@ -39,12 +44,17 @@ export async function getContextMessages(
   }));
 }
 
+/**
+ * 分页拉取会话历史消息，支持 before 游标向上翻页。
+ * @param options.before 上一页最早消息的 id，不传则取最新一页
+ */
 export async function getHistoryPage(
   sessionId: string,
   options: { limit?: number; before?: string } = {},
 ) {
   const limit = options.limit ?? PAGE_SIZE;
 
+  /** 判断指定时间之前是否还有更早的未删除消息。 */
   async function hasOlderMessages(oldestCreatedAt: Date) {
     const count = await prisma.message.count({
       where: {
@@ -99,6 +109,7 @@ export async function getHistoryPage(
   return { messages: rows.map(mapMessageRow), hasMore };
 }
 
+/** 软删除会话下全部未删除消息（设置 isDeleted）。 */
 export async function softDeleteSessionMessages(sessionId: string) {
   return prisma.message.updateMany({
     where: { sessionId, ...activeMessageFilter },
