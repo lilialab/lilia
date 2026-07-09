@@ -1,16 +1,12 @@
 import { type NextRequest } from 'next/server';
-import { withApiHandler, successResponse, badRequest } from '@/lib/server/api-handler';
+import { withApiHandler, successResponse } from '@/lib/server/api-handler';
+import { parseRouteParams } from '@/lib/server/parse-schema';
+import { sessionParamsSchema } from '@/schemas/api/sessions/params';
 import { softDeleteSessionMessages } from '@/services/chat/message.service';
 
-interface SessionParams {
-  id: string;
-}
-
 export const DELETE = withApiHandler(
-  async (_req: NextRequest, context: { params: Promise<SessionParams> }) => {
-    const { id: sessionId } = await context.params;
-
-    if (!sessionId) badRequest('缺少会话 ID');
+  async (_req: NextRequest, context: { params: Promise<unknown> }) => {
+    const { id: sessionId } = await parseRouteParams(sessionParamsSchema, context.params);
 
     const result = await softDeleteSessionMessages(sessionId);
 

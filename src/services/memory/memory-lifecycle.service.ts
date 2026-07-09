@@ -226,3 +226,26 @@ export async function applyMaintenanceMerge(
 
   return { ids: prepared.ids };
 }
+
+export interface ListUserMemoriesInput {
+  userId: string;
+  text?: string;
+  type?: MemoryType;
+  isMaintained?: boolean;
+  limit: number;
+}
+
+/** 按条件列出 UserMemory（仅 isDeleted=false），返回表内全部字段。 */
+export async function listUserMemories(input: ListUserMemoriesInput) {
+  return prisma.userMemory.findMany({
+    where: {
+      userId: input.userId,
+      isDeleted: false,
+      ...(input.text ? { text: { contains: input.text } } : {}),
+      ...(input.type ? { type: input.type } : {}),
+      ...(input.isMaintained !== undefined ? { isMaintained: input.isMaintained } : {}),
+    },
+    orderBy: { createdAt: 'desc' },
+    take: input.limit,
+  });
+}

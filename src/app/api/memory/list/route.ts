@@ -1,18 +1,13 @@
 import { type NextRequest } from 'next/server';
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
-import { VectorService } from '@/services/memory/vector.service';
-
-const vectorService = new VectorService();
-const DEFAULT_QUERY = '用户信息';
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
+import { parseSearchParams } from '@/lib/server/parse-schema';
+import { listMemoryQuerySchema } from '@/schemas/api/memory/list';
+import { listUserMemories } from '@/services/memory/memory-lifecycle.service';
 
 export const GET = withApiHandler(async (req: NextRequest) => {
-  const query = req.nextUrl.searchParams.get('query')?.trim() || DEFAULT_QUERY;
-  const rawLimit = Number(req.nextUrl.searchParams.get('limit') ?? DEFAULT_LIMIT);
-  const limit = Math.min(Math.max(1, rawLimit), MAX_LIMIT);
+  const query = parseSearchParams(listMemoryQuerySchema, req.nextUrl.searchParams);
 
-  const memories = await vectorService.queryMemory(query, limit);
+  const memories = await listUserMemories(query);
 
   return successResponse({ memories });
 });

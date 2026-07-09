@@ -193,8 +193,9 @@ async function loadMemoryStats(userId: string): Promise<ProfileMemoryStats> {
 export async function refreshUserProfile(userId: string): Promise<{ sourceVersion: number }> {
   const [existingProfile, referenceMemories, stats] = await Promise.all([
     prisma.userProfile.findUnique({ where: { userId } }),
+    // 参考记忆仅供长期画像 rollup，不含 event（一次性日程由 RAG 处理）
     prisma.userMemory.findMany({
-      where: { userId, isDeleted: false },
+      where: { userId, isDeleted: false, type: { not: 'event' } },
       orderBy: [{ confidence: 'desc' }, { lastActiveAt: 'desc' }],
       take: REFERENCE_MEMORY_LIMIT,
       select: { text: true, type: true, confidence: true },

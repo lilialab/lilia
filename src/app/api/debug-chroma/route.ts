@@ -6,7 +6,11 @@ import {
   deleteCollection,
   resetCollection,
 } from '@/services/debug/chroma.service';
-import { badRequest, successResponse, withApiHandler } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
+import { parseJsonBody, parseSearchParams } from '@/lib/server/parse-schema';
+import { debugChromaDeleteQuerySchema } from '@/schemas/api/debug-chroma/delete-query';
+import { debugChromaGetQuerySchema } from '@/schemas/api/debug-chroma/get-query';
+import { debugChromaPostBodySchema } from '@/schemas/api/debug-chroma/post-body';
 
 /**
  * 【GET】获取数据
@@ -14,9 +18,10 @@ import { badRequest, successResponse, withApiHandler } from '@/lib/server/api-ha
  * - /api/debug-chroma?name=xxx   -> 查看特定集合详情
  */
 export const GET = withApiHandler(async (req: NextRequest) => {
-  const name = req.nextUrl.searchParams.get('name');
-  const pageSize = Number(req.nextUrl.searchParams.get('pageSize')) ?? 10;
-  const result = name ? await getCollectionInfo(name, pageSize) : await listAllCollections();
+  const query = parseSearchParams(debugChromaGetQuerySchema, req.nextUrl.searchParams);
+  const result = query.name
+    ? await getCollectionInfo(query.name, query.pageSize)
+    : await listAllCollections();
   return successResponse(result);
 });
 
@@ -25,10 +30,7 @@ export const GET = withApiHandler(async (req: NextRequest) => {
  * - /api/debug-chroma
  */
 export const POST = withApiHandler(async (req: NextRequest) => {
-  const { name, dataArray } = await req.json();
-
-  if (!name) badRequest('缺少 name 参数');
-  if (!(dataArray?.length > 0)) badRequest('数据数组不能为空');
+  const { name, dataArray } = await parseJsonBody(debugChromaPostBodySchema, req);
 
   const result = await insertTestData(name, dataArray);
   return successResponse(result);
@@ -39,9 +41,10 @@ export const POST = withApiHandler(async (req: NextRequest) => {
  * - /api/debug-chroma?name=xxx
  */
 export const DELETE = withApiHandler(async (req: NextRequest) => {
-  const name = req.nextUrl.searchParams.get('name');
-  const action = req.nextUrl.searchParams.get('action');
-  if (!name) badRequest('缺少 name 参数');
+  const { name, action } = parseSearchParams(
+    debugChromaDeleteQuerySchema,
+    req.nextUrl.searchParams,
+  );
 
   if (action === 'reset') {
     const result = await resetCollection(name);

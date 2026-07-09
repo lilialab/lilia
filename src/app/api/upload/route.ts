@@ -1,14 +1,12 @@
 import { type NextRequest } from 'next/server';
 import { importMarkdownFile } from '@/services/knowledge/knowledge.service';
-import { badRequest, successResponse, withApiHandler } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
+import { parseInput } from '@/lib/server/parse-schema';
+import { uploadPostBodySchema } from '@/schemas/api/upload/post';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   const formData = await req.formData();
-  const file = formData.get('file') as File | null;
-
-  if (!file || !file.name?.endsWith('.md')) {
-    badRequest('请上传有效的 Markdown 文件');
-  }
+  const { file } = parseInput(uploadPostBodySchema, { file: formData.get('file') });
 
   const result = await importMarkdownFile(file);
 

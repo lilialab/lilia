@@ -5,11 +5,20 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/api/memory/list?query=用户&limit=20
+  url: http://localhost:3000/api/memory/list?limit=20
   params:
-    - name: query
+    - name: text
       value: 用户
       type: query
+      disabled: true
+    - name: type
+      value: preference
+      type: query
+      disabled: true
+    - name: isMaintained
+      value: "true"
+      type: query
+      disabled: true
     - name: limit
       value: "20"
       type: query
