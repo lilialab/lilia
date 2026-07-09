@@ -1,4 +1,4 @@
-import { getOrCreateDefaultSession } from '@/services/sessions.service';
+import { getOrCreateDefaultSession } from '@/services/session/sessions.service';
 import { withApiHandler, successResponse } from '@/lib/server/api-handler';
 
 export const GET = withApiHandler(async () => {

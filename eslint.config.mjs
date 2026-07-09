@@ -57,6 +57,15 @@ const eslintConfig = defineConfig([
 
       // 限制单行代码的最大复杂度
       // complexity: ['warn', { max: 15 }],
+
+      // 禁止 for...in；数据变换优先 map/filter/reduce，顺序 await 可用 for...of
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ForInStatement',
+          message: 'Avoid for...in; use Object.keys/entries/values with array methods.',
+        },
+      ],
     },
   },
 

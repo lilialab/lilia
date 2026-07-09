@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 import { withApiHandler, successResponse, badRequest } from '@/lib/server/api-handler';
-import { getHistoryPage, PAGE_SIZE } from '@/services/message.service';
+import { getHistoryPage, PAGE_SIZE } from '@/services/chat/message.service';
 
 interface SessionParams {
   id: string;

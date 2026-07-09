@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 import { withApiHandler, successResponse, badRequest } from '@/lib/server/api-handler';
-import { softDeleteSessionMessages } from '@/services/message.service';
+import { softDeleteSessionMessages } from '@/services/chat/message.service';
 
 interface SessionParams {
   id: string;

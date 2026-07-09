@@ -1,4 +1,4 @@
-import { completeDefaultSession } from '@/services/sessions.service';
+import { completeDefaultSession } from '@/services/session/sessions.service';
 import { withApiHandler, successResponse } from '@/lib/server/api-handler';
 
 export const POST = withApiHandler(async () => {

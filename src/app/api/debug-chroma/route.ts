@@ -5,7 +5,7 @@ import {
   insertTestData,
   deleteCollection,
   resetCollection,
-} from '@/services/debug-chroma.service';
+} from '@/services/debug/chroma.service';
 import { badRequest, successResponse, withApiHandler } from '@/lib/server/api-handler';
 
 /**

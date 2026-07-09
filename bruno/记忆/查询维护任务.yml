@@ -1,0 +1,19 @@
+info:
+  name: 查询维护任务
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: http://localhost:3000/api/memory/maintain?jobId=42e0c942-7462-4161-bb5b-645b1e21c660
+  params:
+    - name: jobId
+      value: 42e0c942-7462-4161-bb5b-645b1e21c660
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

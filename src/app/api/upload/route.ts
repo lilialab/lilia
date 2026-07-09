@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { importMarkdownFile } from '@/services/knowledge.service';
+import { importMarkdownFile } from '@/services/knowledge/knowledge.service';
 import { badRequest, successResponse, withApiHandler } from '@/lib/server/api-handler';
 
 export const POST = withApiHandler(async (req: NextRequest) => {

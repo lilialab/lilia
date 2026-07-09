@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { streamChatFlow } from '@/services/chat.service';
+import { streamChatFlow } from '@/services/chat/chat.service';
 import { withApiHandler, badRequest } from '@/lib/server/api-handler';
 
 export const POST = withApiHandler(async (req: NextRequest) => {

@@ -6,24 +6,23 @@ export type MessageListItem =
   | { type: 'message'; message: HistoryMessage };
 
 export function buildMessageItems(messages: HistoryMessage[]): MessageListItem[] {
-  const items: MessageListItem[] = [];
-  let lastDayKey: string | null = null;
+  return messages.reduce<{ items: MessageListItem[]; lastDayKey: string | null }>(
+    (acc, message) => {
+      const date = getMessageDate(message);
+      const dayKey = formatDayKey(date);
 
-  for (const message of messages) {
-    const date = getMessageDate(message);
-    const dayKey = formatDayKey(date);
+      if (dayKey !== acc.lastDayKey) {
+        acc.items.push({
+          type: 'divider',
+          key: `divider-${dayKey}`,
+          label: formatDateDivider(date),
+        });
+        acc.lastDayKey = dayKey;
+      }
 
-    if (dayKey !== lastDayKey) {
-      items.push({
-        type: 'divider',
-        key: `divider-${dayKey}`,
-        label: formatDateDivider(date),
-      });
-      lastDayKey = dayKey;
-    }
-
-    items.push({ type: 'message', message });
-  }
-
-  return items;
+      acc.items.push({ type: 'message', message });
+      return acc;
+    },
+    { items: [], lastDayKey: null },
+  ).items;
 }

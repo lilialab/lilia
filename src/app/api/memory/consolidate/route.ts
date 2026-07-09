@@ -4,13 +4,13 @@ import { badRequest, notFound, successResponse, withApiHandler } from '@/lib/ser
 import {
   getConsolidationJob,
   prepareConsolidationJob,
-} from '@/services/consolidation-job.service';
-import { runConsolidation } from '@/services/memory-consolidation.service';
+} from '@/services/memory/job.service';
+import { runConsolidation } from '@/services/memory/consolidation.service';
 import { logger } from '@/lib/server/logger';
 
 export const POST = withApiHandler(async () => {
   const jobId = randomUUID();
-  const job = await prepareConsolidationJob(jobId);
+  const job = await prepareConsolidationJob(jobId, 'extract');
 
   runConsolidation(job).catch((err) => {
     logger.error({ jobId, err }, '[API] runConsolidation uncaught error');

@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
-import { VectorService } from '@/services/vector.service';
+import { VectorService } from '@/services/memory/vector.service';
 
 const vectorService = new VectorService();
 const DEFAULT_QUERY = '用户信息';

@@ -1,0 +1,302 @@
+import { generateText, Output } from 'ai';
+import { z } from 'zod';
+import { prisma } from '@/lib/server/prisma';
+import { getStructuredOllamaModel } from '@/lib/server/ollama';
+import { env } from '@/lib/server/env';
+import { logger } from '@/lib/server/logger';
+import { isMemoryType, type MemoryType } from '@/types/memory';
+import { updateConsolidationJob } from './job.service';
+import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
+
+const EMPTY_PROFILE_TEXT = '目前暂无特殊偏好记录。';
+const REFERENCE_MEMORY_LIMIT = 30;
+const DEFAULT_USER_ID = 'default';
+
+const profileFacetsSchema = z.object({
+  nickname: z.string().optional(),
+  occupation: z.string().optional(),
+  communication_style: z.string().optional(),
+  avoid_topics: z.array(z.string()).optional(),
+  active_goals: z.array(z.string()).optional(),
+});
+
+const profileOutputSchema = z.object({
+  summary: z.string(),
+  facets: profileFacetsSchema,
+});
+
+export type ProfileFacets = z.infer<typeof profileFacetsSchema>;
+
+export interface ProfileMemoryStats {
+  activeMemoryCount: number;
+  byType: Record<MemoryType, number>;
+}
+
+const FACET_LABELS: Record<keyof ProfileFacets, string> = {
+  nickname: '昵称',
+  occupation: '职业',
+  communication_style: '沟通风格',
+  avoid_topics: '敏感话题',
+  active_goals: '当前目标',
+};
+
+const PROFILE_REFRESH_PROMPT = `
+你是用户画像维护专家。根据现有画像、参考记忆列表与库统计，输出更新后的用户画像。
+
+【输出要求】
+1. summary：200~400 字自然语言摘要，第三人称「用户」，概括稳定偏好、性格与长期状态。
+2. facets：结构化槽位，仅填有充分证据的字段；无证据则省略该字段。
+   - nickname / occupation / communication_style：字符串
+   - avoid_topics / active_goals：字符串数组
+3. 合并更新：旧 facets 中仍有效的信息应保留；与参考记忆冲突时，以高置信度、较新的记忆为准。
+4. 仅以参考记忆列表为证据；summary/facets 中无对应证据的表述应删除或弱化。
+5. 低置信度（<0.5）或玩笑类记忆不应写入 facets；event 类过期日程不必写入 active_goals。
+6. 禁止编造；证据不足时 summary 可简短，facets 可留空对象。
+`.trim();
+
+/** 将 summary 与 facets 格式化为 prompt 可用的纯文本。 */
+export function formatProfileForPrompt(
+  summary: string | null | undefined,
+  facets: ProfileFacets | null | undefined,
+): string {
+  const trimmedSummary = summary?.trim() ?? '';
+  const facetLines = facets
+    ? (Object.keys(FACET_LABELS) as (keyof ProfileFacets)[]).flatMap((key) => {
+        const value = facets[key];
+        if (value == null) return [];
+        if (Array.isArray(value) && value.length === 0) return [];
+        if (typeof value === 'string' && !value.trim()) return [];
+        const display = Array.isArray(value) ? value.join('、') : value;
+        return [`- ${FACET_LABELS[key]}：${display}`];
+      })
+    : [];
+
+  if (!trimmedSummary && facetLines.length === 0) {
+    return EMPTY_PROFILE_TEXT;
+  }
+
+  const parts: string[] = [];
+  if (trimmedSummary) parts.push(trimmedSummary);
+  if (facetLines.length > 0) {
+    parts.push('结构化画像：');
+    parts.push(...facetLines);
+  }
+  return parts.join('\n');
+}
+
+/** 将参考记忆列表格式化为 prompt 中的 bullet 文本。 */
+function formatMemoryList(memories: { text: string; type: string; confidence: number }[]): string {
+  if (memories.length === 0) return '（无）';
+  return memories
+    .map(
+      (memory) => `- [${memory.type}, confidence=${memory.confidence.toFixed(2)}] ${memory.text}`,
+    )
+    .join('\n');
+}
+
+/** 将记忆库统计格式化为 prompt 中的多行文本。 */
+function formatStats(stats: ProfileMemoryStats): string {
+  return [
+    `活跃记忆总数：${stats.activeMemoryCount}`,
+    `preference：${stats.byType.preference}`,
+    `event：${stats.byType.event}`,
+    `fact：${stats.byType.fact}`,
+  ].join('\n');
+}
+
+/** 组装画像刷新 prompt 正文（纯函数，便于单测）。 */
+export function buildProfileRefreshPrompt(input: {
+  existingSummary: string | null | undefined;
+  existingFacets: ProfileFacets | undefined;
+  referenceMemories: { text: string; type: string; confidence: number }[];
+  stats: ProfileMemoryStats;
+}): string {
+  return [
+    '【现有画像 summary】',
+    input.existingSummary?.trim() || '（无）',
+    '',
+    '【现有 facets JSON】',
+    JSON.stringify(input.existingFacets ?? {}, null, 2),
+    '',
+    '【参考记忆（高置信度与活跃度优先）】',
+    formatMemoryList(input.referenceMemories),
+    '',
+    '【记忆库统计】',
+    formatStats(input.stats),
+  ].join('\n');
+}
+
+/** 从数据库读取用户画像并格式化为 prompt 文本。 */
+export async function getUserProfileText(userId: string): Promise<string> {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { summary: true, facets: true },
+  });
+
+  if (!profile) return EMPTY_PROFILE_TEXT;
+
+  const facets = profile.facets ? profileFacetsSchema.safeParse(profile.facets).data : undefined;
+
+  return formatProfileForPrompt(profile.summary, facets);
+}
+
+/** 读取上次 maintain 成功时刻（UTC）；无 profile 或未维护过则返回 null。 */
+export async function getLastMaintainedAt(userId: string): Promise<Date | null> {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { lastMaintainedAt: true },
+  });
+
+  return profile?.lastMaintainedAt ?? null;
+}
+
+/** 维护成功后更新水位（不早于已有值）。 */
+export async function updateLastMaintainedAt(userId: string, at: Date): Promise<void> {
+  const existing = await getLastMaintainedAt(userId);
+
+  if (existing && at.getTime() <= existing.getTime()) {
+    return;
+  }
+
+  await prisma.userProfile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      lastMaintainedAt: at,
+    },
+    update: {
+      lastMaintainedAt: at,
+    },
+  });
+}
+
+/** 统计活跃记忆数量与各类型分布。 */
+async function loadMemoryStats(userId: string): Promise<ProfileMemoryStats> {
+  const rows = await prisma.userMemory.groupBy({
+    by: ['type'],
+    where: { userId, isDeleted: false },
+    _count: { id: true },
+  });
+
+  const byType: Record<MemoryType, number> = { preference: 0, event: 0, fact: 0 };
+  rows.forEach((row) => {
+    if (isMemoryType(row.type)) {
+      byType[row.type] = row._count.id;
+    }
+  });
+
+  const activeMemoryCount = Object.values(byType).reduce((sum, count) => sum + count, 0);
+  return { activeMemoryCount, byType };
+}
+
+/** 用 LLM rollup 更新 UserProfile。 */
+export async function refreshUserProfile(userId: string): Promise<{ sourceVersion: number }> {
+  const [existingProfile, referenceMemories, stats] = await Promise.all([
+    prisma.userProfile.findUnique({ where: { userId } }),
+    prisma.userMemory.findMany({
+      where: { userId, isDeleted: false },
+      orderBy: [{ confidence: 'desc' }, { lastActiveAt: 'desc' }],
+      take: REFERENCE_MEMORY_LIMIT,
+      select: { text: true, type: true, confidence: true },
+    }),
+    loadMemoryStats(userId),
+  ]);
+
+  const existingFacets = existingProfile?.facets
+    ? profileFacetsSchema.safeParse(existingProfile.facets).data
+    : undefined;
+
+  const userPrompt = buildProfileRefreshPrompt({
+    existingSummary: existingProfile?.summary,
+    existingFacets,
+    referenceMemories,
+    stats,
+  });
+
+  logger.info({
+    event: 'llm.profile.request',
+    userId,
+    model: env.OLLAMA_MODEL,
+    referenceMemoryCount: referenceMemories.length,
+    prompt: userPrompt,
+  });
+
+  const { output, text } = await generateText({
+    model: getStructuredOllamaModel(env.OLLAMA_MODEL),
+    output: Output.object({ schema: profileOutputSchema }),
+    system: PROFILE_REFRESH_PROMPT,
+    prompt: userPrompt,
+    maxRetries: 2,
+  });
+
+  logger.info({
+    event: 'llm.profile.response',
+    userId,
+    model: env.OLLAMA_MODEL,
+    response: text,
+    output,
+  });
+
+  if (!output) {
+    throw new Error('用户画像模型输出格式无效');
+  }
+
+  const profile = await prisma.userProfile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      summary: output.summary.trim(),
+      facets: output.facets,
+      sourceVersion: 1,
+    },
+    update: {
+      summary: output.summary.trim(),
+      facets: output.facets,
+      sourceVersion: { increment: 1 },
+    },
+  });
+
+  return { sourceVersion: profile.sourceVersion };
+}
+
+/** 用户画像刷新主流程，由 API 路由以 fire-and-forget 方式调用。 */
+export async function runProfileRefresh(job: ConsolidationJob): Promise<void> {
+  const userId = DEFAULT_USER_ID;
+
+  await updateConsolidationJob(job.id, {
+    status: 'running',
+    progress: '正在加载记忆与现有画像...',
+    snapshot: { userId },
+  });
+
+  try {
+    await updateConsolidationJob(job.id, { progress: '正在调用模型更新用户画像...' });
+
+    const { sourceVersion } = await refreshUserProfile(userId);
+
+    const result: ProfileJobResult = { sourceVersion };
+
+    logger.info({
+      event: 'llm.profile.complete',
+      jobId: job.id,
+      userId,
+      sourceVersion,
+    });
+
+    await updateConsolidationJob(job.id, {
+      status: 'completed',
+      completedAt: Date.now(),
+      progress: `画像更新完成（sourceVersion=${sourceVersion}）。`,
+      result,
+    });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : '未知错误';
+    logger.error({ err, jobId: job.id }, '[ProfileRefresh] 用户画像更新失败');
+    await updateConsolidationJob(job.id, {
+      status: 'failed',
+      completedAt: Date.now(),
+      progress: '用户画像更新失败，可稍后重试。',
+      error: errorMessage,
+    });
+  }
+}
