@@ -1,4 +1,5 @@
 import type { InputJsonValue } from '@prisma/client/runtime/client';
+import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import type {
   ConsolidationJob,
@@ -6,8 +7,6 @@ import type {
   JobKind,
   JobStatus,
 } from '@/types/consolidation-job';
-
-const MAX_JOBS = 20;
 
 /** 将未知值断言为 Prisma JSON 输入类型。 */
 function toInputJsonValue(value: unknown): InputJsonValue {
@@ -98,12 +97,12 @@ export async function updateConsolidationJob(
   await prisma.consolidationJob.update({ where: { id }, data });
 }
 
-/** 保留最近 MAX_JOBS 条记录，防止无限增长 */
+/** 保留最近 CONSOLIDATION_JOB_MAX_HISTORY 条记录，防止无限增长 */
 export async function pruneConsolidationJobs(): Promise<void> {
   const staleJobs = await prisma.consolidationJob.findMany({
     orderBy: { startedAt: 'desc' },
     select: { id: true },
-    skip: MAX_JOBS,
+    skip: env.CONSOLIDATION_JOB_MAX_HISTORY,
   });
 
   if (staleJobs.length === 0) return;

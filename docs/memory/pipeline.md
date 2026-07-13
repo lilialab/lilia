@@ -1,7 +1,7 @@
 # 记忆流水线总览
 
-- [对话记忆整理 extract](./extract.md)
-- [记忆维护 maintain](./maintain.md)
+- [对话记忆整理 extract](./extract.md)（行为说明见文档内 **「说明」**）
+- [记忆维护 maintain](./maintain.md)（行为说明见文档内 **「说明」**）
 - [画像维护 profile](./profile.md)
 
 ```mermaid
@@ -28,9 +28,11 @@ flowchart TB
 
 ## 功能与代码对应
 
+各 job 的选取规则、时间/衰减逻辑、落库约定见 [extract](./extract.md#说明) / [maintain](./maintain.md#说明) 的 **「说明」** 节。
+
 | 功能 | 函数 |
 |------|------|
-| 组装 system prompt（人设 + 画像 + 记忆 + skill） | `buildSystemPrompt` |
+| 组装 system prompt（人设 + 画像 + 记忆） | `buildSystemPrompt` |
 | 读取并格式化用户画像 | `fetchUserProfile`, `getUserProfileText` |
 | 语义检索 + 衰减重排 + 滤已删记忆 | `fetchHistoricalContext`, `queryMemoryWithDecay`, `effectiveScore` |
 | RAG 命中后刷新活跃时间 | `touchMemories` |

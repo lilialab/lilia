@@ -1,10 +1,11 @@
 // 基于 Prisma 的 MySQL 存储服务
+import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
 
 export const PAGE_SIZE = 10;
-export const CONTEXT_MESSAGE_LIMIT = 10;
+export const CONTEXT_MESSAGE_LIMIT = env.CHAT_CONTEXT_MESSAGE_LIMIT;
 
 const activeMessageFilter = { isDeleted: false };
 

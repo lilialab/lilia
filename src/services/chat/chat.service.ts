@@ -42,7 +42,6 @@ export async function streamChatFlow(sessionId: string, messages: ChatPostBody['
     userMessageId,
     userContent: lastUserContent,
     contextMessageCount: contextMessages.length,
-    activeSkill: meta.activeSkill,
     memoryFragments: meta.memoryFragments,
     userProfile: meta.userProfile,
   });

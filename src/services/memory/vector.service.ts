@@ -1,4 +1,5 @@
 import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
+import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { effectiveScore } from './decay.utils';
 import { parseMemoryMetadata } from './metadata.utils';
@@ -47,8 +48,6 @@ interface QueryMemoryWithDecayOptions {
   candidateMultiplier?: number;
 }
 
-const DEFAULT_CANDIDATE_MULTIPLIER = 3;
-
 export class VectorService {
   private docCollectionName = 'doc_knowledge_base';
   private memoryCollectionName = 'user_memory_base';
@@ -90,11 +89,12 @@ export class VectorService {
    */
   async queryMemoryWithDecay(
     queryText: string,
-    limit = 5,
+    limit = env.MEMORY_RAG_LIMIT,
     options?: QueryMemoryWithDecayOptions,
   ): Promise<MemoryCandidate[]> {
     const nowMs = options?.nowMs ?? Date.now();
-    const candidateMultiplier = options?.candidateMultiplier ?? DEFAULT_CANDIDATE_MULTIPLIER;
+    const candidateMultiplier =
+      options?.candidateMultiplier ?? env.MEMORY_RAG_CANDIDATE_MULTIPLIER;
     const collection = await this.getCollection(this.memoryCollectionName);
 
     const whereClause = options?.startTime ? { timestamp: { $gte: options.startTime } } : undefined;
@@ -150,7 +150,7 @@ export class VectorService {
   /** 按文本查询语义近邻记忆（用于维护阶段相似聚类）。 */
   async findMemoryNeighbors(
     queryText: string,
-    limit = 10,
+    limit = env.MEMORY_MAINTENANCE_NEIGHBOR_LIMIT,
     excludeId?: string,
   ): Promise<MemoryNeighbor[]> {
     const collection = await this.getCollection(this.memoryCollectionName);
@@ -201,7 +201,7 @@ export class VectorService {
   /**
    * 检索记忆：支持引入时间范围过滤（可选）
    */
-  async queryMemory(queryText: string, limit = 5, startTime?: number): Promise<string[]> {
+  async queryMemory(queryText: string, limit = env.MEMORY_RAG_LIMIT, startTime?: number): Promise<string[]> {
     const hits = await this.queryMemoryWithDecay(queryText, limit, { startTime });
     return hits.map((hit) => hit.text);
   }
@@ -231,7 +231,7 @@ export class VectorService {
   /**
    * 从向量知识库中依据语义检索 Top-K 切片
    */
-  async queryKnowledge(queryText: string, limit = 3): Promise<string[]> {
+  async queryKnowledge(queryText: string, limit = env.KNOWLEDGE_RAG_LIMIT): Promise<string[]> {
     const collection = await this.getCollection(this.docCollectionName);
 
     const response = await collection.query({

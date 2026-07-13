@@ -1,11 +1,14 @@
+import { env } from '@/lib/server/env';
+
 export type { MemoryType } from '@/types/memory';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-/** 按记忆类型返回半衰期（天）。 */
+/** 按记忆类型返回半衰期（天），取值来自 env。 */
 export function getHalfLifeDays(type?: string): number {
-  if (type === 'event') return 30;
-  return 90;
+  if (type === 'event') return env.MEMORY_HALF_LIFE_EVENT_DAYS;
+  if (type === 'preference') return env.MEMORY_HALF_LIFE_PREFERENCE_DAYS;
+  return env.MEMORY_HALF_LIFE_FACT_DAYS;
 }
 
 /** 指数时间衰减：halfLifeDays 天后权重约为 0.5。 */

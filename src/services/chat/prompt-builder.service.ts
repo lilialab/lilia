@@ -2,14 +2,15 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
 import { VectorService } from '@/services/memory/vector.service';
-import { routeSkill, type PromptSkill } from './prompt-builder.utils';
+import {
+  buildRuntimeContextBlock,
+  formatMemoryFragmentLine,
+  type MemoryFragment,
+} from './prompt-format.utils';
 
 const DEFAULT_USER_ID = 'default';
 
-export type { PromptSkill };
-
 export interface SystemPromptMeta {
-  activeSkill: PromptSkill;
   memoryFragments: string[];
   userProfile: string;
 }
@@ -56,17 +57,37 @@ async function fetchUserProfile(userId: string): Promise<string> {
 }
 
 /** 按用户输入从向量记忆库检索相关历史片段（含衰减重排与命中回写）。 */
-async function fetchHistoricalContext(content: string): Promise<string[]> {
+async function fetchHistoricalContext(content: string): Promise<MemoryFragment[]> {
   if (!content) return [];
   try {
     const hits = await vectorService.queryMemoryWithDecay(content);
     const ids = hits.map((hit) => hit.id);
-    if (ids.length > 0) {
-      void vectorService.touchMemories(ids).catch((err) => {
-        logger.warn({ err }, '[Chroma] 记忆 lastActiveAt 回写失败');
+    if (ids.length === 0) return [];
+
+    void vectorService.touchMemories(ids).catch((err) => {
+      logger.warn({ err }, '[Chroma] 记忆 lastActiveAt 回写失败');
+    });
+
+    const rows = await prisma.userMemory.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, createdAt: true, lastActiveAt: true },
+    });
+    const rowById = new Map(rows.map((row) => [row.id, row]));
+
+    const fragments: MemoryFragment[] = [];
+    for (const hit of hits) {
+      const row = rowById.get(hit.id);
+      if (!row) {
+        logger.warn({ memoryId: hit.id }, '[RAG] Chroma 命中但 MySQL 无对应记忆，已跳过');
+        continue;
+      }
+      fragments.push({
+        text: hit.text,
+        recordedAt: row.createdAt,
+        lastActiveAt: row.lastActiveAt,
       });
     }
-    return hits.map((hit) => hit.text);
+    return fragments;
   } catch (err) {
     logger.error({ err }, '[Chroma] 知识库检索失败');
     return [];
@@ -81,18 +102,23 @@ export async function buildSystemPrompt(
   lastUserContent: string,
 ): Promise<SystemPromptResult> {
   const userId = await resolveUserId(sessionId);
+  const now = new Date();
 
   const [userProfile, memoryFragments] = await Promise.all([
     fetchUserProfile(userId),
     fetchHistoricalContext(lastUserContent),
   ]);
 
-  const { skill: activeSkill, block: skillBlock } = routeSkill(lastUserContent);
+  const memoryFragmentLines = memoryFragments.map((fragment, index) =>
+    formatMemoryFragmentLine(index + 1, fragment),
+  );
 
   const contextStr =
-    memoryFragments.length > 0
-      ? memoryFragments.map((doc, index) => `[记忆片段 ${index + 1}]: ${doc}`).join('\n')
+    memoryFragmentLines.length > 0
+      ? memoryFragmentLines.join('\n')
       : '暂无相关历史记忆。';
+
+  const runtimeContext = buildRuntimeContextBlock(now);
 
   const systemPrompt = `
     # 【第一层：核心宪法】(开发者定义，最高权重)
@@ -105,23 +131,22 @@ export async function buildSystemPrompt(
     ${userProfile}
     </user_profile>
 
+    # 【运行时上下文】
+    ${runtimeContext}
+
     <historical_contexts>
     以下是与当前话题相关的历史记忆片段：
     ${contextStr}
     </historical_contexts>
 
-    # 【第三层：动态插件】(根据当前对话动态加载)
-    ${skillBlock}
-
     # 【执行约束】
-    请结合“第一层”的灵魂人设、“第二层”的用户记忆，并在“第三层”的模式指导下回应用户
+    请结合“第一层”的灵魂人设与“第二层”的用户记忆回应用户。记忆「记录于」为首次写入时间，「最近活跃于」为最近一次被系统召回的时间；均为 UTC，仅供理解先后与时效，不要机械向用户播报日期。
   `.trim();
 
   return {
     systemPrompt,
     meta: {
-      activeSkill,
-      memoryFragments,
+      memoryFragments: memoryFragmentLines,
       userProfile,
     },
   };

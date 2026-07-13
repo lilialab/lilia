@@ -1,6 +1,5 @@
+import { env } from '@/lib/server/env';
 import { isMemoryType, type MemoryType } from '@/types/memory';
-
-const DEFAULT_CONFIDENCE = 0.7;
 
 export interface ParsedMemoryMetadata {
   type?: MemoryType;
@@ -19,7 +18,7 @@ export function parseMemoryType(value: unknown): MemoryType | undefined {
 /** 从未知值解析置信度，非法时返回默认值。 */
 export function parseConfidence(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return DEFAULT_CONFIDENCE;
+    return env.MEMORY_DEFAULT_CONFIDENCE;
   }
   return value;
 }

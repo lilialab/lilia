@@ -9,6 +9,7 @@ import { updateConsolidationJob } from './job.service';
 import { applyMaintenanceMerge, markMemoryMaintained } from './memory-lifecycle.service';
 import {
   buildMaintenanceClusterDeleteIds,
+  isMaintenanceNeighborActive,
   mapMaintenanceRewriteOutput,
   validateMaintenanceRewriteOutput,
   type MaintenanceMemoryItem,
@@ -23,7 +24,6 @@ import { isMemoryType, type MemoryType } from '@/types/memory';
 
 const vectorService = new VectorService();
 const DEFAULT_USER_ID = 'default';
-const NEIGHBOR_LIMIT = 10;
 
 const MEMORY_MAINTENANCE_PROMPT = `
 你是记忆库维护专家。给定一条待维护记忆（游标，序号 1）及其 Chroma 近邻（若有），整理该组记忆并输出整理后的条目列表。
@@ -55,7 +55,11 @@ interface MemoryCursor {
   confidence: number;
 }
 
-interface NeighborCandidate extends MemoryCursor {
+interface NeighborMemory extends MemoryCursor {
+  lastActiveAt: Date;
+}
+
+interface NeighborCandidate extends NeighborMemory {
   distance: number;
 }
 
@@ -103,10 +107,12 @@ async function findNextUnmaintainedMemory(
 }
 
 /**
- * 近邻详情以 MySQL 为准：只排除 isDeleted，不过滤 isMaintained（老记忆可作合并对象）。
- * Chroma 返回的 id 若已软删或不存在，此处自然滤掉。
+ * 近邻 id 来自 Chroma 语义召回；详情与活跃态以 MySQL 为准。
+ * 软删为 MySQL + Chroma 双写且非原子（见 softDeleteMemories / applyMaintenanceMerge），
+ * Chroma 可能仍命中已软删 id，此处用 isDeleted=false 兜底（与 queryMemoryWithDecay 一致）。
+ * 不过滤 isMaintained（已维护老记忆仍可作合并近邻）；衰减过滤在 maintainOneMemory 另行处理。
  */
-async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<MemoryCursor[]> {
+async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<NeighborMemory[]> {
   if (ids.length === 0) return [];
 
   const rows = await prisma.userMemory.findMany({
@@ -117,6 +123,7 @@ async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<M
       text: true,
       type: true,
       confidence: true,
+      lastActiveAt: true,
     },
   });
 
@@ -129,6 +136,7 @@ async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<M
         text: row.text,
         type: row.type,
         confidence: row.confidence,
+        lastActiveAt: row.lastActiveAt,
       },
     ];
   });
@@ -228,7 +236,7 @@ async function decideMaintenanceRewrite(
       output: Output.object({ schema: maintenanceOutputSchema }),
       system: MEMORY_MAINTENANCE_PROMPT,
       prompt: userPrompt,
-      maxRetries: 2,
+      maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });
 
     logger.info({
@@ -263,7 +271,7 @@ async function maintainOneMemory(
 ): Promise<MaintainOneResult> {
   const chromaNeighbors = await vectorService.findMemoryNeighbors(
     cursor.text,
-    NEIGHBOR_LIMIT,
+    env.MEMORY_MAINTENANCE_NEIGHBOR_LIMIT,
     cursor.id,
   );
 
@@ -273,10 +281,32 @@ async function maintainOneMemory(
   );
 
   const distanceById = new Map(chromaNeighbors.map((neighbor) => [neighbor.id, neighbor.distance]));
-  const neighbors: NeighborCandidate[] = neighborMemories.map((memory) => ({
-    ...memory,
-    distance: distanceById.get(memory.id) ?? 1,
-  }));
+  const nowMs = Date.now();
+  const neighbors: NeighborCandidate[] = neighborMemories.flatMap((memory) => {
+    if (!isMaintenanceNeighborActive(memory.lastActiveAt.getTime(), nowMs, memory.type)) {
+      return [];
+    }
+    return [
+      {
+        ...memory,
+        distance: distanceById.get(memory.id) ?? 1,
+      },
+    ];
+  });
+
+  const droppedNeighborCount = neighborMemories.length - neighbors.length;
+  if (droppedNeighborCount > 0) {
+    logger.info(
+      {
+        event: 'llm.maintenance.neighbor.decay_filtered',
+        jobId: job.id,
+        cursorId: cursor.id,
+        droppedNeighborCount,
+        keptNeighborCount: neighbors.length,
+      },
+      '[MemoryMaintenance] 近邻因衰减过低已丢弃',
+    );
+  }
 
   // 无近邻：1→1 删旧建新 touch，不调 LLM
   if (neighbors.length === 0) {

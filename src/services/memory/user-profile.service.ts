@@ -9,7 +9,6 @@ import { updateConsolidationJob } from './job.service';
 import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
 
 const EMPTY_PROFILE_TEXT = '目前暂无特殊偏好记录。';
-const REFERENCE_MEMORY_LIMIT = 30;
 const DEFAULT_USER_ID = 'default';
 
 const profileFacetsSchema = z.object({
@@ -197,7 +196,7 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
     prisma.userMemory.findMany({
       where: { userId, isDeleted: false, type: { not: 'event' } },
       orderBy: [{ confidence: 'desc' }, { lastActiveAt: 'desc' }],
-      take: REFERENCE_MEMORY_LIMIT,
+      take: env.MEMORY_PROFILE_REFERENCE_LIMIT,
       select: { text: true, type: true, confidence: true },
     }),
     loadMemoryStats(userId),
@@ -227,7 +226,7 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
     output: Output.object({ schema: profileOutputSchema }),
     system: PROFILE_REFRESH_PROMPT,
     prompt: userPrompt,
-    maxRetries: 2,
+    maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
   });
 
   logger.info({

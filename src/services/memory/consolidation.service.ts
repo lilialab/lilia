@@ -219,7 +219,7 @@ async function extractMemoriesFromTranscript(
       output: Output.object({ schema: consolidationOutputSchema }),
       system: MEMORY_EXTRACTION_PROMPT,
       prompt: userPrompt,
-      maxRetries: 2,
+      maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });
 
     await updateConsolidationJob(job.id, {

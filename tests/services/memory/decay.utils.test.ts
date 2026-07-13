@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { env } from '@/lib/server/env';
 import {
   decay,
   effectiveScore,
@@ -10,14 +11,11 @@ const DAY_MS = 1000 * 60 * 60 * 24;
 const BASE = Date.parse('2026-01-01T00:00:00Z');
 
 describe('getHalfLifeDays', () => {
-  it('returns 30 for event', () => {
-    expect(getHalfLifeDays('event')).toBe(30);
-  });
-
-  it('returns 90 for preference and fact', () => {
-    expect(getHalfLifeDays('preference')).toBe(90);
-    expect(getHalfLifeDays('fact')).toBe(90);
-    expect(getHalfLifeDays(undefined)).toBe(90);
+  it('returns env half-life for each memory type', () => {
+    expect(getHalfLifeDays('event')).toBe(env.MEMORY_HALF_LIFE_EVENT_DAYS);
+    expect(getHalfLifeDays('preference')).toBe(env.MEMORY_HALF_LIFE_PREFERENCE_DAYS);
+    expect(getHalfLifeDays('fact')).toBe(env.MEMORY_HALF_LIFE_FACT_DAYS);
+    expect(getHalfLifeDays(undefined)).toBe(env.MEMORY_HALF_LIFE_FACT_DAYS);
   });
 });
 
@@ -28,14 +26,17 @@ describe('decay', () => {
   });
 
   it('returns about 0.5 after one half-life', () => {
-    const now = BASE + 90 * DAY_MS;
-    expect(decay(BASE, now, 90)).toBeCloseTo(0.5, 5);
+    const halfLife = env.MEMORY_HALF_LIFE_FACT_DAYS;
+    const now = BASE + halfLife * DAY_MS;
+    expect(decay(BASE, now, halfLife)).toBeCloseTo(0.5, 5);
   });
 
   it('decays faster for shorter half-life', () => {
-    const now = BASE + 30 * DAY_MS;
-    const eventDecay = decay(BASE, now, 30);
-    const factDecay = decay(BASE, now, 90);
+    const eventHalfLife = env.MEMORY_HALF_LIFE_EVENT_DAYS;
+    const factHalfLife = env.MEMORY_HALF_LIFE_FACT_DAYS;
+    const now = BASE + eventHalfLife * DAY_MS;
+    const eventDecay = decay(BASE, now, eventHalfLife);
+    const factDecay = decay(BASE, now, factHalfLife);
     expect(eventDecay).toBeCloseTo(0.5, 5);
     expect(factDecay).toBeGreaterThan(eventDecay);
   });

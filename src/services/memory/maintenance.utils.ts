@@ -1,4 +1,6 @@
+import { env } from '@/lib/server/env';
 import { isMemoryType, type MemoryType } from '@/types/memory';
+import { decay, getHalfLifeDays } from './decay.utils';
 
 export interface MaintenanceMemoryItem {
   text: string;
@@ -84,4 +86,17 @@ export function isMaintenanceCursorCandidate(
   if (isDeleted || isMaintained) return false;
   if (!lastMaintainedAt) return true;
   return createdAt.getTime() > lastMaintainedAt.getTime();
+}
+
+/**
+ * 维护近邻是否仍足够活跃可进入 LLM 簇。
+ * 半衰期见 env（MEMORY_HALF_LIFE_*）；默认阈值见 MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY。
+ */
+export function isMaintenanceNeighborActive(
+  lastActiveAtMs: number,
+  nowMs: number,
+  type?: string,
+  minDecay = env.MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY,
+): boolean {
+  return decay(lastActiveAtMs, nowMs, getHalfLifeDays(type)) >= minDecay;
 }

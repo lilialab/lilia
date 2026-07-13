@@ -2,10 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   buildMaintenanceClusterDeleteIds,
   isMaintenanceCursorCandidate,
+  isMaintenanceNeighborActive,
   mapMaintenanceRewriteOutput,
   parseMaintenanceMemoryItem,
   validateMaintenanceRewriteOutput,
 } from '@/services/memory/maintenance.utils';
+import { env } from '@/lib/server/env';
+import { decay, getHalfLifeDays } from '@/services/memory/decay.utils';
+
+const DAY_MS = 1000 * 60 * 60 * 24;
+const BASE = Date.parse('2026-01-01T00:00:00Z');
 
 describe('parseMaintenanceMemoryItem', () => {
   it('returns object for valid item', () => {
@@ -138,5 +144,29 @@ describe('isMaintenanceCursorCandidate', () => {
         watermark,
       ),
     ).toBe(false);
+  });
+});
+
+describe('isMaintenanceNeighborActive', () => {
+  it('returns true when lastActiveAt is now', () => {
+    expect(isMaintenanceNeighborActive(BASE, BASE, 'fact')).toBe(true);
+  });
+
+  it('keeps event neighbor near 2× half-life boundary and drops below', () => {
+    const halfLife = getHalfLifeDays('event');
+    const minDecay = env.MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY;
+    const justAbove = BASE + Math.floor(1.99 * halfLife * DAY_MS);
+    const justBelow = BASE + Math.ceil(2.01 * halfLife * DAY_MS);
+
+    expect(decay(BASE, justAbove, halfLife)).toBeGreaterThanOrEqual(minDecay);
+    expect(isMaintenanceNeighborActive(BASE, justAbove, 'event')).toBe(true);
+
+    expect(decay(BASE, justBelow, halfLife)).toBeLessThan(minDecay);
+    expect(isMaintenanceNeighborActive(BASE, justBelow, 'event')).toBe(false);
+  });
+
+  it('returns false for long-idle preference', () => {
+    const now = BASE + 400 * DAY_MS;
+    expect(isMaintenanceNeighborActive(BASE, now, 'preference')).toBe(false);
   });
 });
