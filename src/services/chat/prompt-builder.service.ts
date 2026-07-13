@@ -7,6 +7,7 @@ import {
   formatMemoryFragmentLine,
   type MemoryFragment,
 } from './prompt-format.utils';
+import { DEFAULT_CLIENT_TIME_ZONE } from '@/utils/timezone';
 
 const DEFAULT_USER_ID = 'default';
 
@@ -70,7 +71,7 @@ async function fetchHistoricalContext(content: string): Promise<MemoryFragment[]
 
     const rows = await prisma.userMemory.findMany({
       where: { id: { in: ids } },
-      select: { id: true, createdAt: true, lastActiveAt: true },
+      select: { id: true, type: true, createdAt: true, lastActiveAt: true },
     });
     const rowById = new Map(rows.map((row) => [row.id, row]));
 
@@ -83,6 +84,7 @@ async function fetchHistoricalContext(content: string): Promise<MemoryFragment[]
       }
       fragments.push({
         text: hit.text,
+        type: row.type as MemoryFragment['type'],
         recordedAt: row.createdAt,
         lastActiveAt: row.lastActiveAt,
       });
@@ -94,13 +96,19 @@ async function fetchHistoricalContext(content: string): Promise<MemoryFragment[]
   }
 }
 
+export interface BuildSystemPromptOptions {
+  clientTimeZone?: string;
+}
+
 /**
  * 核心导出函数：一键组装 System Prompt
  */
 export async function buildSystemPrompt(
   sessionId: string,
   lastUserContent: string,
+  options?: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
+  const clientTimeZone = options?.clientTimeZone ?? DEFAULT_CLIENT_TIME_ZONE;
   const userId = await resolveUserId(sessionId);
   const now = new Date();
 
@@ -110,7 +118,7 @@ export async function buildSystemPrompt(
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>
-    formatMemoryFragmentLine(index + 1, fragment),
+    formatMemoryFragmentLine(index + 1, fragment, clientTimeZone),
   );
 
   const contextStr =
@@ -118,7 +126,7 @@ export async function buildSystemPrompt(
       ? memoryFragmentLines.join('\n')
       : '暂无相关历史记忆。';
 
-  const runtimeContext = buildRuntimeContextBlock(now);
+  const runtimeContext = buildRuntimeContextBlock(now, clientTimeZone);
 
   const systemPrompt = `
     # 【第一层：核心宪法】(开发者定义，最高权重)
@@ -140,7 +148,7 @@ export async function buildSystemPrompt(
     </historical_contexts>
 
     # 【执行约束】
-    请结合“第一层”的灵魂人设与“第二层”的用户记忆回应用户。记忆「记录于」为首次写入时间，「最近活跃于」为最近一次被系统召回的时间；均为 UTC，仅供理解先后与时效，不要机械向用户播报日期。
+    请结合“第一层”的灵魂人设与“第二层”的用户记忆回应用户。向用户提及时间时一律使用用户本地时区与自然口语；不要向用户播报 UTC 或 ISO。记忆「记录于/最近活跃于」或 event 的「系统收录于/最近召回于」是系统元数据；event 类日程以正文中的日期时刻为准。
   `.trim();
 
   return {

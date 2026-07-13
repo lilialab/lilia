@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizeClientTimeZone } from '@/utils/timezone';
 
 const chatMessagePartSchema = z.looseObject({
   type: z.string(),
@@ -15,6 +16,7 @@ const chatMessageSchema = z.object({
 export const chatPostBodySchema = z.object({
   sessionId: z.string().trim().min(1),
   messages: z.array(chatMessageSchema).min(1),
+  clientTimeZone: z.string().trim().optional().transform(normalizeClientTimeZone),
 });
 
 export type ChatPostBody = z.infer<typeof chatPostBodySchema>;

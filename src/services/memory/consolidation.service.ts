@@ -5,10 +5,7 @@ import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { updateConsolidationJob } from './job.service';
-import {
-  buildUserMemoryWritePayload,
-  syncUserMemoriesToChroma,
-} from './memory-lifecycle.service';
+import { buildUserMemoryWritePayload, syncUserMemoriesToChroma } from './memory-lifecycle.service';
 import {
   mapConsolidationOutput,
   validateAndMergeIds,
@@ -59,6 +56,12 @@ const MEMORY_EXTRACTION_PROMPT_CORE = `
   - 用户明确陈述的事实或偏好：0.85~1.0。
   - 合理推断但非直接陈述：0.5~0.84。
   - 证据不足、玩笑或不确定内容：低于 0.5 时不应产出该条记忆。
+
+6. 【event 类 text 时间规范】
+  - type=event 时，text 必须包含可读的日期与时间（用户视角），如「2026年1月1日 19:00」或「1月1日晚上7点」。
+  - 已发生的事件写过去式；计划发生的事件写将来式，并尽量写明具体日期时刻。
+  - 禁止仅写「某天」「上次」等模糊词而不带日期；对话中的「明天」「今晚」等相对时间须结合语境换算为明确日期时刻。
+  - 系统落库时间为 UTC，但 text 中的时刻代表用户说话时所指的本地时间。
 
 现在，请开始分析以下被 <conversation> 标签包裹的对话内容：
 `;

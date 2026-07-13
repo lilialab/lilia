@@ -14,7 +14,11 @@ import { saveAssistantResponse, getContextMessages } from './message.service';
  * @param sessionId 聊天会话 ID
  * @param messages 前端传过来的消息（用于校验与 UI 流式协议；模型上下文以 DB 为准）
  */
-export async function streamChatFlow(sessionId: string, messages: ChatPostBody['messages']) {
+export async function streamChatFlow(
+  sessionId: string,
+  messages: ChatPostBody['messages'],
+  clientTimeZone: string,
+) {
   const lastMessage = messages[messages.length - 1];
 
   if (lastMessage.role !== 'user') {
@@ -33,7 +37,9 @@ export async function streamChatFlow(sessionId: string, messages: ChatPostBody['
   const contextMessages = await getContextMessages(sessionId);
 
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
-  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent);
+  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, {
+    clientTimeZone,
+  });
 
   logger.info({
     event: 'llm.chat.request',

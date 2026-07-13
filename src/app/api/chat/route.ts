@@ -5,8 +5,8 @@ import { parseJsonBody } from '@/lib/server/parse-schema';
 import { chatPostBodySchema } from '@/schemas/api/chat/post';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
-  const { sessionId, messages } = await parseJsonBody(chatPostBodySchema, req);
+  const { sessionId, messages, clientTimeZone } = await parseJsonBody(chatPostBodySchema, req);
 
-  const chatStreamResult = await streamChatFlow(sessionId, messages);
+  const chatStreamResult = await streamChatFlow(sessionId, messages, clientTimeZone);
   return chatStreamResult.toUIMessageStreamResponse();
 });

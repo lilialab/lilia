@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useDefaultSession } from '../hooks/useDefaultSession';
 import { useMessageHistory } from '../hooks/useMessageHistory';
@@ -10,6 +10,7 @@ import { ChatInput } from './ChatInput';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { getBrowserTimeZone } from '@/utils/timezone';
 
 export function ChatScreen() {
   const { sessionId, isLoading, isError } = useDefaultSession();
@@ -20,6 +21,8 @@ export function ChatScreen() {
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
   }, []);
+
+  const clientTimeZone = useMemo(() => getBrowserTimeZone(), []);
 
   const { messages, status, sendMessage, setMessages } = useChat({
     experimental_throttle: 50,
@@ -56,7 +59,7 @@ export function ChatScreen() {
       await sendMessage(
         { text: currentInput },
         {
-          body: { sessionId },
+          body: { sessionId, clientTimeZone },
         },
       );
     } catch (err) {
