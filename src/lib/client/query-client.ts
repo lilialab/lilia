@@ -5,11 +5,11 @@ export function createAppQueryClient(): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
       onError: (error, query) => {
+        if (query.meta?.showErrorToast === false) return;
+
         console.error('[ReactQuery] query 失败:', formatClientError(error), {
           queryKey: query.queryKey,
         });
-
-        if (query.meta?.showErrorToast === false) return;
 
         showErrorToast(formatClientError(error), `query:${JSON.stringify(query.queryKey)}`);
       },

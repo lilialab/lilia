@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { queryStringToBoolean } from '@/schemas/query';
+import { usernameSchema } from '@/schemas/shared/username';
 
 const memoryTypeSchema = z.enum(['preference', 'event', 'fact']);
 
 export const listMemoryQuerySchema = z.object({
-  userId: z.string().trim().default('default'),
+  username: usernameSchema,
   text: z.string().trim().optional(),
   type: memoryTypeSchema.optional(),
   isMaintained: z.enum(['true', 'false']).optional().transform(queryStringToBoolean),

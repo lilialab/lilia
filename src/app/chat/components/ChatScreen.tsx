@@ -1,8 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
+import { useRouter } from 'next/navigation';
 import { useDefaultSession } from '../hooks/useDefaultSession';
+import { useAuth } from '../hooks/useAuth';
 import { useMessageHistory } from '../hooks/useMessageHistory';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
@@ -13,6 +16,8 @@ import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast
 import { getBrowserTimeZone } from '@/utils/timezone';
 
 export function ChatScreen() {
+  const router = useRouter();
+  const { user, isLoading: isAuthLoading, logout, isLoggingOut } = useAuth();
   const { sessionId, isLoading, isError } = useDefaultSession();
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
@@ -24,20 +29,24 @@ export function ChatScreen() {
 
   const clientTimeZone = useMemo(() => getBrowserTimeZone(), []);
 
+  const chatTransport = useMemo(() => new DefaultChatTransport({ credentials: 'include' }), []);
+
   const { messages, status, sendMessage, setMessages } = useChat({
+    id: user?.id ?? 'no-user',
     experimental_throttle: 50,
+    transport: chatTransport,
   });
 
-  const { hasMore, isLoadingMore, isInitialLoading, loadMore, clearHistory } =
-    useMessageHistory({
-      activeSessionId: sessionId,
-      messages,
-      setMessages,
-      bumpScroll,
-    });
+  const { hasMore, isLoadingMore, isInitialLoading, loadMore, clearHistory } = useMessageHistory({
+    activeSessionId: sessionId,
+    messages,
+    setMessages,
+    bumpScroll,
+  });
 
   const isStreaming = status === 'submitted' || status === 'streaming';
   const clearDisabled = isStreaming || messages.length === 0 || isInitialLoading;
+  const isBootstrapping = isAuthLoading || isLoading;
 
   const handleConfirmClear = async () => {
     setConfirmClearOpen(false);
@@ -68,9 +77,22 @@ export function ChatScreen() {
     }
   };
 
+  useEffect(() => {
+    if (!isAuthLoading && user === null) {
+      router.replace('/login');
+    }
+  }, [isAuthLoading, user, router]);
+
+  if (!isAuthLoading && user === null) {
+    return null;
+  }
+
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
       <ChatHeader
+        user={user}
+        onLogout={logout}
+        isLoggingOut={isLoggingOut}
         onClear={() => setConfirmClearOpen(true)}
         disabled={clearDisabled}
       />
@@ -85,7 +107,7 @@ export function ChatScreen() {
         onCancel={() => setConfirmClearOpen(false)}
       />
 
-      {isLoading ? (
+      {isBootstrapping ? (
         <div className={cn('flex flex-1 items-center justify-center text-sm text-zinc-400')}>
           加载中...
         </div>

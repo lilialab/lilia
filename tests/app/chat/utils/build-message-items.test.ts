@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HistoryMessage } from '@/app/chat/request';
+import type { HistoryMessage } from '@/lib/client/api/sessions';
 import { buildMessageItems } from '@/app/chat/utils/build-message-items';
 
 function makeMessage(id: string, createdAt: string): HistoryMessage {

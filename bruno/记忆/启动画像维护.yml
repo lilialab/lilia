@@ -5,8 +5,11 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/memory/profile
-  auth: inherit
+  url: http://localhost:3000/api/memory/profile?username=jerry
+  params:
+    - name: username
+      value: jerry
+      type: query
 
 settings:
   encodeUrl: true

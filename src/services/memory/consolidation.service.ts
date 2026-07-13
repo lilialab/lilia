@@ -15,7 +15,6 @@ import {
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
 
 const SESSION_STATUS_COMPLETED = 'completed';
-const DEFAULT_USER_ID = 'default';
 
 /** 长期保留：输入格式、类型定义、分段与完整性等核心规则 */
 const MEMORY_EXTRACTION_PROMPT_CORE = `
@@ -115,13 +114,13 @@ function formatMessageXml(id: string, seq: number, role: string, parts: unknown)
 }
 
 /**
- * 捞取所有未整理、且所属会话已完结的消息，按时间正序构建带 id + seq 的 XML transcript。
+ * 捞取指定用户未整理、且所属会话已完结的消息，按时间正序构建带 id + seq 的 XML transcript。
  */
-async function buildTranscript(): Promise<TranscriptResult | null> {
+async function buildTranscript(userId: string): Promise<TranscriptResult | null> {
   const messages = await prisma.message.findMany({
     where: {
       isConsolidated: false,
-      session: { status: SESSION_STATUS_COMPLETED },
+      session: { status: SESSION_STATUS_COMPLETED, userId },
     },
     orderBy: { createdAt: 'asc' },
     select: {
@@ -135,7 +134,6 @@ async function buildTranscript(): Promise<TranscriptResult | null> {
   if (messages.length === 0) return null;
 
   const messageIds = messages.map((message) => message.id);
-  const userId = messages[0]?.session.userId ?? DEFAULT_USER_ID;
 
   const lines = messages.flatMap((message, seq) => {
     const line = formatMessageXml(message.id, seq, message.role, message.parts);
@@ -285,21 +283,22 @@ async function persistConsolidation(
 /**
  * 记忆整理主流程，由 API 路由以 fire-and-forget 方式调用。
  */
-export async function runConsolidation(job: ConsolidationJob): Promise<void> {
+export async function runConsolidation(job: ConsolidationJob, userId: string): Promise<void> {
   await updateConsolidationJob(job.id, {
     status: 'running',
     progress: '正在读取未整理的已完结话题...',
+    snapshot: { userId },
   });
 
   try {
-    const transcriptResult = await buildTranscript();
+    const transcriptResult = await buildTranscript(userId);
 
     if (!transcriptResult) {
       await completeJob(job, '没有可整理的已完结话题消息。', emptyResult());
       return;
     }
 
-    const { transcript, messageIds, userId } = transcriptResult;
+    const { transcript, messageIds } = transcriptResult;
 
     if (!transcript) {
       await completeJob(

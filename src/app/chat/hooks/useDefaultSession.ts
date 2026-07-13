@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchDefaultSession } from '@/app/chat/request';
+import { fetchDefaultSession } from '@/lib/client/api/sessions';
 import { queryKeys } from '@/lib/client/query-keys';
 
 export function useDefaultSession() {

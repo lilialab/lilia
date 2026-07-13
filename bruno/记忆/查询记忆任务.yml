@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/api/memory/jobs?jobId=1d3db488-1b5a-43c4-9722-5fb930079862
+  url: http://localhost:3000/api/memory/jobs?jobId=b978cdae-5979-4461-984f-92d517e1210d
   params:
     - name: jobId
-      value: 1d3db488-1b5a-43c4-9722-5fb930079862
+      value: b978cdae-5979-4461-984f-92d517e1210d
       type: query
   auth: inherit
 

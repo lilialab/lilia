@@ -1,6 +1,7 @@
 import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import type { Where } from 'chromadb';
 import { effectiveScore } from './decay.utils';
 import { parseMemoryMetadata } from './metadata.utils';
 import type { MemoryType } from '@/types/memory';
@@ -12,6 +13,7 @@ interface AddChunksInput {
 
 interface AddMemoryInput {
   id: string;
+  userId: string;
   text: string;
   timestamp: number;
   type: MemoryType;
@@ -21,6 +23,7 @@ interface AddMemoryInput {
 
 export interface UpdateMemoryInput {
   id: string;
+  userId: string;
   text: string;
   timestamp: number;
   type: MemoryType;
@@ -43,9 +46,15 @@ export interface MemoryCandidate {
 }
 
 interface QueryMemoryWithDecayOptions {
+  userId: string;
   startTime?: number;
   nowMs?: number;
   candidateMultiplier?: number;
+}
+
+interface FindMemoryNeighborsOptions {
+  userId: string;
+  excludeId?: string;
 }
 
 export class VectorService {
@@ -62,6 +71,16 @@ export class VectorService {
     });
   }
 
+  private buildMemoryWhereClause(userId: string, startTime?: number): Where {
+    if (startTime === undefined) {
+      return { user_id: userId };
+    }
+
+    return {
+      $and: [{ user_id: userId }, { timestamp: { $gte: startTime } }],
+    };
+  }
+
   // ==================== 个人记忆库 业务逻辑 ====================
   /**
    * 存储定期提取的记忆
@@ -75,6 +94,7 @@ export class VectorService {
       ids: memories.map((m) => m.id),
       documents: memories.map((m) => m.text),
       metadatas: memories.map((m) => ({
+        user_id: m.userId,
         timestamp: m.timestamp,
         type: m.type,
         confidence: m.confidence,
@@ -90,14 +110,13 @@ export class VectorService {
   async queryMemoryWithDecay(
     queryText: string,
     limit = env.MEMORY_RAG_LIMIT,
-    options?: QueryMemoryWithDecayOptions,
+    options: QueryMemoryWithDecayOptions,
   ): Promise<MemoryCandidate[]> {
-    const nowMs = options?.nowMs ?? Date.now();
-    const candidateMultiplier =
-      options?.candidateMultiplier ?? env.MEMORY_RAG_CANDIDATE_MULTIPLIER;
+    const nowMs = options.nowMs ?? Date.now();
+    const candidateMultiplier = options.candidateMultiplier ?? env.MEMORY_RAG_CANDIDATE_MULTIPLIER;
     const collection = await this.getCollection(this.memoryCollectionName);
 
-    const whereClause = options?.startTime ? { timestamp: { $gte: options.startTime } } : undefined;
+    const whereClause = this.buildMemoryWhereClause(options.userId, options.startTime);
 
     const response = await collection.query({
       queryTexts: [queryText],
@@ -139,7 +158,11 @@ export class VectorService {
 
     // 兜底：软删与删向量非原子，以 MySQL isDeleted=false 为准剔除 ghost 命中
     const activeRows = await prisma.userMemory.findMany({
-      where: { id: { in: ranked.map((item) => item.id) }, isDeleted: false },
+      where: {
+        id: { in: ranked.map((item) => item.id) },
+        userId: options.userId,
+        isDeleted: false,
+      },
       select: { id: true },
     });
     const activeIds = new Set(activeRows.map((row) => row.id));
@@ -151,13 +174,14 @@ export class VectorService {
   async findMemoryNeighbors(
     queryText: string,
     limit = env.MEMORY_MAINTENANCE_NEIGHBOR_LIMIT,
-    excludeId?: string,
+    options: FindMemoryNeighborsOptions,
   ): Promise<MemoryNeighbor[]> {
     const collection = await this.getCollection(this.memoryCollectionName);
 
     const response = await collection.query({
       queryTexts: [queryText],
-      nResults: limit + (excludeId ? 1 : 0),
+      nResults: limit + (options.excludeId ? 1 : 0),
+      where: { user_id: options.userId },
       include: ['distances'],
     });
 
@@ -166,7 +190,7 @@ export class VectorService {
 
     return ids
       .flatMap((id, index) => {
-        if (id === excludeId) return [];
+        if (id === options.excludeId) return [];
         return [{ id, distance: distances[index] ?? 1 }];
       })
       .slice(0, limit);
@@ -189,6 +213,7 @@ export class VectorService {
       documents: [input.text],
       metadatas: [
         {
+          user_id: input.userId,
           timestamp: input.timestamp,
           type: input.type,
           confidence: input.confidence,
@@ -201,8 +226,13 @@ export class VectorService {
   /**
    * 检索记忆：支持引入时间范围过滤（可选）
    */
-  async queryMemory(queryText: string, limit = env.MEMORY_RAG_LIMIT, startTime?: number): Promise<string[]> {
-    const hits = await this.queryMemoryWithDecay(queryText, limit, { startTime });
+  async queryMemory(
+    queryText: string,
+    userId: string,
+    limit = env.MEMORY_RAG_LIMIT,
+    startTime?: number,
+  ): Promise<string[]> {
+    const hits = await this.queryMemoryWithDecay(queryText, limit, { userId, startTime });
     return hits.map((hit) => hit.text);
   }
 
@@ -215,15 +245,25 @@ export class VectorService {
     const now = new Date();
     const nowMs = now.getTime();
 
-    await prisma.userMemory.updateMany({
+    const rows = await prisma.userMemory.findMany({
       where: { id: { in: ids }, isDeleted: false },
+      select: { id: true, userId: true },
+    });
+
+    if (rows.length === 0) return;
+
+    await prisma.userMemory.updateMany({
+      where: { id: { in: rows.map((row) => row.id) }, isDeleted: false },
       data: { lastActiveAt: now },
     });
 
     const collection = await this.getCollection(this.memoryCollectionName);
     await collection.update({
-      ids,
-      metadatas: ids.map(() => ({ last_active_at: nowMs })),
+      ids: rows.map((row) => row.id),
+      metadatas: rows.map((row) => ({
+        user_id: row.userId,
+        last_active_at: nowMs,
+      })),
     });
   }
 

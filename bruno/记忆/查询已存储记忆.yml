@@ -5,8 +5,11 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/api/memory/list?limit=20
+  url: http://localhost:3000/api/memory/list?username=tom&limit=20
   params:
+    - name: username
+      value: tom
+      type: query
     - name: text
       value: 用户
       type: query
@@ -22,7 +25,6 @@ http:
     - name: limit
       value: "20"
       type: query
-  auth: inherit
 
 settings:
   encodeUrl: true

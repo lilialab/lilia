@@ -8,8 +8,7 @@ import {
   type MemoryFragment,
 } from './prompt-format.utils';
 import { DEFAULT_CLIENT_TIME_ZONE } from '@/utils/timezone';
-
-const DEFAULT_USER_ID = 'default';
+import { AppError } from '@/lib/server/app-error';
 
 export interface SystemPromptMeta {
   memoryFragments: string[];
@@ -49,7 +48,10 @@ async function resolveUserId(sessionId: string): Promise<string> {
     where: { id: sessionId },
     select: { userId: true },
   });
-  return session?.userId ?? DEFAULT_USER_ID;
+  if (!session?.userId) {
+    throw AppError.notFound('会话不存在');
+  }
+  return session.userId;
 }
 
 /** 获取用户画像文本。 */
@@ -58,10 +60,13 @@ async function fetchUserProfile(userId: string): Promise<string> {
 }
 
 /** 按用户输入从向量记忆库检索相关历史片段（含衰减重排与命中回写）。 */
-async function fetchHistoricalContext(content: string): Promise<MemoryFragment[]> {
+async function fetchHistoricalContext(
+  content: string,
+  userId: string,
+): Promise<MemoryFragment[]> {
   if (!content) return [];
   try {
-    const hits = await vectorService.queryMemoryWithDecay(content);
+    const hits = await vectorService.queryMemoryWithDecay(content, undefined, { userId });
     const ids = hits.map((hit) => hit.id);
     if (ids.length === 0) return [];
 
@@ -114,7 +119,7 @@ export async function buildSystemPrompt(
 
   const [userProfile, memoryFragments] = await Promise.all([
     fetchUserProfile(userId),
-    fetchHistoricalContext(lastUserContent),
+    fetchHistoricalContext(lastUserContent, userId),
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>

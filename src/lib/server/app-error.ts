@@ -15,6 +15,10 @@ export class AppError extends Error {
     return new AppError(404, message);
   }
 
+  static unauthorized(message: string) {
+    return new AppError(401, message);
+  }
+
   static internal(message: string) {
     return new AppError(500, message);
   }

@@ -1,5 +1,5 @@
 import type { UIMessage } from 'ai';
-import { parseApiResponse } from '@/lib/client/api-client';
+import { apiFetchJson } from '@/lib/client/api-fetch';
 
 const PAGE_SIZE = 10;
 
@@ -16,11 +16,12 @@ interface DefaultSession {
   id: string;
 }
 
+/** 获取当前用户的默认会话。 */
 export async function fetchDefaultSession(): Promise<DefaultSession> {
-  const res = await fetch('/api/sessions/default');
-  return parseApiResponse<DefaultSession>(res);
+  return apiFetchJson<DefaultSession>('/api/sessions/default');
 }
 
+/** 分页拉取会话历史消息。 */
 export async function fetchHistoryPage(
   sessionId: string,
   before?: string,
@@ -30,17 +31,18 @@ export async function fetchHistoryPage(
     params.set('before', before);
   }
 
-  const res = await fetch(`/api/sessions/${sessionId}?${params.toString()}`);
   try {
-    return await parseApiResponse<MessageHistoryPage>(res);
+    return await apiFetchJson<MessageHistoryPage>(
+      `/api/sessions/${sessionId}?${params.toString()}`,
+    );
   } catch {
     return { messages: [], hasMore: false };
   }
 }
 
+/** 清空指定会话的全部消息。 */
 export async function clearSessionMessages(sessionId: string): Promise<void> {
-  const res = await fetch(`/api/sessions/${sessionId}/messages`, {
+  await apiFetchJson<{ count: number }>(`/api/sessions/${sessionId}/messages`, {
     method: 'DELETE',
   });
-  await parseApiResponse<{ count: number }>(res);
 }

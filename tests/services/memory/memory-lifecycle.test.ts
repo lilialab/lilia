@@ -144,8 +144,8 @@ describe('createUserMemories', () => {
       ]),
     });
     expect(mockAddMemories).toHaveBeenCalledWith([
-      expect.objectContaining({ text: '用户喜欢跑步', type: 'preference' }),
-      expect.objectContaining({ text: '用户是工程师', type: 'fact' }),
+      expect.objectContaining({ userId: 'default', text: '用户喜欢跑步', type: 'preference' }),
+      expect.objectContaining({ userId: 'default', text: '用户是工程师', type: 'fact' }),
     ]);
   });
 });
@@ -199,6 +199,7 @@ describe('applyMaintenanceMerge', () => {
     expect(mockDeleteMemories).toHaveBeenCalledWith(['old-1', 'old-2']);
     expect(mockAddMemories).toHaveBeenCalledWith([
       expect.objectContaining({
+        userId: 'default',
         text: '用户喜欢跑步',
         type: 'preference',
         confidence: 0.9,
@@ -237,8 +238,8 @@ describe('applyMaintenanceMerge', () => {
       ]),
     });
     expect(mockAddMemories).toHaveBeenCalledWith([
-      expect.objectContaining({ text: '用户喜欢跑步' }),
-      expect.objectContaining({ text: '用户住在上海' }),
+      expect.objectContaining({ userId: 'default', text: '用户喜欢跑步' }),
+      expect.objectContaining({ userId: 'default', text: '用户住在上海' }),
     ]);
   });
 });

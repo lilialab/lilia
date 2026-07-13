@@ -22,6 +22,7 @@ export interface CreateUserMemoriesOptions {
 
 interface UserMemoryChromaRecord {
   id: string;
+  userId: string;
   text: string;
   timestamp: number;
   type: MemoryType;
@@ -83,6 +84,7 @@ function prepareUserMemoryWrite(
     });
     chromaRecords.push({
       id,
+      userId: input.userId,
       text: input.text,
       timestamp,
       type: input.type,
@@ -155,6 +157,7 @@ export async function updateMemoryRecord(input: {
 
   await vectorService.updateMemory({
     id: row.id,
+    userId: row.userId,
     text: row.text,
     type: input.type,
     confidence: row.confidence,

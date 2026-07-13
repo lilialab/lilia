@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { clearSessionMessages, fetchHistoryPage } from '@/app/chat/request';
+import {
+  clearSessionMessages,
+  fetchHistoryPage,
+  type HistoryMessage,
+} from '@/lib/client/api/sessions';
 import { queryKeys } from '@/lib/client/query-keys';
-import type { HistoryMessage } from '../request';
 
 interface UseMessageHistoryOptions {
   activeSessionId: string;

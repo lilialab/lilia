@@ -9,7 +9,6 @@ import { updateConsolidationJob } from './job.service';
 import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
 
 const EMPTY_PROFILE_TEXT = '目前暂无特殊偏好记录。';
-const DEFAULT_USER_ID = 'default';
 
 const profileFacetsSchema = z.object({
   nickname: z.string().optional(),
@@ -260,9 +259,7 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
 }
 
 /** 用户画像刷新主流程，由 API 路由以 fire-and-forget 方式调用。 */
-export async function runProfileRefresh(job: ConsolidationJob): Promise<void> {
-  const userId = DEFAULT_USER_ID;
-
+export async function runProfileRefresh(job: ConsolidationJob, userId: string): Promise<void> {
   await updateConsolidationJob(job.id, {
     status: 'running',
     progress: '正在加载记忆与现有画像...',

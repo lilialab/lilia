@@ -23,7 +23,6 @@ import type {
 import { isMemoryType, type MemoryType } from '@/types/memory';
 
 const vectorService = new VectorService();
-const DEFAULT_USER_ID = 'default';
 
 const MEMORY_MAINTENANCE_PROMPT = `
 你是记忆库维护专家。给定一条待维护记忆（游标，序号 1）及其 Chroma 近邻（若有），整理该组记忆并输出整理后的条目列表。
@@ -272,7 +271,7 @@ async function maintainOneMemory(
   const chromaNeighbors = await vectorService.findMemoryNeighbors(
     cursor.text,
     env.MEMORY_MAINTENANCE_NEIGHBOR_LIMIT,
-    cursor.id,
+    { userId: cursor.userId, excludeId: cursor.id },
   );
 
   const neighborMemories = await loadActiveMemoriesByIds(
@@ -388,9 +387,7 @@ async function completeMaintenanceJob(
 }
 
 /** 串行记忆维护：逐条游标整理（LLM 或 touch）。 */
-export async function runMaintenance(job: ConsolidationJob): Promise<void> {
-  const userId = DEFAULT_USER_ID;
-
+export async function runMaintenance(job: ConsolidationJob, userId: string): Promise<void> {
   await updateConsolidationJob(job.id, {
     status: 'running',
     progress: '正在查找待维护记忆...',

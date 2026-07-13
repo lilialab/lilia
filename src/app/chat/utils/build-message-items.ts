@@ -1,4 +1,4 @@
-import type { HistoryMessage } from '../request';
+import type { HistoryMessage } from '@/lib/client/api/sessions';
 import { formatDateDivider, formatDayKey, getMessageDate } from './date-divider';
 
 export type MessageListItem =
