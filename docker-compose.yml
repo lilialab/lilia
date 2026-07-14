@@ -1,8 +1,10 @@
+# 本地基础设施（应用本身用 pnpm dev 跑在宿主机）
+# 凭证与库名来自 .env；数据目录 ./docker-volumes/（已 gitignore）
 x-timezone: &timezone
   TZ: Asia/Shanghai
 
 services:
-  # 关系型数据库：用于未来 Prisma 存储用户对话历史、Agent 状态
+  # Prisma：用户、会话、消息、记忆元数据、ConsolidationJob 等
   mysql:
     image: mysql:8
     container_name: pai-arbor-mysql
@@ -16,7 +18,7 @@ services:
     volumes:
       - ./docker-volumes/mysql-data:/var/lib/mysql
 
-  # 向量数据库：用于 RAG 存储规范文本的向量片段
+  # 向量库：UserMemory / 知识库文档切片的 embedding 检索
   chromadb:
     image: chromadb/chroma:latest
     container_name: pai-arbor-chroma
@@ -28,14 +30,14 @@ services:
     volumes:
       - ./docker-volumes/chroma-data:/data
 
-  # OSS
+  # S3 兼容对象存储：知识库上传文件；9000=API，9001=控制台
   minio:
     image: elestio/minio:latest
     container_name: pai-arbor-minio
     restart: unless-stopped
     ports:
-      - '9000:9000' # API 端口（代码连接这个）
-      - '9001:9001' # Web 管理后台端口
+      - '9000:9000'
+      - '9001:9001'
     environment:
       <<: *timezone
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
@@ -44,6 +46,7 @@ services:
       - ./docker-volumes/minio-data:/data
     command: server /data --console-address ":9001"
 
+  # 日志接收：pino → Loki（无 Web UI）；配置见 docker/loki-config.yml
   loki:
     image: grafana/loki:latest
     container_name: pai-arbor-loki
@@ -57,6 +60,7 @@ services:
       - ./docker/loki-config.yml:/etc/loki/loki-config.yml:ro
       - ./docker-volumes/loki-data:/loki
 
+  # 日志查询 UI：宿主机 http://localhost:3001（admin/admin），预置 Loki 数据源
   grafana:
     image: grafana/grafana:latest
     container_name: pai-arbor-grafana
@@ -73,3 +77,16 @@ services:
     volumes:
       - ./docker-volumes/grafana-data:/var/lib/grafana
       - ./docker/grafana-loki-datasource.yml:/etc/grafana/provisioning/datasources/loki.yml:ro
+
+  # BullMQ / ioredis（REDIS_URL）；AOF 持久化延迟任务与队列状态
+  redis:
+    image: redis:8
+    container_name: pai-arbor-redis
+    restart: unless-stopped
+    environment:
+      <<: *timezone
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./docker-volumes/redis-data:/data
+    command: redis-server --appendonly yes

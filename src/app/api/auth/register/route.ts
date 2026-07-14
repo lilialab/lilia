@@ -6,8 +6,11 @@ import { registerUser } from '@/services/user/users.service';
 import { createAuthSession, setSessionCookie } from '@/lib/server/session';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
-  const { username, displayName, password } = await parseJsonBody(registerBodySchema, req);
-  const user = await registerUser({ username, displayName, password });
+  const { username, displayName, password, timeZone } = await parseJsonBody(
+    registerBodySchema,
+    req,
+  );
+  const user = await registerUser({ username, displayName, password, timeZone });
 
   const token = await createAuthSession(user.id);
   const response = NextResponse.json({

@@ -8,12 +8,16 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  passwordHash String   @map("password_hash")
-  displayName  String   @map("display_name")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                   String    @id @default(uuid())
+  username             String    @unique
+  passwordHash         String    @map("password_hash")
+  displayName          String    @map("display_name")
+  /** IANA 时区，聊天 prompt 本地时间以库为准 */
+  timeZone             String    @default("Asia/Shanghai") @map("time_zone")
+  /** maintain→profile 管线上次两者都成功完成的时刻 */
+  lastMemoryPipelineAt DateTime? @map("last_memory_pipeline_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
   authSessions AuthSession[]
   sessions     ChatSession[]
@@ -39,13 +43,12 @@ model ChatSession {
   id        String    @id @default(uuid())
   userId    String    @map("user_id")
   title     String    @default("新对话")
-  status    String    @default("active") // active | completed
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages  Message[]
 
-  @@index([userId, status])
+  @@index([userId])
   @@map("chat_sessions")
 }
 
@@ -87,14 +90,13 @@ model UserMemory {
 }
 
 model UserProfile {
-  userId           String    @id @map("user_id")
-  summary          String?   @db.Text
-  facets           Json?
-  sourceVersion    Int       @default(0) @map("source_version")
-  lastMaintainedAt DateTime? @map("last_maintained_at")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String   @id @map("user_id")
+  summary       String?  @db.Text
+  facets        Json?
+  sourceVersion Int      @default(0) @map("source_version")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }

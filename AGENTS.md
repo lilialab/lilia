@@ -35,9 +35,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## 命令与环境
 
-- 跑脚本：WSL 下须 `nix develop --command pnpm <script>`
-- 改完验证：`pnpm test:run`、`pnpm lint`（`eslint` + `tsc --noEmit`）
-- 单测依赖完整 `.env`（含 `AUTH_SESSION_*` 等），无 fallback
+- **WSL / NixOS**：所有 shell 命令须 `nix develop --command ...`（如 `nix develop --command pnpm lint`）
+- 改完验证：`pnpm test:run`、`pnpm lint`（`eslint` + `tsc --noEmit`）；记忆 Worker：`pnpm worker:memory-extract`（session 闲置 extract）、`pnpm worker:memory-maintain`（user 闲置 maintain→profile；需 Redis）
+- 单测依赖完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等），无 fallback
 - Schema 变更：`pnpm exec prisma generate`（必要时 `pnpm exec prisma db push`）
 - 勿改 `docker-volumes/`；勿提交 `.env`
 - 用户未要求时不 `git commit`；不编辑 `.cursor/plans/` 中的 plan 文件
@@ -58,7 +58,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 **鉴权双轨**
 
 - Cookie：`resolveRequestUserId(req)` → chat、sessions、`/api/auth/*`；`src/proxy.ts` 保护 `/chat`
-- username：`resolveUserIdByUsername` + query `?username=` → `/api/memory/*`、`POST /api/sessions/complete`；Bruno「记忆」
+- username：`resolveUserIdByUsername` + query `?username=` → `/api/memory/*`；Bruno「记忆」
 
 **多用户隔离**
 
@@ -75,12 +75,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## 代码风格
 
-与 `eslint.config.mjs` 保持一致：
+与 [`eslint.config.mjs`](eslint.config.mjs)、[`.prettierrc`](.prettierrc) 保持一致；**可读性优先，不必为统一风格牺牲可读性**。
 
-- 可读性优先；`for...in` 避免使用（ESLint 禁止）
-- 纯数据变换默认用 `map` / `filter` / `reduce` / `flatMap`；若 imperative 写法更清晰可用 `for...of`
-- 需要顺序 `await` 时用 `for...of`，不要用 `forEach` + async
-- 以上为默认倾向，不必为统一风格牺牲可读性
+- 优先 ES2015+（async/await、解构、可选链等）；折行按 Prettier `printWidth: 100`
+- 数据变换默认 `map` / `filter` / `reduce` / `flatMap`；需顺序副作用或 `await` 时用 `for...of`（勿 `forEach` + async）；`for...in` 禁用（ESLint）
+- 数组更新优先非破坏性：`toSorted` / `toReversed` / `toSpliced` / `with`；负向索引读元素优先 `.at()`；禁止依赖会改原数组的 `sort` / `reverse` / `splice`（ESLint unicorn）
 - 类型导入写 `import type { ... }`；数组类型写 `T[]` 不用 `Array<T>`
 - `src/services/` 下 export 函数补简短中文 JSDoc
 - 最小 diff：不顺手重构无关代码；不加用户未请求的测试或文档
@@ -100,7 +99,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | 用户画像 | `src/services/memory/user-profile.service.ts` |
 | 会话 / 历史消息 | `src/services/session/sessions.service.ts` + `src/services/chat/message.service.ts` |
 | 知识库上传 | `src/app/api/upload/route.ts` + `src/services/knowledge/` |
-| 记忆流水线（脚本） | [`docs/memory/pipeline.md`](docs/memory/pipeline.md) + `bruno/记忆/` + `src/app/api/memory/`（`?username=`） |
+| 记忆流水线（脚本） | [`docs/memory/pipeline.md`](docs/memory/pipeline.md) + `bruno/记忆/` + `src/app/api/memory/`（`?username=`）+ `pnpm worker:memory-extract` / `pnpm worker:memory-maintain` |
 | 登录 / 注册 / Cookie 会话 | `src/lib/server/session.ts` + `request-user.ts` + `src/app/api/auth/` + `src/lib/client/api/auth.ts` + `src/app/login/`、`register/` |
 | 聊天 UI / 流式请求 | `src/app/chat/components/ChatScreen.tsx` + `src/app/api/chat/route.ts` |
 

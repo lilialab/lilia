@@ -14,8 +14,6 @@ import {
 } from './consolidation.utils';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
 
-const SESSION_STATUS_COMPLETED = 'completed';
-
 /** 长期保留：输入格式、类型定义、分段与完整性等核心规则 */
 const MEMORY_EXTRACTION_PROMPT_CORE = `
 你是一个高度专业、冷酷理性的记忆提炼专家。你的唯一任务是分析用户与 AI 助理（名叫阿尔博）之间的对话，将已聊完的话题提炼为长期记忆，并精准标注每条消息的处理状态。
@@ -114,13 +112,13 @@ function formatMessageXml(id: string, seq: number, role: string, parts: unknown)
 }
 
 /**
- * 捞取指定用户未整理、且所属会话已完结的消息，按时间正序构建带 id + seq 的 XML transcript。
+ * 捞取指定会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
  */
-async function buildTranscript(userId: string): Promise<TranscriptResult | null> {
+async function buildTranscript(sessionId: string): Promise<TranscriptResult | null> {
   const messages = await prisma.message.findMany({
     where: {
       isConsolidated: false,
-      session: { status: SESSION_STATUS_COMPLETED, userId },
+      sessionId,
     },
     orderBy: { createdAt: 'asc' },
     select: {
@@ -133,6 +131,7 @@ async function buildTranscript(userId: string): Promise<TranscriptResult | null>
 
   if (messages.length === 0) return null;
 
+  const userId = messages[0].session.userId;
   const messageIds = messages.map((message) => message.id);
 
   const lines = messages.flatMap((message, seq) => {
@@ -199,7 +198,11 @@ async function extractMemoriesFromTranscript(
 ): Promise<{ parsed: ConsolidationParseResult } | { error: string }> {
   await updateConsolidationJob(job.id, {
     progress: `正在调用模型提取记忆（${messageIds.length} 条消息）...`,
-    snapshot: { messageIds, userId },
+    snapshot: {
+      messageIds,
+      userId,
+      ...(job.snapshot?.sessionId !== undefined ? { sessionId: job.snapshot.sessionId } : {}),
+    },
   });
 
   const userPrompt = `<conversation>\n${transcript}\n</conversation>`;
@@ -281,20 +284,25 @@ async function persistConsolidation(
 }
 
 /**
- * 记忆整理主流程，由 API 路由以 fire-and-forget 方式调用。
+ * 记忆整理主流程：按会话捞 transcript，记忆写入共享的 userId。
  */
-export async function runConsolidation(job: ConsolidationJob, userId: string): Promise<void> {
+export async function runConsolidation(
+  job: ConsolidationJob,
+  params: { sessionId: string; userId: string },
+): Promise<void> {
+  const { sessionId, userId } = params;
+
   await updateConsolidationJob(job.id, {
     status: 'running',
-    progress: '正在读取未整理的已完结话题...',
-    snapshot: { userId },
+    progress: '正在读取未整理的会话消息...',
+    snapshot: { userId, sessionId },
   });
 
   try {
-    const transcriptResult = await buildTranscript(userId);
+    const transcriptResult = await buildTranscript(sessionId);
 
     if (!transcriptResult) {
-      await completeJob(job, '没有可整理的已完结话题消息。', emptyResult());
+      await completeJob(job, '没有可整理的未整理消息。', emptyResult());
       return;
     }
 
@@ -305,7 +313,7 @@ export async function runConsolidation(job: ConsolidationJob, userId: string): P
         job,
         `${messageIds.length} 条消息无有效文本，未做任何标记。`,
         emptyResult(),
-        { messageIds, userId },
+        { messageIds, userId, sessionId },
       );
       return;
     }
@@ -370,6 +378,7 @@ export async function runConsolidation(job: ConsolidationJob, userId: string): P
     logger.info({
       event: 'llm.consolidation.complete',
       jobId: job.id,
+      sessionId,
       memoriesExtracted: result.memoriesExtracted,
       consolidatedMessageCount: result.consolidatedMessageCount,
       unfinishedMessageCount: result.unfinishedMessageCount,
@@ -383,7 +392,7 @@ export async function runConsolidation(job: ConsolidationJob, userId: string): P
     );
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '未知错误';
-    logger.error({ err }, '[MemoryConsolidation] 记忆整理失败');
+    logger.error({ err, sessionId, userId }, '[MemoryConsolidation] 记忆整理失败');
     await failJob(job, errorMessage);
   }
 }

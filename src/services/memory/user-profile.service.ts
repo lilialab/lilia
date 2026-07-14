@@ -138,36 +138,6 @@ export async function getUserProfileText(userId: string): Promise<string> {
   return formatProfileForPrompt(profile.summary, facets);
 }
 
-/** 读取上次 maintain 成功时刻（UTC）；无 profile 或未维护过则返回 null。 */
-export async function getLastMaintainedAt(userId: string): Promise<Date | null> {
-  const profile = await prisma.userProfile.findUnique({
-    where: { userId },
-    select: { lastMaintainedAt: true },
-  });
-
-  return profile?.lastMaintainedAt ?? null;
-}
-
-/** 维护成功后更新水位（不早于已有值）。 */
-export async function updateLastMaintainedAt(userId: string, at: Date): Promise<void> {
-  const existing = await getLastMaintainedAt(userId);
-
-  if (existing && at.getTime() <= existing.getTime()) {
-    return;
-  }
-
-  await prisma.userProfile.upsert({
-    where: { userId },
-    create: {
-      userId,
-      lastMaintainedAt: at,
-    },
-    update: {
-      lastMaintainedAt: at,
-    },
-  });
-}
-
 /** 统计活跃记忆数量与各类型分布。 */
 async function loadMemoryStats(userId: string): Promise<ProfileMemoryStats> {
   const rows = await prisma.userMemory.groupBy({

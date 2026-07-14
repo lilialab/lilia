@@ -8,10 +8,10 @@ import { assertSessionOwnedByUser } from '@/services/session/sessions.service';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   const userId = await resolveRequestUserId(req);
-  const { sessionId, messages, clientTimeZone } = await parseJsonBody(chatPostBodySchema, req);
+  const { sessionId, messages } = await parseJsonBody(chatPostBodySchema, req);
 
   await assertSessionOwnedByUser(sessionId, userId);
 
-  const chatStreamResult = await streamChatFlow(sessionId, messages, clientTimeZone);
+  const chatStreamResult = await streamChatFlow(sessionId, userId, messages);
   return chatStreamResult.toUIMessageStreamResponse();
 });

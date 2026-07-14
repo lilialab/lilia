@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
 /** query 中空串视为 undefined（缺省与 ?key= 等价）。 */
-export function emptyToUndefined(val: unknown): unknown {
+function emptyToUndefined(val: unknown): unknown {
   return val === '' || val === undefined ? undefined : val;
 }
 

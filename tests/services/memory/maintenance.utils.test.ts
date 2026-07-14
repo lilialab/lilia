@@ -92,58 +92,13 @@ describe('buildMaintenanceClusterDeleteIds', () => {
 });
 
 describe('isMaintenanceCursorCandidate', () => {
-  const watermark = new Date('2026-06-25T12:00:00.000Z');
-
-  it('accepts unmaintained memory after watermark', () => {
-    expect(
-      isMaintenanceCursorCandidate(
-        new Date('2026-06-25T13:00:00.000Z'),
-        false,
-        false,
-        watermark,
-      ),
-    ).toBe(true);
-  });
-
-  it('rejects unmaintained memory at or before watermark', () => {
-    expect(
-      isMaintenanceCursorCandidate(
-        new Date('2026-06-25T12:00:00.000Z'),
-        false,
-        false,
-        watermark,
-      ),
-    ).toBe(false);
-  });
-
-  it('accepts any unmaintained memory when watermark is null', () => {
-    expect(
-      isMaintenanceCursorCandidate(
-        new Date('2026-01-01T00:00:00.000Z'),
-        false,
-        false,
-        null,
-      ),
-    ).toBe(true);
+  it('accepts unmaintained active memory', () => {
+    expect(isMaintenanceCursorCandidate(false, false)).toBe(true);
   });
 
   it('rejects maintained or deleted memories', () => {
-    expect(
-      isMaintenanceCursorCandidate(
-        new Date('2026-06-26T00:00:00.000Z'),
-        true,
-        false,
-        watermark,
-      ),
-    ).toBe(false);
-    expect(
-      isMaintenanceCursorCandidate(
-        new Date('2026-06-26T00:00:00.000Z'),
-        false,
-        true,
-        watermark,
-      ),
-    ).toBe(false);
+    expect(isMaintenanceCursorCandidate(true, false)).toBe(false);
+    expect(isMaintenanceCursorCandidate(false, true)).toBe(false);
   });
 });
 

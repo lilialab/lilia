@@ -38,7 +38,7 @@ export async function getContextMessages(
     take: limit,
   });
 
-  return items.reverse().map((row) => ({
+  return items.toReversed().map((row) => ({
     id: row.id,
     role: row.role as UIMessage['role'],
     parts: row.parts as UIMessage['parts'],
@@ -86,7 +86,7 @@ export async function getHistoryPage(
       take: limit,
     });
 
-    const rows = items.reverse();
+    const rows = items.toReversed();
     const hasMore =
       rows.length === limit &&
       rows.length > 0 &&
@@ -101,7 +101,7 @@ export async function getHistoryPage(
     take: limit,
   });
 
-  const rows = items.reverse();
+  const rows = items.toReversed();
   const hasMore =
     rows.length > 0 &&
     rows.length === limit &&

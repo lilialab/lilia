@@ -13,12 +13,9 @@ describe('sessionHistoryQuerySchema', () => {
     }
   });
 
-  it('非法 limit 回退 PAGE_SIZE', () => {
+  it('非法 limit 解析失败', () => {
     const result = safeParseQueryParams(sessionHistoryQuerySchema, { limit: 'abc' });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.limit).toBe(PAGE_SIZE);
-    }
+    expect(result.success).toBe(false);
   });
 
   it('合法 limit 与 before 通过校验', () => {

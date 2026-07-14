@@ -1,5 +1,10 @@
 allowBuilds:
   '@prisma/engines': true
+  esbuild: true
+  msgpackr-extract: false
   prisma: true
   sharp: true
   unrs-resolver: true
+
+overrides:
+  ioredis: 5.11.1

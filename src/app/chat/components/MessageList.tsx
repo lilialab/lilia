@@ -85,8 +85,7 @@ export function MessageList({
       return;
     }
 
-    const last = messages.at(-1);
-    if (last?.role === 'user' || awaitingAssistant) {
+    if (lastMessage?.role === 'user' || awaitingAssistant) {
       scrollToBottom();
       isPinnedRef.current = true;
       return;
@@ -95,7 +94,7 @@ export function MessageList({
     if (isPinnedRef.current) {
       scrollToBottom();
     }
-  }, [messages, status, awaitingAssistant, scrollToBottom]);
+  }, [messages, lastMessage, awaitingAssistant, scrollToBottom]);
 
   useLayoutEffect(() => {
     if (!isLoadingMore) {

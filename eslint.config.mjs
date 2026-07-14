@@ -2,11 +2,15 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    plugins: {
+      unicorn: eslintPluginUnicorn,
+    },
     rules: {
       // 强制纯类型导入必须显式写出 `import type`
       '@typescript-eslint/consistent-type-imports': [
@@ -59,6 +63,7 @@ const eslintConfig = defineConfig([
       // complexity: ['warn', { max: 15 }],
 
       // 可读性优先：仅禁止 for...in；map/filter/reduce 为默认倾向（不强制），顺序 await 优先 for...of
+      // ES2023 非破坏性数组方法由下方 unicorn 规则约束（不开 recommended）
       'no-restricted-syntax': [
         'error',
         {
@@ -67,6 +72,12 @@ const eslintConfig = defineConfig([
             '避免 for...in；可用 Object.keys/entries/values + 数组方法，或 for...of（可读性优先）。',
         },
       ],
+
+      'unicorn/no-array-sort': ['error', { allowExpressionStatement: false }],
+      'unicorn/no-array-reverse': ['error', { allowExpressionStatement: false }],
+      'unicorn/no-array-splice': 'error',
+      'unicorn/no-confusing-array-splice': 'error',
+      'unicorn/prefer-at': 'error',
     },
   },
 

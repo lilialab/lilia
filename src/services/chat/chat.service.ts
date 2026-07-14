@@ -6,22 +6,26 @@ import { prisma } from '@/lib/server/prisma';
 import { logger } from '@/lib/server/logger';
 import { env } from '@/lib/server/env';
 import { AppError } from '@/lib/server/app-error';
+import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
+import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
+import { getUserTimeZone } from '@/services/user/users.service';
 import { buildSystemPrompt } from './prompt-builder.service';
 import { saveAssistantResponse, getContextMessages } from './message.service';
 
 /**
  * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流（适配 AI SDK 5.0 Parts 架构）
  * @param sessionId 聊天会话 ID
+ * @param userId 所属用户（用于滑动窗口调度 extract / maintain，以及库内时区）
  * @param messages 前端传过来的消息（用于校验与 UI 流式协议；模型上下文以 DB 为准）
  */
 export async function streamChatFlow(
   sessionId: string,
+  userId: string,
   messages: ChatPostBody['messages'],
-  clientTimeZone: string,
 ) {
-  const lastMessage = messages[messages.length - 1];
+  const lastMessage = messages.at(-1);
 
-  if (lastMessage.role !== 'user') {
+  if (lastMessage?.role !== 'user') {
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
 
@@ -34,11 +38,15 @@ export async function streamChatFlow(
   });
   const userMessageId = userMessage.id;
 
+  await scheduleMemoryExtract(sessionId, userId);
+  await scheduleMaintainPipeline(userId);
+
   const contextMessages = await getContextMessages(sessionId);
 
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
+  const timeZone = await getUserTimeZone(userId);
   const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, {
-    clientTimeZone,
+    timeZone,
   });
 
   logger.info({

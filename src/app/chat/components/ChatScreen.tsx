@@ -13,7 +13,6 @@ import { ChatInput } from './ChatInput';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
-import { getBrowserTimeZone } from '@/utils/timezone';
 
 export function ChatScreen() {
   const router = useRouter();
@@ -26,8 +25,6 @@ export function ChatScreen() {
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
   }, []);
-
-  const clientTimeZone = useMemo(() => getBrowserTimeZone(), []);
 
   const chatTransport = useMemo(() => new DefaultChatTransport({ credentials: 'include' }), []);
 
@@ -68,7 +65,7 @@ export function ChatScreen() {
       await sendMessage(
         { text: currentInput },
         {
-          body: { sessionId, clientTimeZone },
+          body: { sessionId },
         },
       );
     } catch (err) {

@@ -24,7 +24,6 @@ export async function listSessions(userId: string) {
       id: true,
       userId: true,
       title: true,
-      status: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -55,35 +54,4 @@ export async function assertSessionOwnedByUser(sessionId: string, userId: string
   if (!session) {
     throw AppError.notFound('会话不存在');
   }
-}
-
-/**
- * 将会话标记为已完结，供记忆整理 Worker 扫描。
- * 幂等：已是 completed 时直接返回，不报错。
- */
-export async function completeSession(sessionId: string, userId: string) {
-  await assertSessionOwnedByUser(sessionId, userId);
-
-  const session = await prisma.chatSession.findUniqueOrThrow({
-    where: { id: sessionId },
-  });
-
-  if (session.status === 'completed') {
-    return { session, alreadyCompleted: true };
-  }
-
-  const updated = await prisma.chatSession.update({
-    where: { id: sessionId },
-    data: { status: 'completed' },
-  });
-
-  return { session: updated, alreadyCompleted: false };
-}
-
-/**
- * 完结当前用户的默认会话。
- */
-export async function completeDefaultSession(userId: string) {
-  const session = await getOrCreateDefaultSession(userId);
-  return completeSession(session.id, userId);
 }

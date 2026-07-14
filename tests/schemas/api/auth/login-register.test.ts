@@ -27,6 +27,7 @@ describe('registerBodySchema', () => {
       displayName: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(true);
   });
@@ -37,6 +38,28 @@ describe('registerBodySchema', () => {
       displayName: 'Tom',
       password: 'password123',
       confirmPassword: 'password456',
+      timeZone: 'Asia/Shanghai',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('非法 timeZone 解析失败', () => {
+    const result = registerBodySchema.safeParse({
+      username: 'tom_user',
+      displayName: 'Tom',
+      password: 'password123',
+      confirmPassword: 'password123',
+      timeZone: 'Not/A/Timezone',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('缺省 timeZone 解析失败', () => {
+    const result = registerBodySchema.safeParse({
+      username: 'tom_user',
+      displayName: 'Tom',
+      password: 'password123',
+      confirmPassword: 'password123',
     });
     expect(result.success).toBe(false);
   });

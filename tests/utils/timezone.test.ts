@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  DEFAULT_CLIENT_TIME_ZONE,
-  formatLocalDateTime,
-  isValidIanaTimeZone,
-  normalizeClientTimeZone,
-} from '@/utils/timezone';
+import { formatLocalDateTime, isValidIanaTimeZone } from '@/utils/timezone';
 
 describe('isValidIanaTimeZone', () => {
   it('接受合法 IANA 时区', () => {
@@ -15,23 +10,6 @@ describe('isValidIanaTimeZone', () => {
   it('拒绝非法时区', () => {
     expect(isValidIanaTimeZone('Not/A/Timezone')).toBe(false);
     expect(isValidIanaTimeZone('')).toBe(false);
-  });
-});
-
-describe('normalizeClientTimeZone', () => {
-  it('缺省回退 Asia/Shanghai', () => {
-    expect(normalizeClientTimeZone()).toBe(DEFAULT_CLIENT_TIME_ZONE);
-    expect(normalizeClientTimeZone('')).toBe(DEFAULT_CLIENT_TIME_ZONE);
-    expect(normalizeClientTimeZone('   ')).toBe(DEFAULT_CLIENT_TIME_ZONE);
-  });
-
-  it('非法值回退 Asia/Shanghai', () => {
-    expect(normalizeClientTimeZone('Invalid/Zone')).toBe(DEFAULT_CLIENT_TIME_ZONE);
-  });
-
-  it('合法 IANA 原样保留', () => {
-    expect(normalizeClientTimeZone('America/Los_Angeles')).toBe('America/Los_Angeles');
-    expect(normalizeClientTimeZone('  Asia/Tokyo  ')).toBe('Asia/Tokyo');
   });
 });
 

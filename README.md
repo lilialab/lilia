@@ -4,20 +4,21 @@
 
 ## 技术栈
 
-| 层级       | 技术                                                |
-| ---------- | --------------------------------------------------- |
-| 前端       | Next.js 16、React 19、Tailwind CSS 4、Vercel AI SDK |
-| 后端       | Next.js Route Handlers                              |
-| 关系数据库 | MySQL 8 + Prisma 7                                  |
-| 向量数据库 | ChromaDB                                            |
-| 对象存储   | MinIO（S3 兼容）                                    |
-| 日志       | Loki + Grafana（pino 推送）                         |
-| 模型服务   | Ollama（对话 + Embedding）                          |
+| 层级 | 技术 |
+|------|------|
+| 前端 | Next.js 16、React 19、Tailwind CSS 4、Vercel AI SDK |
+| 后端 | Next.js Route Handlers |
+| 关系数据库 | MySQL 8 + Prisma 7 |
+| 向量数据库 | ChromaDB |
+| 对象存储 | MinIO（S3 兼容） |
+| 任务队列 | Redis（BullMQ 后端） |
+| 日志 | Loki + Grafana（pino 推送） |
+| 模型服务 | Ollama（对话 + Embedding） |
 
 ## 前置依赖
 
 - [Node.js](https://nodejs.org/) 24+ 与 [pnpm](https://pnpm.io/)
-- [Docker](https://www.docker.com/)（运行 MySQL、Chroma、MinIO）
+- [Docker](https://www.docker.com/)（运行 MySQL、Chroma、MinIO、Redis 等）
 - [Ollama](https://ollama.com/)（本地 LLM 与 Embedding 服务）
 
 可选：使用项目自带的 Nix flake 开发环境（Node 24 + pnpm）：
@@ -50,23 +51,24 @@ docker compose up -d
 
 将启动以下服务：
 
-| 服务     | 端口                        | 用途                                      |
-| -------- | --------------------------- | ----------------------------------------- |
-| MySQL    | 3306                        | 会话、消息、文件元数据                    |
-| ChromaDB | 8000                        | 向量检索                                  |
-| MinIO    | 9000（API）/ 9001（控制台） | 文件存储                                  |
-| Loki     | 3100                        | 日志接收 API（无 Web UI，应用往这里推送） |
-| Grafana  | 3001                        | 日志查询界面（admin / admin）             |
+| 服务 | 端口 | 用途 |
+|------|------|------|
+| MySQL | 3306 | 会话、消息、文件元数据 |
+| ChromaDB | 8000 | 向量检索 |
+| MinIO | 9000（API）/ 9001（控制台） | 文件存储 |
+| Redis | 6379 | BullMQ 任务队列 |
+| Loki | 3100 | 日志接收 API（无 Web UI，应用往这里推送） |
+| Grafana | 3001 | 日志查询界面（admin / admin） |
 
 #### 日志与调试
 
 应用通过 [pino](https://getpino.io/) 输出结构化日志，LLM 请求/回复、记忆片段等动态上下文写入 Loki（不记录固定 system 提示词全文）。
 
-| 变量          | 说明            | 默认值                  |
-| ------------- | --------------- | ----------------------- |
-| `LOG_LEVEL`   | 日志级别        | `debug`                 |
-| `LOKI_URL`    | Loki 推送地址   | `http://localhost:3100` |
-| `LOG_TO_LOKI` | 是否推送到 Loki | `true`                  |
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `LOG_LEVEL` | 日志级别 | `debug` |
+| `LOKI_URL` | Loki 推送地址 | `http://localhost:3100` |
+| `LOG_TO_LOKI` | 是否推送到 Loki | `true` |
 
 - Grafana：[http://localhost:3001](http://localhost:3001) → Explore → 数据源 Loki（Label filters 可选 `event`）
 - 重启应用后新日志带 `event` label；
@@ -117,26 +119,12 @@ pnpm dev
 
 服务端统一从 [`src/lib/server/env.ts`](src/lib/server/env.ts) 读取配置；本地开发可复制 [`.env.example`](.env.example) 为 `.env`。**除 `OLLAMA_HOST` 外均为必填**（未设置则启动报错）。
 
-| 变量                 | 说明             | 必填 |
-| -------------------- | ---------------- | ---- |
-| `NODE_ENV`           | 运行环境         | 是   |
-| `DATABASE_USER`      | MySQL 用户名     | 是   |
-| `DATABASE_PASSWORD`  | MySQL 密码       | 是   |
-| `DATABASE_HOST`      | MySQL 主机       | 是   |
-| `DATABASE_PORT`      | MySQL 端口       | 是   |
-| `DATABASE_NAME`      | 数据库名         | 是   |
-| `CHROMA_HOST`        | Chroma 主机      | 是   |
-| `CHROMA_PORT`        | Chroma 端口      | 是   |
-| `MINIO_ACCESS_KEY`   | MinIO Access Key | 是   |
-| `MINIO_SECRET_KEY`   | MinIO Secret Key | 是   |
-| `MINIO_BUCKET_NAME`  | 存储桶名称       | 是   |
-| `MINIO_ENDPOINT`     | MinIO 地址       | 是   |
-| `OLLAMA_HOST`        | Ollama 服务地址  | 否（不设则用 `127.0.0.1:11434`） |
-| `OLLAMA_MODEL`       | 对话模型名称     | 是   |
-| `OLLAMA_EMBED_MODEL` | 向量嵌入模型     | 是   |
-| `LOG_LEVEL`          | 日志级别         | 是   |
-| `LOKI_URL`           | Loki 地址        | 是   |
-| `LOG_TO_LOKI`        | 是否推送 Loki    | 是（`true` / `false`） |
+| 变量 | 说明 | 必填 |
+|------|------|------|
+| `REDIS_URL` | Redis 地址（BullMQ）；依赖 compose 中的 Redis 服务 | 是 |
+| `MEMORY_EXTRACT_IDLE_MINUTES` | 用户发消息后闲置多久触发 extract（分钟）；发消息会重置 | 是 |
+| `MEMORY_MAINTAIN_IDLE_HOURS` | 用户发消息后闲置多久触发 maintain→profile（小时）；发消息会重置 | 是 |
+| `MEMORY_MAINTAIN_MIN_INTERVAL_HOURS` | 距上次维护不足该小时数则到期后再推迟 | 是 |
 
 ## 开发说明
 
@@ -151,6 +139,8 @@ pnpm dev          # 启动开发服务器
 pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
 pnpm lint         # ESLint 检查
+pnpm worker:memory-extract  # 记忆整理 Worker（需 Redis；另开终端）
+pnpm worker:memory-maintain  # maintain→profile 闲置窗口（需 Redis；另开终端）
 
 
 # 根据你的 schema.prisma 文件，生成专属于你这个项目的 Prisma Client (TypeScript 类型和方法)。

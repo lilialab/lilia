@@ -14,7 +14,6 @@ import {
   validateMaintenanceRewriteOutput,
   type MaintenanceMemoryItem,
 } from './maintenance.utils';
-import { getLastMaintainedAt, updateLastMaintainedAt } from './user-profile.service';
 import type {
   ConsolidationJob,
   MaintenanceJobResult,
@@ -70,19 +69,14 @@ interface MaintainOneResult {
 }
 
 /**
- * 捞下一条待维护游标。
- * isMaintained：条级防重试；lastMaintainedAt（createdAfter）：水位限本批时间范围，二者配合。
+ * 捞下一条待维护游标（未删除且 isMaintained=false）。
  */
-async function findNextUnmaintainedMemory(
-  userId: string,
-  createdAfter: Date | null,
-): Promise<MemoryCursor | null> {
+async function findNextUnmaintainedMemory(userId: string): Promise<MemoryCursor | null> {
   const row = await prisma.userMemory.findFirst({
     where: {
       userId,
       isDeleted: false,
       isMaintained: false,
-      ...(createdAfter ? { createdAt: { gt: createdAfter } } : {}),
     },
     orderBy: { createdAt: 'asc' },
     select: {
@@ -331,7 +325,6 @@ async function maintainOneMemory(
 async function runMaintenanceLoop(
   job: ConsolidationJob,
   userId: string,
-  createdAfter: Date | null,
 ): Promise<{
   processedCount: number;
   mergedGroups: MaintenanceMergedGroup[];
@@ -342,7 +335,7 @@ async function runMaintenanceLoop(
   const maintenanceDeletedIds: string[] = [];
 
   while (true) {
-    const cursor = await findNextUnmaintainedMemory(userId, createdAfter);
+    const cursor = await findNextUnmaintainedMemory(userId);
     if (!cursor) break;
 
     processedCount += 1;
@@ -395,16 +388,10 @@ export async function runMaintenance(job: ConsolidationJob, userId: string): Pro
   });
 
   try {
-    const lastMaintainedAt = await getLastMaintainedAt(userId);
-
     const { processedCount, mergedGroups, maintenanceDeletedIds } = await runMaintenanceLoop(
       job,
       userId,
-      lastMaintainedAt,
     );
-
-    const completedAt = new Date();
-    await updateLastMaintainedAt(userId, completedAt);
 
     await completeMaintenanceJob(job, {
       processedCount,
@@ -412,7 +399,6 @@ export async function runMaintenance(job: ConsolidationJob, userId: string): Pro
       deletedCount: maintenanceDeletedIds.length,
       mergedGroups,
       deletedIds: maintenanceDeletedIds,
-      lastMaintainedAt: completedAt.getTime(),
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '未知错误';

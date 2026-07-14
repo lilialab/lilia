@@ -78,14 +78,10 @@ export function buildMaintenanceClusterDeleteIds(
 
 /** 记忆是否应进入维护游标池（纯函数，便于单测）。 */
 export function isMaintenanceCursorCandidate(
-  createdAt: Date,
   isMaintained: boolean,
   isDeleted: boolean,
-  lastMaintainedAt: Date | null,
 ): boolean {
-  if (isDeleted || isMaintained) return false;
-  if (!lastMaintainedAt) return true;
-  return createdAt.getTime() > lastMaintainedAt.getTime();
+  return !isDeleted && !isMaintained;
 }
 
 /**

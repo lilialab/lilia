@@ -7,6 +7,7 @@ import { AuthField, AuthShell } from '@/components/auth/AuthForm';
 import { register } from '@/lib/client/api/auth';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { getBrowserTimeZone } from '@/utils/timezone';
 
 export function RegisterForm() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!username.trim() || !displayName.trim() || !password) return;
 
@@ -27,6 +28,7 @@ export function RegisterForm() {
         displayName: displayName.trim(),
         password,
         confirmPassword,
+        timeZone: getBrowserTimeZone(),
       });
       router.push('/chat');
       router.refresh();

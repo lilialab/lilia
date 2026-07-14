@@ -108,28 +108,26 @@ export function validateAndMergeIds(
     { finishedMemories: [], droppedInvalidIdTexts: [] },
   );
 
-  if (finishedMemories.length === 0) {
-    return {
-      finishedMemories,
-      consolidatedIds: [],
-      deferredIds: [...messageIds],
-      droppedInvalidIdTexts,
-    };
+  /** 无可 consolidated 前缀时的空结果（全部 defer）。 */
+  const emptyValidated: ValidatedConsolidation = {
+    finishedMemories,
+    consolidatedIds: [],
+    deferredIds: [...messageIds],
+    droppedInvalidIdTexts,
+  };
+
+  const lastMemory = finishedMemories.at(-1);
+  if (!lastMemory) {
+    return emptyValidated;
   }
 
-  const lastMemory = finishedMemories[finishedMemories.length - 1];
   const indices = lastMemory.sourceMessageIds.flatMap((id) => {
     const index = idToIndex.get(id);
     return index === undefined ? [] : [index];
   });
 
   if (indices.length === 0) {
-    return {
-      finishedMemories,
-      consolidatedIds: [],
-      deferredIds: [...messageIds],
-      droppedInvalidIdTexts,
-    };
+    return emptyValidated;
   }
 
   const globalMax = Math.max(...indices);

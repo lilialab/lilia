@@ -4,8 +4,7 @@
 
 ```mermaid
 flowchart TD
-  Start[维护 job 启动] --> GetWatermark[读取维护水位]
-  GetWatermark --> Loop[串行消费游标队列]
+  Start[维护 job 启动] --> Loop[串行消费游标队列]
   Loop --> FindCursor[取一条待维护游标]
   FindCursor --> One[维护单条游标]
   One --> Neighbors[Chroma 找语义近邻]
@@ -19,8 +18,7 @@ flowchart TD
   LlmRewrite -->|成功| Rewrite
   Rewrite --> Loop
   Mark --> Loop
-  Loop --> UpdateWatermark[更新维护水位]
-  UpdateWatermark --> Done[完成 job 写结果]
+  Loop --> Done[完成 job 写结果]
 ```
 
 ## 说明
@@ -35,9 +33,8 @@ flowchart TD
 
 - `isDeleted = false`
 - `isMaintained = false`
-- 若存在批级水位 `UserProfile.lastMaintainedAt`，还要求 `createdAt > 水位`
 
-**不是**「太旧就不维护」：水位只限定本批增量边界；首次维护时水位为 null，所有未维护条都会进队。游标按 `createdAt` 升序串行处理。
+游标按 `createdAt` 升序串行处理。管线冷却时钟见 [`User.lastMemoryPipelineAt`](./pipeline.md)（maintain→profile 都成功后才更新，与游标选取无关）。
 
 ### 近邻召回与过滤
 
@@ -81,7 +78,6 @@ flowchart TD
 | 功能 | 函数 |
 |------|------|
 | 维护 job 主流程 | `runMaintenance`, `completeMaintenanceJob` |
-| 读取 / 更新批级水位 | `getLastMaintainedAt`, `updateLastMaintainedAt` |
 | 串行消费游标队列 | `runMaintenanceLoop`, `findNextUnmaintainedMemory` |
 | 单条游标维护编排 | `maintainOneMemory` |
 | 语义近邻召回与详情加载 | `findMemoryNeighbors`, `loadActiveMemoriesByIds` |

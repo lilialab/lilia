@@ -7,7 +7,6 @@ import {
   formatMemoryFragmentLine,
   type MemoryFragment,
 } from './prompt-format.utils';
-import { DEFAULT_CLIENT_TIME_ZONE } from '@/utils/timezone';
 import { AppError } from '@/lib/server/app-error';
 
 export interface SystemPromptMeta {
@@ -102,7 +101,8 @@ async function fetchHistoricalContext(
 }
 
 export interface BuildSystemPromptOptions {
-  clientTimeZone?: string;
+  /** 用户库内 IANA 时区 */
+  timeZone: string;
 }
 
 /**
@@ -111,9 +111,9 @@ export interface BuildSystemPromptOptions {
 export async function buildSystemPrompt(
   sessionId: string,
   lastUserContent: string,
-  options?: BuildSystemPromptOptions,
+  options: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
-  const clientTimeZone = options?.clientTimeZone ?? DEFAULT_CLIENT_TIME_ZONE;
+  const { timeZone } = options;
   const userId = await resolveUserId(sessionId);
   const now = new Date();
 
@@ -123,7 +123,7 @@ export async function buildSystemPrompt(
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>
-    formatMemoryFragmentLine(index + 1, fragment, clientTimeZone),
+    formatMemoryFragmentLine(index + 1, fragment, timeZone),
   );
 
   const contextStr =
@@ -131,7 +131,7 @@ export async function buildSystemPrompt(
       ? memoryFragmentLines.join('\n')
       : '暂无相关历史记忆。';
 
-  const runtimeContext = buildRuntimeContextBlock(now, clientTimeZone);
+  const runtimeContext = buildRuntimeContextBlock(now, timeZone);
 
   const systemPrompt = `
     # 【第一层：核心宪法】(开发者定义，最高权重)

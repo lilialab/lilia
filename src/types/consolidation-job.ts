@@ -28,8 +28,6 @@ export interface MaintenanceJobResult {
   deletedCount: number;
   mergedGroups: MaintenanceMergedGroup[];
   deletedIds: string[];
-  /** 本次 maintain 成功时刻（ms），与 UserProfile.lastMaintainedAt 同步 */
-  lastMaintainedAt?: number;
 }
 
 export interface ProfileJobResult {
@@ -46,6 +44,7 @@ export interface ConsolidationJobRawPayload {
 export interface ConsolidationJobSnapshot {
   messageIds?: string[];
   userId?: string;
+  sessionId?: string;
   rawPayload?: ConsolidationJobRawPayload;
 }
 
