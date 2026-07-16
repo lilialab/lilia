@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/server/prisma';
-import { hashPassword } from '@/lib/server/password';
+import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { AppError } from '@/lib/server/app-error';
 
 export interface PublicUser {
@@ -26,6 +26,15 @@ export async function getUserById(id: string): Promise<PublicUser | null> {
     where: { id },
     select: publicUserSelect,
   });
+}
+
+/** 按 ID 取用户；不存在时 401（会话对应用户已失效）。 */
+export async function requireUserById(id: string): Promise<PublicUser> {
+  const user = await getUserById(id);
+  if (!user) {
+    throw AppError.unauthorized('用户不存在');
+  }
+  return user;
 }
 
 /** 读取用户 IANA 时区；用户不存在时 404。 */
@@ -67,6 +76,25 @@ export async function findUserByUsername(username: string) {
       passwordHash: true,
     },
   });
+}
+
+/**
+ * 校验账号密码；失败统一 401，成功返回公开用户字段。
+ */
+export async function authenticateUser(
+  username: string,
+  password: string,
+): Promise<Pick<PublicUser, 'id' | 'username' | 'displayName'>> {
+  const user = await findUserByUsername(username);
+  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    throw AppError.unauthorized('账号或密码错误');
+  }
+
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+  };
 }
 
 /** 注册新用户。 */

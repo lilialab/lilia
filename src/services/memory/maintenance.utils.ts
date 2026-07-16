@@ -77,10 +77,7 @@ export function buildMaintenanceClusterDeleteIds(
 }
 
 /** 记忆是否应进入维护游标池（纯函数，便于单测）。 */
-export function isMaintenanceCursorCandidate(
-  isMaintained: boolean,
-  isDeleted: boolean,
-): boolean {
+export function isMaintenanceCursorCandidate(isMaintained: boolean, isDeleted: boolean): boolean {
   return !isDeleted && !isMaintained;
 }
 

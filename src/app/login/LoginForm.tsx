@@ -14,14 +14,14 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) return;
 
     setIsSubmitting(true);
     try {
       await login({ username: username.trim(), password });
-      router.push('/chat');
+      router.push('/contacts');
       router.refresh();
     } catch (err) {
       showErrorToast(formatClientError(err), 'auth-login');

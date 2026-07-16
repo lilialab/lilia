@@ -1,6 +1,7 @@
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import { AppError } from '@/lib/server/app-error';
 import type {
   ConsolidationJob,
   ConsolidationJobSnapshot,
@@ -59,6 +60,15 @@ export async function createConsolidationJob(
 export async function getConsolidationJob(id: string): Promise<ConsolidationJob | undefined> {
   const row = await prisma.consolidationJob.findUnique({ where: { id } });
   return row ? toConsolidationJob(row) : undefined;
+}
+
+/** 按 id 查询任务；不存在时 404。 */
+export async function getConsolidationJobOrThrow(id: string): Promise<ConsolidationJob> {
+  const job = await getConsolidationJob(id);
+  if (!job) {
+    throw AppError.notFound('找不到对应的任务，可能已过期');
+  }
+  return job;
 }
 
 /** 部分更新任务字段；任务不存在时静默跳过。 */

@@ -35,9 +35,7 @@ const markdownComponents: Components = {
     if (isBlock) {
       return <code className={cn(className, 'font-mono text-sm')}>{children}</code>;
     }
-    return (
-      <code className={cn('rounded bg-zinc-300/60 px-1 font-mono text-sm')}>{children}</code>
-    );
+    return <code className={cn('rounded bg-zinc-300/60 px-1 font-mono text-sm')}>{children}</code>;
   },
   pre: ({ children }) => (
     <pre className={cn('my-2 overflow-x-auto rounded bg-zinc-800 p-3 text-sm text-zinc-100')}>
@@ -54,9 +52,7 @@ const markdownComponents: Components = {
       {children}
     </th>
   ),
-  td: ({ children }) => (
-    <td className={cn('border border-zinc-300 px-2 py-1')}>{children}</td>
-  ),
+  td: ({ children }) => <td className={cn('border border-zinc-300 px-2 py-1')}>{children}</td>,
   hr: () => <hr className={cn('my-3 border-zinc-300')} />,
 };
 

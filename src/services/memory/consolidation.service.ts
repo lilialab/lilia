@@ -13,72 +13,9 @@ import {
   type FinishedMemory,
 } from './consolidation.utils';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
+import { loadJobPrompt } from '@/prompts/load';
 
-/** 长期保留：输入格式、类型定义、分段与完整性等核心规则 */
-const MEMORY_EXTRACTION_PROMPT_CORE = `
-你是一个高度专业、冷酷理性的记忆提炼专家。你的唯一任务是分析用户与 AI 助理（名叫阿尔博）之间的对话，将已聊完的话题提炼为长期记忆，并精准标注每条消息的处理状态。
-
-【输入格式】
-对话由若干 <message id="消息UUID" seq="序号">角色: 内容</message> 标签组成。
-- id：消息的唯一标识，回填时必须原样使用，不得编造。
-- seq：从 0 开始的顺序序号，与对话时间顺序一致；仅作阅读辅助，回填仍以 id 为准。
-
-【核心提取准则】
-1. 提取有持久价值的信息，放入 finished_memories：
-  - preference（偏好）：用户的兴趣、喜好、厌恶。
-  - event（事件）：已经发生或计划发生的重大日程、关键生活动态。
-  - fact（事实）：用户的硬性基本资料、职业、长期状态。
-
-2. 记忆 text 规范：
-  - 不得把日常寒暄、口水话、纯应答（如「好的」「嗯嗯」）单独写成记忆；这类消息的 id 可列入所属话题块的 source_message_ids，但不得单独占一条 finished_memory。
-  - text 必须是语义完整的、以"用户"为主语的简短陈述句，严禁使用"我"、"你"等代词。
-  - text 提炼用户侧持久事实；阿尔博的收尾回复不必写进 text，但必须写进 source_message_ids。
-  - 同一话题块内多轮来回的信息，应合并提炼为一条 text（必要时可用分号连接多个要点），禁止拆成多条。
-
-3. 【按时间顺序与 A-B-A 分段】
-  - finished_memories 必须严格按照对话时间顺序排列（先发生的条目在前）。
-  - 同一话题若在对话中先聊完、中间聊了别的话题、之后又回到该话题（话题 A → 话题 B → 话题 A），才拆成多条 finished_memory 分别总结；允许对同一主题重复总结，禁止把 B 的 id 混入 A。
-  - 每条 finished_memory 只对应一个连续、未跨话题的消息片段；source_message_ids 应覆盖该片段内全部相关消息（含片段内寒暄），不得包含其他话题块的消息 id。
-  - 每个话题块的 source_message_ids 必须包含该块内每一轮消息的 id（用户与阿尔博），从该块第一条到最后一条，不得跳过中间任意一条。
-  - 必须包含该话题块最后一条阿尔博的回复（收尾、确认、告别等），即使该内容不写进 text。
-  - 回填自检：该话题块内所有消息的 seq 应落在该条 source_message_ids 对应 seq 的 min–max 闭区间内。
-
-4. 【话题完整性控制】
-  - 只有已经交待完整、用户已转移话题的内容，才能进入 finished_memories。
-  - 对话末尾话题聊到一半、信息不全时，严禁提炼，不得将其 id 放入任何 finished_memory 的 source_message_ids。
-  - 若无任何已完结、有持久价值的话题，finished_memories 应为 []。
-
-5. 【置信度 confidence】
-  - 每条 finished_memory 必填 confidence（0~1 浮点数）。
-  - 用户明确陈述的事实或偏好：0.85~1.0。
-  - 合理推断但非直接陈述：0.5~0.84。
-  - 证据不足、玩笑或不确定内容：低于 0.5 时不应产出该条记忆。
-
-6. 【event 类 text 时间规范】
-  - type=event 时，text 必须包含可读的日期与时间（用户视角），如「2026年1月1日 19:00」或「1月1日晚上7点」。
-  - 已发生的事件写过去式；计划发生的事件写将来式，并尽量写明具体日期时刻。
-  - 禁止仅写「某天」「上次」等模糊词而不带日期；对话中的「明天」「今晚」等相对时间须结合语境换算为明确日期时刻。
-  - 系统落库时间为 UTC，但 text 中的时刻代表用户说话时所指的本地时间。
-
-现在，请开始分析以下被 <conversation> 标签包裹的对话内容：
-`;
-
-/**
- * 弱本地模型专用约束。升级云端模型后删除本常量，并改为：
- * const MEMORY_EXTRACTION_PROMPT = MEMORY_EXTRACTION_PROMPT_CORE;
- */
-const MEMORY_EXTRACTION_PROMPT_LOCAL_MODEL_GUARDRAILS = `
-【弱模型额外约束】
-- 禁止将话题切换、结束、无实质信息的元描述（如「用户结束了一个话题」）单独写成 finished_memory；若无 preference/event/fact 级持久价值，不要为该块产出记忆。
-- 同一会话内连续、同类的轻松话题（如连续讲笑话）应合并为一条 finished_memory，禁止每个小片段各写一条。
-- text 必须以「用户」为主语；阿尔博的行为仅作背景，用分号附在用户陈述之后，不得让 text 以阿尔博为主语。
-- 若整段对话仅有寒暄、笑话等且无持久价值，finished_memories 应为 []。
-`;
-
-const MEMORY_EXTRACTION_PROMPT = [
-  MEMORY_EXTRACTION_PROMPT_CORE,
-  MEMORY_EXTRACTION_PROMPT_LOCAL_MODEL_GUARDRAILS,
-].join('\n');
+const MEMORY_EXTRACTION_PROMPT = loadJobPrompt('extract');
 
 const consolidationOutputSchema = z.object({
   finished_memories: z.array(

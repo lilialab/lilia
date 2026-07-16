@@ -13,10 +13,7 @@ export function messageHasVisibleContent(message: UIMessage): boolean {
 
 type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
 
-export function isAwaitingAssistantResponse(
-  status: ChatStatus,
-  messages: UIMessage[],
-): boolean {
+export function isAwaitingAssistantResponse(status: ChatStatus, messages: UIMessage[]): boolean {
   const lastMessage = messages.at(-1);
   if (status !== 'submitted' && status !== 'streaming') {
     return false;

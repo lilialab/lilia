@@ -21,7 +21,6 @@ export function useAuth() {
       await logout();
     },
     onSuccess: () => {
-      // 勿 setQueryData(null)：会在 staleTime 内被当成「已拉取的未登录」，换号进 Chat 白屏
       queryClient.removeQueries({ queryKey: queryKeys.authMe });
       router.push('/login');
       router.refresh();

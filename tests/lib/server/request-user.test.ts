@@ -32,7 +32,7 @@ describe('resolveRequestUserId', () => {
   });
 
   it('缺少 Cookie 时抛 401', async () => {
-    const req = new NextRequest('http://localhost/api/sessions/default');
+    const req = new NextRequest('http://localhost/api/contacts');
     await expect(resolveRequestUserId(req)).rejects.toMatchObject({
       status: 401,
       message: '未登录',
@@ -41,7 +41,7 @@ describe('resolveRequestUserId', () => {
 
   it('session 无效时抛 401', async () => {
     mockResolveSessionUserId.mockResolvedValue(null);
-    const req = new NextRequest('http://localhost/api/sessions/default', {
+    const req = new NextRequest('http://localhost/api/contacts', {
       headers: { cookie: `${SESSION_COOKIE}=invalid` },
     });
 
@@ -53,7 +53,7 @@ describe('resolveRequestUserId', () => {
 
   it('合法 session 返回 userId', async () => {
     mockResolveSessionUserId.mockResolvedValue('user-1');
-    const req = new NextRequest('http://localhost/api/sessions/default', {
+    const req = new NextRequest('http://localhost/api/contacts', {
       headers: { cookie: `${SESSION_COOKIE}=valid-token` },
     });
 

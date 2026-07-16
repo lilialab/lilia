@@ -27,27 +27,32 @@ export function useMessageHistory({
   const queryClient = useQueryClient();
   const [hasMore, setHasMore] = useState(false);
   const loadingMoreRef = useRef(false);
-  const initialSyncRef = useRef<string | null>(null);
+  const syncedDataUpdatedAtRef = useRef<number | null>(null);
 
-  const { data, isLoading: isInitialLoading } = useQuery({
+  const {
+    data,
+    dataUpdatedAt,
+    isFetching,
+    isLoading: isInitialLoading,
+  } = useQuery({
     queryKey: queryKeys.messageHistory(activeSessionId),
     queryFn: () => fetchHistoryPage(activeSessionId),
     enabled: !!activeSessionId,
   });
 
   useEffect(() => {
-    initialSyncRef.current = null;
+    syncedDataUpdatedAtRef.current = null;
   }, [activeSessionId]);
 
   useEffect(() => {
-    if (!data || !activeSessionId) return;
-    if (initialSyncRef.current === activeSessionId) return;
+    if (!data || !activeSessionId || isFetching) return;
+    if (syncedDataUpdatedAtRef.current === dataUpdatedAt) return;
 
-    initialSyncRef.current = activeSessionId;
+    syncedDataUpdatedAtRef.current = dataUpdatedAt;
     setMessages(data.messages);
     setHasMore(data.hasMore);
     bumpScroll();
-  }, [data, activeSessionId, setMessages, bumpScroll]);
+  }, [data, dataUpdatedAt, activeSessionId, isFetching, setMessages, bumpScroll]);
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (before: string) => fetchHistoryPage(activeSessionId, before),

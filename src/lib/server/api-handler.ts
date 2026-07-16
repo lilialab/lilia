@@ -29,7 +29,10 @@ export function withApiHandler(handler: RouteHandler): RouteHandler {
           logger.error(logPayload, '[API_ERROR_INTERCEPTED]');
         }
 
-        return NextResponse.json({ success: false, error: error.message }, { status: error.status });
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: error.status },
+        );
       }
 
       logger.error(

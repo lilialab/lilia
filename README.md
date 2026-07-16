@@ -136,6 +136,7 @@ pnpm dev
 
 ```bash
 pnpm dev          # 启动开发服务器
+pnpm dev:all      # Next + extract/maintain Worker（需 Redis；一条命令）
 pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
 pnpm lint         # ESLint 检查

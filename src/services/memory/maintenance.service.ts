@@ -20,20 +20,11 @@ import type {
   MaintenanceMergedGroup,
 } from '@/types/consolidation-job';
 import { isMemoryType, type MemoryType } from '@/types/memory';
+import { loadJobPrompt } from '@/prompts/load';
 
 const vectorService = new VectorService();
 
-const MEMORY_MAINTENANCE_PROMPT = `
-你是记忆库维护专家。给定一条待维护记忆（游标，序号 1）及其 Chroma 近邻（若有），整理该组记忆并输出整理后的条目列表。
-
-【输出要求】
-1. 以序号 1（游标）为主：将与游标语义重复或近义的近邻合并为更少条；无法与游标合并的，单独输出并保留原意。
-2. 输出 memories 数组：至少 1 条，至多等于输入条数。
-3. text：第三人称「用户」表述，保留关键信息，去除重复与矛盾细节。
-4. type：preference | event | fact。
-5. confidence：0~1，综合各条置信度，略偏向较高值。
-6. 禁止编造；禁止无故丢弃输入中的独立事实。
-`.trim();
+const MEMORY_MAINTENANCE_PROMPT = loadJobPrompt('maintain');
 
 const maintenanceOutputSchema = z.object({
   memories: z.array(

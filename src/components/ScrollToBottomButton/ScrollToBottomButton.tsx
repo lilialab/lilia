@@ -10,10 +10,7 @@ interface ScrollToBottomButtonProps {
   onScrollToBottom: () => void;
 }
 
-export function ScrollToBottomButton({
-  scrollRef,
-  onScrollToBottom,
-}: ScrollToBottomButtonProps) {
+export function ScrollToBottomButton({ scrollRef, onScrollToBottom }: ScrollToBottomButtonProps) {
   const [showButton, setShowButton] = useState(false);
 
   const updateButtonVisibility = useCallback(() => {

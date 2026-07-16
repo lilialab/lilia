@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "dev:all": "concurrently -n web,extract,maintain -c blue,magenta,magenta \"pnpm dev\" \"pnpm worker:memory-extract\" \"pnpm worker:memory-maintain\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint && tsc --noEmit",
@@ -48,6 +49,7 @@
     "@types/node": "^25.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "eslint-config-prettier": "^10.1.8",

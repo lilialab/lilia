@@ -46,13 +46,13 @@ export function AuthShell({ title, children, footer }: AuthShellProps) {
   return (
     <div className={cn('flex min-h-dvh items-center justify-center bg-zinc-50 px-4')}>
       <div
-        className={cn(
-          'w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-sm',
-        )}
+        className={cn('w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-sm')}
       >
         <h1 className={cn('mb-6 text-center text-xl font-semibold text-zinc-900')}>{title}</h1>
         {children}
-        {footer ? <div className={cn('mt-6 text-center text-sm text-zinc-500')}>{footer}</div> : null}
+        {footer ? (
+          <div className={cn('mt-6 text-center text-sm text-zinc-500')}>{footer}</div>
+        ) : null}
       </div>
     </div>
   );

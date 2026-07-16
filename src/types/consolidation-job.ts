@@ -66,8 +66,6 @@ export function isMaintenanceJobResult(
   return result !== undefined && 'mergedCount' in result;
 }
 
-export function isProfileJobResult(
-  result: ConsolidationJob['result'],
-): result is ProfileJobResult {
+export function isProfileJobResult(result: ConsolidationJob['result']): result is ProfileJobResult {
   return result !== undefined && 'sourceVersion' in result && !('mergedCount' in result);
 }

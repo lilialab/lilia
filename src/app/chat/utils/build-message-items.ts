@@ -2,8 +2,7 @@ import type { HistoryMessage } from '@/lib/client/api/sessions';
 import { formatDateDivider, formatDayKey, getMessageDate } from './date-divider';
 
 export type MessageListItem =
-  | { type: 'divider'; key: string; label: string }
-  | { type: 'message'; message: HistoryMessage };
+  { type: 'divider'; key: string; label: string } | { type: 'message'; message: HistoryMessage };
 
 export function buildMessageItems(messages: HistoryMessage[]): MessageListItem[] {
   return messages.reduce<{ items: MessageListItem[]; lastDayKey: string | null }>(

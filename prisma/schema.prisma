@@ -19,12 +19,38 @@ model User {
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
-  authSessions AuthSession[]
-  sessions     ChatSession[]
-  memories     UserMemory[]
-  profile      UserProfile?
+  authSessions   AuthSession[]
+  sessions       ChatSession[]
+  userCharacters UserCharacter[]
+  memories       UserMemory[]
+  profile        UserProfile?
 
   @@map("users")
+}
+
+model Character {
+  id             String          @id @default(uuid())
+  slug           String          @unique
+  displayName    String          @map("display_name")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  sessions       ChatSession[]
+  userCharacters UserCharacter[]
+
+  @@map("characters")
+}
+
+model UserCharacter {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  characterId String    @map("character_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, characterId])
+  @@index([userId])
+  @@map("user_characters")
 }
 
 model AuthSession {
@@ -40,14 +66,17 @@ model AuthSession {
 }
 
 model ChatSession {
-  id        String    @id @default(uuid())
-  userId    String    @map("user_id")
-  title     String    @default("新对话")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  characterId String    @map("character_id")
+  title       String    @default("新对话")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  messages    Message[]
 
+  @@unique([userId, characterId])
   @@index([userId])
   @@map("chat_sessions")
 }

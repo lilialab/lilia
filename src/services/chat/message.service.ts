@@ -10,12 +10,7 @@ export const CONTEXT_MESSAGE_LIMIT = env.CHAT_CONTEXT_MESSAGE_LIMIT;
 const activeMessageFilter = { isDeleted: false };
 
 /** 将数据库消息行映射为前端历史消息格式。 */
-function mapMessageRow(row: {
-  id: string;
-  role: string;
-  parts: unknown;
-  createdAt: Date;
-}) {
+function mapMessageRow(row: { id: string; role: string; parts: unknown; createdAt: Date }) {
   return {
     id: row.id,
     role: row.role as UIMessage['role'],
@@ -88,9 +83,7 @@ export async function getHistoryPage(
 
     const rows = items.toReversed();
     const hasMore =
-      rows.length === limit &&
-      rows.length > 0 &&
-      (await hasOlderMessages(rows[0].createdAt));
+      rows.length === limit && rows.length > 0 && (await hasOlderMessages(rows[0].createdAt));
 
     return { messages: rows.map(mapMessageRow), hasMore };
   }
@@ -103,9 +96,7 @@ export async function getHistoryPage(
 
   const rows = items.toReversed();
   const hasMore =
-    rows.length > 0 &&
-    rows.length === limit &&
-    (await hasOlderMessages(rows[0].createdAt));
+    rows.length > 0 && rows.length === limit && (await hasOlderMessages(rows[0].createdAt));
 
   return { messages: rows.map(mapMessageRow), hasMore };
 }

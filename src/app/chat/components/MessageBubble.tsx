@@ -14,9 +14,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div
         className={cn(
           'max-w-[85%] min-w-0 rounded-lg px-4 py-2 text-base',
-          isUser
-            ? 'bg-blue-600 text-white'
-            : 'overflow-hidden bg-zinc-200 text-zinc-900',
+          isUser ? 'bg-blue-600 text-white' : 'overflow-hidden bg-zinc-200 text-zinc-900',
         )}
       >
         {message.parts?.map((part, idx) => (

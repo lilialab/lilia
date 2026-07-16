@@ -30,7 +30,7 @@ export function RegisterForm() {
         confirmPassword,
         timeZone: getBrowserTimeZone(),
       });
-      router.push('/chat');
+      router.push('/contacts');
       router.refresh();
     } catch (err) {
       showErrorToast(formatClientError(err), 'auth-register');

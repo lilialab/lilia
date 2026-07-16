@@ -12,15 +12,6 @@ export interface MessageHistoryPage {
   hasMore: boolean;
 }
 
-interface DefaultSession {
-  id: string;
-}
-
-/** 获取当前用户的默认会话。 */
-export async function fetchDefaultSession(): Promise<DefaultSession> {
-  return apiFetchJson<DefaultSession>('/api/sessions/default');
-}
-
 /** 分页拉取会话历史消息。 */
 export async function fetchHistoryPage(
   sessionId: string,

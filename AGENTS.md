@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | 共享类型 | `src/types/`（如 `memory.ts`、`consolidation-job.ts`） |
 | 服务端基础设施 | `src/lib/server/`（env、prisma、chroma、ollama、logger） |
 | 客户端 | `src/lib/client/`（`api/*` 域 API；`api-fetch.ts`、`query-*` transport/缓存） |
-| 前端页面 | `src/app/chat/`、`src/app/login/`、`src/app/register/` |
+| 前端页面 | `src/app/(main)/`（通讯录/我）、`src/app/chat/`（单聊/添加）、`src/app/login/`、`register/` |
 | 路由保护 | `src/proxy.ts`（Next.js 16 proxy，非 `middleware.ts`） |
 | 通用组件 | `src/components/` |
 | 单测 | `tests/` 镜像 `src/`，不在 `src/` 内 co-locate |
@@ -29,6 +29,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | `chat/` | 聊天流、prompt 组装、消息 |
 | `memory/` | 记忆整理、向量检索、衰减、metadata 解析、用户画像、job |
 | `session/` | 会话 |
+| `character/` | AI 角色目录、通讯录（加好友）、联系人 session |
 | `knowledge/` | 文档导入、file 记录 |
 | `debug/` | Chroma 调试 |
 | `user/` | 用户注册、按 username 解析 userId（`resolveUserIdByUsername`） |
@@ -36,7 +37,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 命令与环境
 
 - **WSL / NixOS**：所有 shell 命令须 `nix develop --command ...`（如 `nix develop --command pnpm lint`）
-- 改完验证：`pnpm test:run`、`pnpm lint`（`eslint` + `tsc --noEmit`）；记忆 Worker：`pnpm worker:memory-extract`（session 闲置 extract）、`pnpm worker:memory-maintain`（user 闲置 maintain→profile；需 Redis）
+- 改完验证：`pnpm test:run`、`pnpm lint`（`eslint` + `tsc --noEmit`）；本地联调记忆：`pnpm dev:all`（Next + extract/maintain Worker；需 Redis）
 - 单测依赖完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等），无 fallback
 - Schema 变更：`pnpm exec prisma generate`（必要时 `pnpm exec prisma db push`）
 - 勿改 `docker-volumes/`；勿提交 `.env`
@@ -46,7 +47,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **Route / Service**
 
-- Route Handler：薄层，参数校验 + 调 service + `withApiHandler` / `successResponse`
+- Route Handler：薄层，鉴权 + 参数校验 + 调 service + `withApiHandler` / `successResponse`；不写业务分支
+- **业务 / 领域错误**（不存在、未加好友、状态不允许等）：在 **service** 抛 `AppError`；route 不要再翻译或重包一层
+- **HTTP 边界错误**（未登录、body/query 解析失败）：在 route / `parse-schema` / `resolveRequestUserId` 抛
+- service **不要**自行 `NextResponse.json`；统一由 `withApiHandler` 把 `AppError` 映射为 JSON
 - 同域 service 用 `./` 相对路径；跨域用 `@/services/{domain}/...`
 - 环境变量仅通过 `src/lib/server/env.ts`；记忆类型用 `src/types/memory.ts` 的 `MemoryType` / `isMemoryType`
 
@@ -57,7 +61,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **鉴权双轨**
 
-- Cookie：`resolveRequestUserId(req)` → chat、sessions、`/api/auth/*`；`src/proxy.ts` 保护 `/chat`
+- Cookie：`resolveRequestUserId(req)` → chat、sessions、`/api/auth/*`；`src/proxy.ts` 保护 `/contacts`、`/chat/*`、`/me`
 - username：`resolveUserIdByUsername` + query `?username=` → `/api/memory/*`；Bruno「记忆」
 
 **多用户隔离**
@@ -93,7 +97,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 | 任务 | 先看 |
 |------|------|
-| 聊天 / system prompt | `src/services/chat/prompt-builder.service.ts` |
+| 聊天 / system prompt | `src/services/chat/prompt-builder.service.ts`；人设与 jobs 文案见 `src/prompts/` |
 | 记忆整理 | `src/services/memory/consolidation.service.ts` + `consolidation.utils.ts` |
 | 记忆检索 / 衰减 | `src/services/memory/vector.service.ts` + `decay.utils.ts` + `metadata.utils.ts` |
 | 用户画像 | `src/services/memory/user-profile.service.ts` |
@@ -102,6 +106,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | 记忆流水线（脚本） | [`docs/memory/pipeline.md`](docs/memory/pipeline.md) + `bruno/记忆/` + `src/app/api/memory/`（`?username=`）+ `pnpm worker:memory-extract` / `pnpm worker:memory-maintain` |
 | 登录 / 注册 / Cookie 会话 | `src/lib/server/session.ts` + `request-user.ts` + `src/app/api/auth/` + `src/lib/client/api/auth.ts` + `src/app/login/`、`register/` |
 | 聊天 UI / 流式请求 | `src/app/chat/components/ChatScreen.tsx` + `src/app/api/chat/route.ts` |
+| 通讯录 / 加 AI 好友 | `src/services/character/contacts.service.ts` + `/contacts`、`/chat/add`、`/chat/[characterId]` |
 
 ## 避免
 

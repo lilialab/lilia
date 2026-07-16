@@ -5,17 +5,36 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = Boolean(request.cookies.get(env.AUTH_SESSION_COOKIE_NAME)?.value);
 
-  if (pathname.startsWith('/chat') && !hasSession) {
+  // 旧通讯录入口 /chat → /contacts
+  if (pathname === '/chat') {
+    return NextResponse.redirect(new URL('/contacts', request.url));
+  }
+
+  const needsAuth =
+    pathname.startsWith('/chat/') ||
+    pathname.startsWith('/contacts') ||
+    pathname === '/me' ||
+    pathname.startsWith('/me/');
+
+  if (needsAuth && !hasSession) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   if (pathname === '/login' && hasSession) {
-    return NextResponse.redirect(new URL('/chat', request.url));
+    return NextResponse.redirect(new URL('/contacts', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/chat/:path*', '/login'],
+  matcher: [
+    '/chat',
+    '/chat/:path*',
+    '/contacts',
+    '/contacts/:path*',
+    '/me',
+    '/me/:path*',
+    '/login',
+  ],
 };
