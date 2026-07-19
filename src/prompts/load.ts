@@ -9,6 +9,8 @@ export interface CharacterPrompt {
   id: string;
   displayName: string;
   persona: string;
+  /** 角色可用的 skill id 列表（如 searchChatHistory）。 */
+  skills: string[];
 }
 
 const PROMPTS_ROOT = path.join(process.cwd(), 'src/prompts');
@@ -33,7 +35,11 @@ export function loadPlatformSafety(): string {
 /** 加载角色人设（meta + persona）；slug 对齐 characters/{slug}/ 目录。 */
 export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPrompt {
   const metaRaw = readPromptFile('characters', slug, 'meta.json');
-  const meta = JSON.parse(metaRaw) as { id: string; displayName: string };
+  const meta = JSON.parse(metaRaw) as {
+    id: string;
+    displayName: string;
+    skills?: string[];
+  };
   const persona = readPromptFile('characters', slug, 'persona.md');
 
   if (meta.id !== slug) {
@@ -44,6 +50,7 @@ export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPro
     id: slug,
     displayName: meta.displayName,
     persona,
+    skills: Array.isArray(meta.skills) ? meta.skills : [],
   };
 }
 

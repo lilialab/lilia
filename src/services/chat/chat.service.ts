@@ -1,4 +1,4 @@
-import { type UIDataTypes, streamText, convertToModelMessages } from 'ai';
+import { type UIDataTypes, streamText, convertToModelMessages, stepCountIs } from 'ai';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
 import { ollamaProvider } from '@/lib/server/ollama';
@@ -9,7 +9,9 @@ import { AppError } from '@/lib/server/app-error';
 import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import { getUserTimeZone } from '@/services/user/users.service';
-import { buildSystemPrompt } from './prompt-builder.service';
+import { loadCharacter } from '@/prompts/load';
+import { resolveToolsForCharacter } from '@/skills/resolve-tools';
+import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
 import { saveAssistantResponse, getContextMessages } from './message.service';
 
 /**
@@ -45,6 +47,10 @@ export async function streamChatFlow(
 
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
   const timeZone = await getUserTimeZone(userId);
+  const { characterSlug } = await resolveSessionContext(sessionId);
+  const character = loadCharacter(characterSlug);
+  const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
+
   const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, {
     timeZone,
   });
@@ -58,14 +64,18 @@ export async function streamChatFlow(
     contextMessageCount: contextMessages.length,
     memoryFragments: meta.memoryFragments,
     userProfile: meta.userProfile,
+    skills: character.skills,
   });
 
   const startedAt = Date.now();
 
+  // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
   return streamText({
     model: ollamaProvider(env.OLLAMA_MODEL),
     system: systemPrompt,
     messages: await convertToModelMessages(contextMessages),
+    tools,
+    stopWhen: stepCountIs(5),
 
     onFinish: async ({ text, reasoningText, usage }) => {
       try {

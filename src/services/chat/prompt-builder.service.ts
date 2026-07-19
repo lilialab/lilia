@@ -23,7 +23,7 @@ export interface SystemPromptResult {
 const vectorService = new VectorService();
 
 /** 从会话解析 userId 与角色 slug。 */
-async function resolveSessionContext(
+export async function resolveSessionContext(
   sessionId: string,
 ): Promise<{ userId: string; characterSlug: string }> {
   const session = await prisma.chatSession.findUnique({

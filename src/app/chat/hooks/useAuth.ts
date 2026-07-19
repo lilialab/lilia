@@ -11,6 +11,7 @@ export function useAuth() {
   const meQuery = useQuery({
     queryKey: queryKeys.authMe,
     queryFn: fetchCurrentUser,
+    staleTime: 5 * 60 * 1000,
     retry: false,
     meta: { showErrorToast: false },
   });
