@@ -1,4 +1,4 @@
-import type { HistoryMessage } from '@/lib/client/api/sessions';
+import type { HistoryMessage } from '@/client-api/sessions';
 import { format, isSameYear, isToday, isYesterday } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

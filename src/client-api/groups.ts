@@ -1,6 +1,6 @@
 import { apiFetchJson } from '@/lib/client/api-fetch';
-import type { CharacterSummary } from '@/lib/client/api/characters';
-import type { HistoryMessage } from '@/lib/client/api/sessions';
+import type { CharacterSummary } from '@/client-api/characters';
+import type { HistoryMessage } from '@/client-api/sessions';
 import type { MessageMetadata } from '@/types/message-kind';
 
 const PAGE_SIZE = 10;

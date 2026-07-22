@@ -1,9 +1,10 @@
 import { Divider } from '@/components/Divider';
 import { ScrollToBottomButton } from '@/components/ScrollToBottomButton';
-import type { HistoryMessage } from '@/lib/client/api/sessions';
+import type { HistoryMessage } from '@/client-api/sessions';
 import { cn } from '@/lib/client/cn';
 import { isDisplayMessage } from '@/types/message-kind';
 import { isAtBottom, TOP_THRESHOLD } from '@/utils/scroll';
+import type { ChatStatus } from 'ai';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { buildMessageItems } from '../utils/build-message-items';
 import { isAwaitingAssistantResponse } from '../utils/message-content';
@@ -12,7 +13,7 @@ import { MessageBubble } from './MessageBubble';
 
 interface MessageListProps {
   messages: HistoryMessage[];
-  status: 'ready' | 'submitted' | 'streaming' | 'error';
+  status: ChatStatus;
   scrollToBottomKey: number;
   hasMore?: boolean;
   isLoadingMore?: boolean;

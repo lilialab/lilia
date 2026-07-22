@@ -1,5 +1,9 @@
 import { cn } from '@/lib/client/cn';
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
   return <div className={cn('flex h-full flex-col bg-zinc-50')}>{children}</div>;
 }

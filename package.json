@@ -48,7 +48,6 @@
     "@dprint/json": "^0.23.0",
     "@dprint/typescript": "^0.96.1",
     "@tailwindcss/postcss": "^4",
-    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",

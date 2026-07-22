@@ -1,9 +1,9 @@
 'use client';
 
+import { fetchGroups, type GroupDetail } from '@/client-api/groups';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { fetchGroups, type GroupDetail } from '@/lib/client/api/groups';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
@@ -18,7 +18,11 @@ function memberSubtitle(group: GroupDetail): string {
   return `${group.members.length} 位成员`;
 }
 
-function GroupsEmpty({ onCreate }: { onCreate: () => void }) {
+interface GroupsEmptyProps {
+  onCreate: () => void;
+}
+
+function GroupsEmpty({ onCreate }: GroupsEmptyProps) {
   return (
     <div className={cn('flex flex-1 flex-col items-center justify-center gap-4 px-6')}>
       <p className={cn('text-sm text-zinc-400')}>还没有群聊</p>
@@ -36,7 +40,11 @@ function GroupsEmpty({ onCreate }: { onCreate: () => void }) {
   );
 }
 
-function GroupsList({ groups }: { groups: GroupDetail[] }) {
+interface GroupsListProps {
+  groups: GroupDetail[];
+}
+
+function GroupsList({ groups }: GroupsListProps) {
   const router = useRouter();
 
   return (

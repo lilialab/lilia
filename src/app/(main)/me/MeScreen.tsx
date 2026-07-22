@@ -24,9 +24,9 @@ export function MeScreen() {
             <p className={cn('text-base font-medium text-zinc-900')}>
               {user?.displayName ?? '...'}
             </p>
-            {user?.username
-              ? <p className={cn('mt-1 text-sm text-zinc-500')}>@{user.username}</p>
-              : null}
+            {user?.username && (
+              <p className={cn('mt-1 text-sm text-zinc-500')}>@{user.username}</p>
+            )}
           </section>
 
           <section className={cn('mt-3 bg-white')}>

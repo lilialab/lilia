@@ -1,9 +1,9 @@
 'use client';
 
+import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { type ContactSummary, fetchContacts } from '@/lib/client/api/contacts';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
@@ -14,7 +14,11 @@ function ContactsEmpty() {
   return <p className={cn('px-4 py-6 text-sm text-zinc-400')}>还没有 AI 好友，点右上角添加</p>;
 }
 
-function ContactsList({ contacts }: { contacts: ContactSummary[] }) {
+interface ContactsListProps {
+  contacts: ContactSummary[];
+}
+
+function ContactsList({ contacts }: ContactsListProps) {
   const router = useRouter();
 
   return (

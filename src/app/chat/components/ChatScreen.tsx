@@ -5,8 +5,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { removeContact } from '@/lib/client/api/contacts';
-import type { HistoryMessage } from '@/lib/client/api/sessions';
+import { removeContact } from '@/client-api/contacts';
+import type { HistoryMessage } from '@/client-api/sessions';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -50,7 +50,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   );
 
   const { messages, status, sendMessage, setMessages } = useChat<HistoryMessage>({
-    id: sessionId || `character-${characterId}`,
+    id: sessionId ?? `character-${characterId}`,
     experimental_throttle: 50,
     transport: chatTransport,
   });
@@ -111,7 +111,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
       <ScreenHeader
-        title={displayName || '...'}
+        title={displayName ?? '...'}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
         right={
           <HeaderIconButton aria-label="更多操作" onClick={() => setMenuOpen(true)}>
@@ -182,7 +182,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void loadMore()}
-          userDisplayName={user?.displayName || '我'}
+          userDisplayName={user?.displayName ?? '我'}
         />
         <ChatInput
           value={input}

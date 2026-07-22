@@ -1,7 +1,7 @@
 'use client';
 
 import { AuthField, AuthShell } from '@/components/auth/AuthForm';
-import { register } from '@/lib/client/api/auth';
+import { register } from '@/client-api/auth';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import { getBrowserTimeZone } from '@/utils/timezone';

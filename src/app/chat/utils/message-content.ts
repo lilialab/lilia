@@ -1,4 +1,4 @@
-import type { UIMessage } from 'ai';
+import type { ChatStatus, UIMessage } from 'ai';
 
 type ChatMessageLike = Pick<UIMessage, 'id' | 'role' | 'parts'>;
 
@@ -10,8 +10,6 @@ export function messageHasVisibleContent(message: ChatMessageLike): boolean {
     return part.text.trim().length > 0;
   });
 }
-
-type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
 
 /** submitted/streaming 且最后一条尚无可见正文（空壳助手等）。 */
 export function isAwaitingAssistantResponse(

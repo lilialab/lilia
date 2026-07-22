@@ -1,10 +1,10 @@
 'use client';
 
+import { type CharacterSummary, fetchCharacters } from '@/client-api/characters';
+import { addContact, fetchContacts } from '@/client-api/contacts';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { type CharacterSummary, fetchCharacters } from '@/lib/client/api/characters';
-import { addContact, fetchContacts } from '@/lib/client/api/contacts';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -18,7 +18,11 @@ function AvailableCharactersEmpty() {
   return <p className={cn('px-4 py-6 text-sm text-zinc-400')}>没有可添加的角色</p>;
 }
 
-function AvailableCharactersList({ characters }: { characters: CharacterSummary[] }) {
+interface AvailableCharactersListProps {
+  characters: CharacterSummary[];
+}
+
+function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
   const queryClient = useQueryClient();
 
   const addMutation = useMutation({

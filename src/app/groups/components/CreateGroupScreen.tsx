@@ -3,8 +3,8 @@
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { type ContactSummary, fetchContacts } from '@/lib/client/api/contacts';
-import { createGroup } from '@/lib/client/api/groups';
+import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
+import { createGroup } from '@/client-api/groups';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';

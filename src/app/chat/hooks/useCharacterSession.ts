@@ -1,6 +1,6 @@
 'use client';
 
-import { fetchContactSession } from '@/lib/client/api/contacts';
+import { fetchContactSession } from '@/client-api/contacts';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
 

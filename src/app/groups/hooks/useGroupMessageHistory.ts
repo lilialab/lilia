@@ -1,17 +1,13 @@
 'use client';
 
-import { usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
-import { fetchGroupHistoryPage, type GroupHistoryMessage } from '@/lib/client/api/groups';
+import { usePagedMessageHistory, type SetMessages } from '@/hooks/usePagedMessageHistory';
+import { fetchGroupHistoryPage, type GroupHistoryMessage } from '@/client-api/groups';
 import { queryKeys } from '@/lib/client/query-keys';
 
 interface UseGroupMessageHistoryOptions {
   groupSessionId: string;
   messages: GroupHistoryMessage[];
-  setMessages: (
-    messages:
-      | GroupHistoryMessage[]
-      | ((prev: GroupHistoryMessage[]) => GroupHistoryMessage[]),
-  ) => void;
+  setMessages: SetMessages<GroupHistoryMessage>;
   bumpScroll: () => void;
 }
 

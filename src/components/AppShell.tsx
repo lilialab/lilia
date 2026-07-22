@@ -7,10 +7,14 @@ import { usePathname } from 'next/navigation';
 
 const TAB_BAR_PATHS = new Set(['/contacts', '/groups', '/me']);
 
+interface AppShellProps {
+  children: React.ReactNode;
+}
+
 /**
  * 根壳：中间内容走 ViewTransition；TabBar 在过渡外，避免 Tab 切换时底栏闪动。
  */
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const showTabBar = TAB_BAR_PATHS.has(pathname);
 
@@ -19,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className={cn('min-h-0 flex-1 overflow-hidden')}>
         <DirectionalPageTransition>{children}</DirectionalPageTransition>
       </div>
-      {showTabBar ? <TabBar /> : null}
+      {showTabBar && <TabBar />}
     </div>
   );
 }

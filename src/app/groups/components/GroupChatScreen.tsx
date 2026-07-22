@@ -3,21 +3,19 @@
 import { ChatInput } from '@/app/chat/components/ChatInput';
 import { MessageList } from '@/app/chat/components/MessageList';
 import { useGroupMessageHistory } from '@/app/groups/hooks/useGroupMessageHistory';
+import { fetchGroup, type GroupHistoryMessage } from '@/client-api/groups';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { fetchGroup, type GroupHistoryMessage } from '@/lib/client/api/groups';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
-import { extractTextFromParts } from '@/lib/message-parts';
-import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
 import { useChat } from '@ai-sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import { DefaultChatTransport } from 'ai';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
-import { buildTurnCueText, extractFirstMentionSlug } from './GroupChatScreen.utils';
+import { buildUserOutboundMetadata, sendTurnCueIfMentioned } from './GroupChatScreen.utils';
 
 interface GroupChatScreenProps {
   groupSessionId: string;
@@ -61,12 +59,10 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     onFinish: ({ message, isAbort, isDisconnect, isError }) => {
       if (isAbort || isDisconnect || isError || message.role !== 'assistant') return;
 
-      const slug = extractFirstMentionSlug(extractTextFromParts(message.parts));
-      if (!slug || !members.some((m) => m.slug === slug)) return;
-
-      void sendMessage({
-        text: buildTurnCueText(slug),
-        metadata: { kind: MESSAGE_KIND_TURN_CUE, slug },
+      sendTurnCueIfMentioned({
+        assistantParts: message.parts,
+        members,
+        sendMessage,
       });
     },
   });
@@ -101,10 +97,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     try {
       await sendMessage({
         text,
-        metadata: {
-          kind: null,
-          slug: extractFirstMentionSlug(text),
-        },
+        metadata: buildUserOutboundMetadata(text),
       });
     } catch (err) {
       showErrorToast(formatClientError(err), 'group-send');
@@ -122,7 +115,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
-      <ScreenHeader title={groupQuery.data?.title || '...'} onBack={goBackToGroups} />
+      <ScreenHeader title={groupQuery.data?.title ?? '...'} onBack={goBackToGroups} />
 
       <PageStatus
         loading={isBootstrapping}
@@ -138,7 +131,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void handleLoadMore()}
-          userDisplayName={user?.displayName || '我'}
+          userDisplayName={user?.displayName ?? '我'}
         />
         <ChatInput
           value={input}

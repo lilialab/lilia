@@ -1,6 +1,8 @@
 'use client';
 
 import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { UIMessage } from 'ai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface MessageHistoryPage<T> {
@@ -8,18 +10,21 @@ export interface MessageHistoryPage<T> {
   hasMore: boolean;
 }
 
-interface UsePagedMessageHistoryOptions<T extends { id: string }> {
+/** 与 useChat().setMessages 同形。 */
+export type SetMessages<T extends UIMessage> = UseChatHelpers<T>['setMessages'];
+
+interface UsePagedMessageHistoryOptions<T extends UIMessage> {
   /** 资源 id（sessionId / groupSessionId）；空则不请求 */
   resourceId: string;
   queryKey: QueryKey;
   fetchPage: (resourceId: string, before?: string) => Promise<MessageHistoryPage<T>>;
   messages: T[];
-  setMessages: (messages: T[] | ((prev: T[]) => T[])) => void;
+  setMessages: SetMessages<T>;
   bumpScroll: () => void;
 }
 
 /** 通用消息历史：初始页同步 + before 游标上翻。 */
-export function usePagedMessageHistory<T extends { id: string }>({
+export function usePagedMessageHistory<T extends UIMessage>({
   resourceId,
   queryKey,
   fetchPage,

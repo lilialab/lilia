@@ -1,4 +1,4 @@
-import { extractTextFromParts } from '@/lib/message-parts';
+import { extractTextFromParts } from '@/utils/message-parts';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';

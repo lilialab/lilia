@@ -1,4 +1,4 @@
-import { fetchCurrentUser, logout } from '@/lib/client/api/auth';
+import { fetchCurrentUser, logout } from '@/client-api/auth';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';

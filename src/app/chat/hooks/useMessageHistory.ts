@@ -1,11 +1,11 @@
 'use client';
 
-import { usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
+import { usePagedMessageHistory, type SetMessages } from '@/hooks/usePagedMessageHistory';
 import {
   clearSessionMessages,
   fetchHistoryPage,
   type HistoryMessage,
-} from '@/lib/client/api/sessions';
+} from '@/client-api/sessions';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
@@ -13,9 +13,7 @@ import { useCallback } from 'react';
 interface UseMessageHistoryOptions {
   activeSessionId: string;
   messages: HistoryMessage[];
-  setMessages: (
-    messages: HistoryMessage[] | ((prev: HistoryMessage[]) => HistoryMessage[]),
-  ) => void;
+  setMessages: SetMessages<HistoryMessage>;
   bumpScroll: () => void;
 }
 

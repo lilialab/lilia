@@ -1,4 +1,4 @@
-import { collectTextParts, extractTextFromParts } from '@/lib/message-parts';
+import { collectTextParts, extractTextFromParts } from '@/utils/message-parts';
 import { describe, expect, it } from 'vitest';
 
 describe('collectTextParts', () => {

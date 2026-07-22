@@ -1,4 +1,4 @@
-import { extractTextFromParts } from '@/lib/message-parts';
+import { extractTextFromParts } from '@/utils/message-parts';
 import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
