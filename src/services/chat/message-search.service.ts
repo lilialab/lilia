@@ -85,12 +85,17 @@ export async function searchUserMessages(options: {
     durationMs: Date.now() - startedAt,
   });
 
-  return rows.map((row) => ({
-    messageId: row.id,
-    sessionId: row.sessionId,
-    characterDisplayName: row.session.character.displayName,
-    role: row.role,
-    createdAt: row.createdAt.toISOString(),
-    parts: row.parts,
-  }));
+  return rows.flatMap((row) => {
+    if (!row.sessionId || !row.session) return [];
+    return [
+      {
+        messageId: row.id,
+        sessionId: row.sessionId,
+        characterDisplayName: row.session.character.displayName,
+        role: row.role,
+        createdAt: row.createdAt.toISOString(),
+        parts: row.parts,
+      },
+    ];
+  });
 }

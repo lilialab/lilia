@@ -68,7 +68,8 @@ async function buildTranscript(sessionId: string): Promise<TranscriptResult | nu
 
   if (messages.length === 0) return null;
 
-  const userId = messages[0].session.userId;
+  const userId = messages[0]?.session?.userId;
+  if (!userId) return null;
   const messageIds = messages.map((message) => message.id);
 
   const lines = messages.flatMap((message, seq) => {
@@ -112,7 +113,7 @@ function completeJob(
     completedAt: Date.now(),
     progress,
     result,
-    ...(snapshot !== undefined ? { snapshot } : {}),
+    snapshot,
   });
 }
 
@@ -138,7 +139,7 @@ async function extractMemoriesFromTranscript(
     snapshot: {
       messageIds,
       userId,
-      ...(job.snapshot?.sessionId !== undefined ? { sessionId: job.snapshot.sessionId } : {}),
+      sessionId: job.snapshot?.sessionId,
     },
   });
 

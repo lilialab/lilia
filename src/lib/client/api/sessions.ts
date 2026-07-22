@@ -1,9 +1,11 @@
 import type { UIMessage } from 'ai';
 import { apiFetchJson } from '@/lib/client/api-fetch';
+import type { MessageMetadata } from '@/types/message-kind';
 
 const PAGE_SIZE = 10;
 
-export interface HistoryMessage extends UIMessage {
+/** 会话历史消息；METADATA 与 AI SDK UIMessage 对齐。 */
+export interface HistoryMessage<METADATA = MessageMetadata> extends UIMessage<METADATA> {
   createdAt?: string;
 }
 

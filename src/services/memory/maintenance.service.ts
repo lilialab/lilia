@@ -93,7 +93,7 @@ async function findNextUnmaintainedMemory(userId: string): Promise<MemoryCursor 
 /**
  * 近邻 id 来自 Chroma 语义召回；详情与活跃态以 MySQL 为准。
  * 软删为 MySQL + Chroma 双写且非原子（见 softDeleteMemories / applyMaintenanceMerge），
- * Chroma 可能仍命中已软删 id，此处用 isDeleted=false 兜底（与 queryMemoryWithDecay 一致）。
+ * Chroma 可能仍命中已软删 id，此处用 isDeleted=false 做防御性过滤（与 queryMemoryWithDecay 一致）。
  * 不过滤 isMaintained（已维护老记忆仍可作合并近邻）；衰减过滤在 maintainOneMemory 另行处理。
  */
 async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<NeighborMemory[]> {
@@ -304,7 +304,7 @@ async function maintainOneMemory(
       { jobId: job.id, cursorId: cursor.id, error: decision.error },
       '[MemoryMaintenance] 跳过维护失败的游标',
     );
-    // 兜底：标记已消费，避免同一条游标在失败时无限重试
+    // 失败时仍标记已消费，避免同一条游标无限重试
     await markMemoryMaintained(cursor.id);
     return { processed: true, merged: false, maintenanceDeletedIds: [] };
   }

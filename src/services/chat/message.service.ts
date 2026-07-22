@@ -1,6 +1,7 @@
 // 基于 Prisma 的 MySQL 存储服务
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import type { MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
 
@@ -10,12 +11,33 @@ export const CONTEXT_MESSAGE_LIMIT = env.CHAT_CONTEXT_MESSAGE_LIMIT;
 const activeMessageFilter = { isDeleted: false };
 
 /** 将数据库消息行映射为前端历史消息格式。 */
-function mapMessageRow(row: { id: string; role: string; parts: unknown; createdAt: Date }) {
+function mapMessageRow(
+  row: { id: string; role: string; parts: unknown; createdAt: Date },
+  speaker: { characterId: string; slug: string; displayName: string } | null,
+): {
+  id: string;
+  role: UIMessage['role'];
+  parts: UIMessage['parts'];
+  createdAt: string;
+  metadata: MessageMetadata;
+} {
   return {
     id: row.id,
     role: row.role as UIMessage['role'],
     parts: row.parts as UIMessage['parts'],
     createdAt: row.createdAt.toISOString(),
+    metadata:
+      row.role === 'assistant' && speaker
+        ? {
+            kind: null,
+            slug: speaker.slug,
+            speakerDisplayName: speaker.displayName,
+            speakerCharacterId: speaker.characterId,
+          }
+        : {
+            kind: null,
+            slug: null,
+          },
   };
 }
 
@@ -50,6 +72,22 @@ export async function getHistoryPage(
 ) {
   const limit = options.limit ?? PAGE_SIZE;
 
+  const session = await prisma.chatSession.findUnique({
+    where: { id: sessionId },
+    select: {
+      character: { select: { id: true, slug: true, displayName: true } },
+    },
+  });
+  const speaker = session?.character
+    ? {
+        characterId: session.character.id,
+        slug: session.character.slug,
+        displayName: session.character.displayName,
+      }
+    : null;
+  const mapRow = (row: { id: string; role: string; parts: unknown; createdAt: Date }) =>
+    mapMessageRow(row, speaker);
+
   /** 判断指定时间之前是否还有更早的未删除消息。 */
   async function hasOlderMessages(oldestCreatedAt: Date) {
     const count = await prisma.message.count({
@@ -62,43 +100,34 @@ export async function getHistoryPage(
     return count > 0;
   }
 
+  let beforeCreatedAt: Date | undefined;
   if (options.before) {
     const cursor = await prisma.message.findFirst({
       where: { id: options.before, sessionId, ...activeMessageFilter },
+      select: { createdAt: true },
     });
-
     if (!cursor) {
       return { messages: [], hasMore: false };
     }
-
-    const items = await prisma.message.findMany({
-      where: {
-        sessionId,
-        ...activeMessageFilter,
-        createdAt: { lt: cursor.createdAt },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
-
-    const rows = items.toReversed();
-    const hasMore =
-      rows.length === limit && rows.length > 0 && (await hasOlderMessages(rows[0].createdAt));
-
-    return { messages: rows.map(mapMessageRow), hasMore };
+    beforeCreatedAt = cursor.createdAt;
   }
 
   const items = await prisma.message.findMany({
-    where: { sessionId, ...activeMessageFilter },
+    where: {
+      sessionId,
+      ...activeMessageFilter,
+      createdAt: beforeCreatedAt ? { lt: beforeCreatedAt } : undefined,
+    },
     orderBy: { createdAt: 'desc' },
     take: limit,
   });
 
   const rows = items.toReversed();
+  const oldest = rows.at(0);
   const hasMore =
-    rows.length > 0 && rows.length === limit && (await hasOlderMessages(rows[0].createdAt));
+    rows.length === limit && oldest != null && (await hasOlderMessages(oldest.createdAt));
 
-  return { messages: rows.map(mapMessageRow), hasMore };
+  return { messages: rows.map(mapRow), hasMore };
 }
 
 /** 软删除会话下全部未删除消息（设置 isDeleted）。 */

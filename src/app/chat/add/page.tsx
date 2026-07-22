@@ -1,4 +1,4 @@
-import { AddContactScreen } from '../components/AddContactScreen';
+import { AddContactScreen } from '@/app/contacts/components/AddContactScreen';
 
 export default function AddContactPage() {
   return <AddContactScreen />;

@@ -1,0 +1,77 @@
+import type { ReactNode } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { cn } from '@/lib/client/cn';
+
+const sideSlotClass = cn('flex min-h-10 min-w-10 shrink-0 items-center');
+
+interface ScreenHeaderProps {
+  title: string;
+  /** 有则显示返回按钮（图标，aria-label 固定为「返回」） */
+  onBack?: () => void;
+  right?: ReactNode;
+}
+
+/** 通用顶栏：可选返回 / 标题 / 右侧 slot。 */
+export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
+  return (
+    <header
+      className={cn(
+        'flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-3 py-3',
+      )}
+    >
+      <div className={sideSlotClass}>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="返回"
+            className={cn(
+              'flex min-h-10 min-w-10 items-center justify-center rounded-md text-zinc-600',
+              'hover:bg-zinc-50',
+            )}
+          >
+            <ChevronLeft className={cn('h-5 w-5')} aria-hidden />
+          </button>
+        )}
+      </div>
+      <h1
+        className={cn(
+          'min-w-0 flex-1 truncate px-2 text-center text-base font-medium text-zinc-900',
+        )}
+      >
+        {title}
+      </h1>
+      <div className={cn(sideSlotClass, 'justify-end')}>{right}</div>
+    </header>
+  );
+}
+
+interface HeaderIconButtonProps {
+  onClick: () => void;
+  'aria-label': string;
+  disabled?: boolean;
+  children: ReactNode;
+}
+
+/** 顶栏右侧图标按钮。 */
+export function HeaderIconButton({
+  onClick,
+  'aria-label': ariaLabel,
+  disabled,
+  children,
+}: HeaderIconButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      className={cn(
+        'flex min-h-10 min-w-10 items-center justify-center rounded-md text-zinc-500 transition-colors',
+        'hover:bg-zinc-100 hover:text-zinc-700 disabled:pointer-events-none disabled:opacity-40',
+      )}
+    >
+      {children}
+    </button>
+  );
+}

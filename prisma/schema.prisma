@@ -7,20 +7,28 @@ datasource db {
   provider = "mysql"
 }
 
+/**
+ * 登录用户；记忆与画像按 userId 共享，跨单聊/群聊角色
+ */
 model User {
   id                   String    @id @default(uuid())
   username             String    @unique
   passwordHash         String    @map("password_hash")
   displayName          String    @map("display_name")
-  /** IANA 时区，聊天 prompt 本地时间以库为准 */
+  /**
+   * IANA 时区，聊天 prompt 本地时间以库为准
+   */
   timeZone             String    @default("Asia/Shanghai") @map("time_zone")
-  /** maintain→profile 管线上次两者都成功完成的时刻 */
+  /**
+   * maintain→profile 管线上次两者都成功完成的时刻
+   */
   lastMemoryPipelineAt DateTime? @map("last_memory_pipeline_at")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
   authSessions   AuthSession[]
   sessions       ChatSession[]
+  groupSessions  GroupSession[]
   userCharacters UserCharacter[]
   memories       UserMemory[]
   profile        UserProfile?
@@ -28,6 +36,9 @@ model User {
   @@map("users")
 }
 
+/**
+ * AI 角色目录（全局）；人设/skills 在 prompts，不在本表
+ */
 model Character {
   id             String          @id @default(uuid())
   slug           String          @unique
@@ -35,11 +46,16 @@ model Character {
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
   sessions       ChatSession[]
+  groupMembers   GroupMember[]
+  spokenMessages Message[]
   userCharacters UserCharacter[]
 
   @@map("characters")
 }
 
+/**
+ * 用户通讯录：已添加的 AI 好友（单聊前提；建群成员须已在此）
+ */
 model UserCharacter {
   id          String    @id @default(uuid())
   userId      String    @map("user_id")
@@ -53,6 +69,9 @@ model UserCharacter {
   @@map("user_characters")
 }
 
+/**
+ * Cookie 登录会话（鉴权），与聊天 ChatSession 无关
+ */
 model AuthSession {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
@@ -65,6 +84,9 @@ model AuthSession {
   @@map("auth_sessions")
 }
 
+/**
+ * 单聊：每用户每角色至多一条会话
+ */
 model ChatSession {
   id          String    @id @default(uuid())
   userId      String    @map("user_id")
@@ -81,24 +103,77 @@ model ChatSession {
   @@map("chat_sessions")
 }
 
+/**
+ * 群聊会话；用户为 owner，AI 成员见 GroupMember
+ */
+model GroupSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String   @default("群聊")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members  GroupMember[]
+  messages Message[]
+
+  @@index([userId])
+  @@map("group_sessions")
+}
+
+/**
+ * 群内 AI 成员；与 UserCharacter（通讯录）不同，仅表示本群在场角色
+ */
+model GroupMember {
+  id             String   @id @default(uuid())
+  groupSessionId String   @map("group_session_id")
+  characterId    String   @map("character_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  groupSession GroupSession @relation(fields: [groupSessionId], references: [id], onDelete: Cascade)
+  character    Character    @relation(fields: [characterId], references: [id], onDelete: Restrict)
+
+  @@unique([groupSessionId, characterId])
+  @@index([characterId])
+  @@map("group_members")
+}
+
+/**
+ * 单聊 / 群聊共用消息表。
+ * sessionId 与 groupSessionId 恰好一个非空（应用层校验）。
+ * speakerCharacterId：null = 用户；非空 = 该 AI（群聊助手消息应填写）。
+ * kind：null = 普通消息；turn_cue = 群聊续聊触发语（role 仍为 user）。
+ */
 model Message {
-  id                 String      @id @default(uuid())
-  sessionId          String      @map("session_id")
+  id                 String   @id @default(uuid())
+  sessionId          String?  @map("session_id")
+  groupSessionId     String?  @map("group_session_id")
+  speakerCharacterId String?  @map("speaker_character_id")
   role               String
+  kind               String?  @map("kind")
   parts              Json
-  isConsolidated     Boolean     @default(false) @map("is_consolidated")
-  isDeleted          Boolean     @default(false) @map("is_deleted")
-  consolidationJobId String?     @map("consolidation_job_id")
-  session            ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  createdAt          DateTime    @default(now()) @map("created_at")
+  isConsolidated     Boolean  @default(false) @map("is_consolidated")
+  isDeleted          Boolean  @default(false) @map("is_deleted")
+  consolidationJobId String?  @map("consolidation_job_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  session          ChatSession?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  groupSession     GroupSession? @relation(fields: [groupSessionId], references: [id], onDelete: Cascade)
+  speakerCharacter Character?    @relation(fields: [speakerCharacterId], references: [id], onDelete: SetNull)
 
   @@index([sessionId])
+  @@index([groupSessionId])
   @@index([sessionId, isConsolidated])
+  @@index([groupSessionId, isConsolidated])
   @@index([sessionId, isDeleted])
+  @@index([groupSessionId, isDeleted])
   @@index([consolidationJobId])
   @@map("messages")
 }
 
+/**
+ * 长期用户记忆条目（preference / event / fact）；按 userId 共享，供 RAG / maintain
+ */
 model UserMemory {
   id           String   @id @default(uuid())
   userId       String   @map("user_id")
@@ -118,6 +193,9 @@ model UserMemory {
   @@map("user_memories")
 }
 
+/**
+ * 用户画像摘要（maintain→profile 产物）；每用户一行
+ */
 model UserProfile {
   userId        String   @id @map("user_id")
   summary       String?  @db.Text
@@ -130,6 +208,9 @@ model UserProfile {
   @@map("user_profiles")
 }
 
+/**
+ * 记忆流水线任务记录（extract / maintain / profile），与具体会话无 FK
+ */
 model ConsolidationJob {
   id          String    @id @default(uuid())
   kind        String    @default("extract") // extract | maintain | profile
@@ -145,6 +226,9 @@ model ConsolidationJob {
   @@map("consolidation_jobs")
 }
 
+/**
+ * 知识库上传文件元数据（MinIO）；与聊天会话无直接 FK
+ */
 model File {
   id        String      @id @default(uuid())
   fileName  String      @map("file_name")
@@ -156,11 +240,14 @@ model File {
   @@map("files")
 }
 
+/**
+ * 文件切片预览文本；向量等内容在 Chroma 等侧
+ */
 model FileChunk {
   id             String @id @default(uuid())
   fileId         String @map("file_id")
   chunkIndex     Int    @map("chunk_index") // 切片排序索引 (0, 1, 2...)
-  contentPreview String @map("content_preview") @db.Text // 存储纯文本，用于兜底或普通展示
+  contentPreview String @map("content_preview") @db.Text // 存储纯文本，用于备用或普通展示
   file           File   @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
   @@map("file_chunks")

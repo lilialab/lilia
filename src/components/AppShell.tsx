@@ -5,7 +5,7 @@ import { DirectionalPageTransition } from '@/components/DirectionalPageTransitio
 import { TabBar } from '@/components/TabBar';
 import { cn } from '@/lib/client/cn';
 
-const TAB_BAR_PATHS = new Set(['/contacts', '/me']);
+const TAB_BAR_PATHS = new Set(['/contacts', '/groups', '/me']);
 
 /**
  * 根壳：中间内容走 ViewTransition；TabBar 在过渡外，避免 Tab 切换时底栏闪动。

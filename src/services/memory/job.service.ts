@@ -101,7 +101,11 @@ export async function updateConsolidationJob(
   }
   if (patch.snapshot !== undefined) {
     const previous = (existing.snapshot ?? {}) as ConsolidationJobSnapshot;
-    data.snapshot = toInputJsonValue({ ...previous, ...patch.snapshot });
+    const definedEntries = Object.entries(patch.snapshot).filter(([, value]) => value !== undefined);
+    data.snapshot = toInputJsonValue({
+      ...previous,
+      ...Object.fromEntries(definedEntries),
+    });
   }
 
   await prisma.consolidationJob.update({ where: { id }, data });

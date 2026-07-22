@@ -1,16 +1,22 @@
-import type { UIMessage } from 'ai';
+import type { HistoryMessage } from '@/lib/client/api/sessions';
 import { cn } from '@/lib/client/cn';
 import { MessagePartRenderer } from './MessagePartRenderer';
 
 interface MessageBubbleProps {
-  message: UIMessage;
+  message: HistoryMessage;
+  /** 用户气泡显示名，默认「我」 */
+  userDisplayName?: string;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, userDisplayName = '我' }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const speakerName = isUser ? userDisplayName : message.metadata?.speakerDisplayName;
 
   return (
-    <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start')}>
+      {speakerName ? (
+        <span className={cn('max-w-[85%] truncate px-1 text-xs text-zinc-500')}>{speakerName}</span>
+      ) : null}
       <div
         className={cn(
           'max-w-[85%] min-w-0 rounded-lg px-4 py-2 text-base',

@@ -123,7 +123,7 @@ export async function createUserMemories(
   return { ids: prepared.ids };
 }
 
-/** 软删除记忆并同步移除 Chroma 向量。先 MySQL 后 Chroma；若 Chroma 删失败，RAG 侧靠 MySQL 二次过滤兜底。 */
+/** 软删除记忆并同步移除 Chroma 向量。先 MySQL 后 Chroma；若 Chroma 删失败，RAG 侧靠 MySQL 二次过滤做防御。 */
 export async function softDeleteMemories(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
 
@@ -244,9 +244,9 @@ export async function listUserMemories(input: ListUserMemoriesInput) {
     where: {
       userId: input.userId,
       isDeleted: false,
-      ...(input.text ? { text: { contains: input.text } } : {}),
-      ...(input.type ? { type: input.type } : {}),
-      ...(input.isMaintained !== undefined ? { isMaintained: input.isMaintained } : {}),
+      text: input.text ? { contains: input.text } : undefined,
+      type: input.type,
+      isMaintained: input.isMaintained,
     },
     orderBy: { createdAt: 'desc' },
     take: input.limit,

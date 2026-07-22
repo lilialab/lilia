@@ -1,19 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCharacterSession } from '../hooks/useCharacterSession';
-import { useAuth } from '../hooks/useAuth';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useMessageHistory } from '../hooks/useMessageHistory';
-import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { PageStatus } from '@/components/PageStatus';
+import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { MoreHorizontal } from 'lucide-react';
 import { removeContact } from '@/lib/client/api/contacts';
+import type { HistoryMessage } from '@/lib/client/api/sessions';
 import { queryKeys } from '@/lib/client/query-keys';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -25,7 +28,7 @@ interface ChatScreenProps {
 export function ChatScreen({ characterId }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
   const { sessionId, displayName, isLoading, isError } = useCharacterSession(characterId);
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
@@ -37,9 +40,16 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     setScrollToBottomKey((k) => k + 1);
   }, []);
 
-  const chatTransport = useMemo(() => new DefaultChatTransport({ credentials: 'include' }), []);
+  const chatTransport = useMemo(
+    () =>
+      new DefaultChatTransport<HistoryMessage>({
+        api: '/api/chat',
+        credentials: 'include',
+      }),
+    [],
+  );
 
-  const { messages, status, sendMessage, setMessages } = useChat({
+  const { messages, status, sendMessage, setMessages } = useChat<HistoryMessage>({
     id: sessionId || `character-${characterId}`,
     experimental_throttle: 50,
     transport: chatTransport,
@@ -87,34 +97,27 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     setInput('');
 
     try {
-      await sendMessage(
-        { text: currentInput },
-        {
-          body: { sessionId },
-        },
-      );
+      await sendMessage({ text: currentInput }, { body: { sessionId } });
     } catch (err) {
       showErrorToast(formatClientError(err), 'chat-send');
       setInput(currentInput);
     }
   };
 
-  useEffect(() => {
-    if (!isAuthLoading && user === null) {
-      router.replace('/login');
-    }
-  }, [isAuthLoading, user, router]);
-
-  if (!isAuthLoading && user === null) {
+  if (isUnauthenticated) {
     return null;
   }
 
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
-      <ChatHeader
-        characterName={displayName}
+      <ScreenHeader
+        title={displayName || '...'}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
-        onOpenMenu={() => setMenuOpen(true)}
+        right={
+          <HeaderIconButton aria-label="更多操作" onClick={() => setMenuOpen(true)}>
+            <MoreHorizontal className={cn('h-5 w-5')} aria-hidden />
+          </HeaderIconButton>
+        }
       />
 
       <ActionSheet
@@ -162,43 +165,31 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
         onCancel={() => setConfirmDeleteOpen(false)}
       />
 
-      {isBootstrapping ? (
-        <div className={cn('flex flex-1 items-center justify-center text-sm text-zinc-400')}>
-          加载中...
-        </div>
-      ) : isError || !sessionId ? (
-        <div className={cn('flex flex-1 flex-col items-center justify-center gap-3 px-4')}>
-          <p className={cn('text-sm text-zinc-400')}>无法加载会话，请先添加该 AI 好友</p>
-          <button
-            type="button"
-            onClick={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
-            className={cn(
-              'rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700',
-              'hover:bg-zinc-50',
-            )}
-          >
-            返回通讯录
-          </button>
-        </div>
-      ) : (
-        <>
-          <MessageList
-            messages={messages}
-            status={status}
-            scrollToBottomKey={scrollToBottomKey}
-            hasMore={hasMore}
-            isLoadingMore={isLoadingMore}
-            onLoadMore={() => void loadMore()}
-          />
-          <ChatInput
-            value={input}
-            onChange={setInput}
-            onSubmit={handleFormSubmit}
-            disabled={isStreaming}
-            isStreaming={isStreaming}
-          />
-        </>
-      )}
+      <PageStatus
+        loading={isBootstrapping}
+        error={isError || !sessionId}
+        errorMessage="无法加载会话，请先添加该 AI 好友"
+        actionLabel="返回通讯录"
+        actionVariant="button"
+        onAction={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
+      >
+        <MessageList
+          messages={messages}
+          status={status}
+          scrollToBottomKey={scrollToBottomKey}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={() => void loadMore()}
+          userDisplayName={user?.displayName || '我'}
+        />
+        <ChatInput
+          value={input}
+          onChange={setInput}
+          onSubmit={handleFormSubmit}
+          disabled={isStreaming}
+          isStreaming={isStreaming}
+        />
+      </PageStatus>
     </div>
   );
 }

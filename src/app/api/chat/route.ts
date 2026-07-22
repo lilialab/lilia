@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 import { streamChatFlow } from '@/services/chat/chat.service';
-import { withApiHandler } from '@/lib/server/api-handler';
+import { withApiHandler, withMessageMetadata } from '@/lib/server/api-handler';
 import { parseJsonBody } from '@/lib/server/parse-schema';
 import { chatPostBodySchema } from '@/schemas/api/chat/post';
 import { resolveRequestUserId } from '@/lib/server/request-user';
@@ -12,6 +12,6 @@ export const POST = withApiHandler(async (req: NextRequest) => {
 
   await assertSessionOwnedByUser(sessionId, userId);
 
-  const chatStreamResult = await streamChatFlow(sessionId, userId, messages);
-  return chatStreamResult.toUIMessageStreamResponse();
+  const { streamResult, metadata } = await streamChatFlow(sessionId, userId, messages);
+  return streamResult.toUIMessageStreamResponse(withMessageMetadata(metadata));
 });

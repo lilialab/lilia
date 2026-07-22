@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Users } from 'lucide-react';
+import { MessagesSquare, User, Users } from 'lucide-react';
 import { cn } from '@/lib/client/cn';
 
 const TABS = [
   { href: '/contacts', label: '通讯录', icon: Users },
+  { href: '/groups', label: '群聊', icon: MessagesSquare },
   { href: '/me', label: '我', icon: User },
 ] as const;
 

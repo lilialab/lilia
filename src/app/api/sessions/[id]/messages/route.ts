@@ -7,7 +7,7 @@ import { resolveRequestUserId } from '@/lib/server/request-user';
 import { assertSessionOwnedByUser } from '@/services/session/sessions.service';
 
 export const DELETE = withApiHandler(
-  async (req: NextRequest, context: { params: Promise<unknown> }) => {
+  async (req: NextRequest, context: RouteContext<'/api/sessions/[id]/messages'>) => {
     const userId = await resolveRequestUserId(req);
     const { id: sessionId } = await parseRouteParams(sessionParamsSchema, context.params);
     await assertSessionOwnedByUser(sessionId, userId);

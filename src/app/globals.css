@@ -11,8 +11,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:
+    'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
   --animate-slide-in-left: slide-in-left 0.2s ease-out;
 
@@ -117,7 +119,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    var(--font-geist-sans),
     'PingFang SC',
     'Microsoft YaHei',
     system-ui,

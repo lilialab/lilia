@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   clearSessionMessages,
   fetchHistoryPage,
   type HistoryMessage,
 } from '@/lib/client/api/sessions';
 import { queryKeys } from '@/lib/client/query-keys';
+import { usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
 
 interface UseMessageHistoryOptions {
   activeSessionId: string;
@@ -25,64 +26,16 @@ export function useMessageHistory({
   bumpScroll,
 }: UseMessageHistoryOptions) {
   const queryClient = useQueryClient();
-  const [hasMore, setHasMore] = useState(false);
-  const loadingMoreRef = useRef(false);
-  const syncedDataUpdatedAtRef = useRef<number | null>(null);
 
-  const {
-    data,
-    dataUpdatedAt,
-    isFetching,
-    isLoading: isInitialLoading,
-  } = useQuery({
-    queryKey: queryKeys.messageHistory(activeSessionId),
-    queryFn: () => fetchHistoryPage(activeSessionId),
-    enabled: !!activeSessionId,
-  });
-
-  useEffect(() => {
-    syncedDataUpdatedAtRef.current = null;
-  }, [activeSessionId]);
-
-  useEffect(() => {
-    if (!data || !activeSessionId || isFetching) return;
-    if (syncedDataUpdatedAtRef.current === dataUpdatedAt) return;
-
-    syncedDataUpdatedAtRef.current = dataUpdatedAt;
-    setMessages(data.messages);
-    setHasMore(data.hasMore);
-    bumpScroll();
-  }, [data, dataUpdatedAt, activeSessionId, isFetching, setMessages, bumpScroll]);
-
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: (before: string) => fetchHistoryPage(activeSessionId, before),
-    onSuccess: (page) => {
-      if (page.messages.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      setMessages((prev) => {
-        const existingIds = new Set(prev.map((m) => m.id));
-        const older = page.messages.filter((m) => !existingIds.has(m.id));
-        return [...older, ...prev];
-      });
-      setHasMore(page.hasMore);
-    },
-    onSettled: () => {
-      loadingMoreRef.current = false;
-    },
-  });
-
-  const loadMore = useCallback(async () => {
-    if (!activeSessionId || !hasMore || loadingMoreRef.current) return;
-
-    const oldestId = messages[0]?.id;
-    if (!oldestId) return;
-
-    loadingMoreRef.current = true;
-    await mutateAsync(oldestId);
-  }, [activeSessionId, hasMore, messages, mutateAsync]);
+  const { hasMore, isLoadingMore, isInitialLoading, loadMore, setHasMore } =
+    usePagedMessageHistory({
+      resourceId: activeSessionId,
+      queryKey: queryKeys.messageHistory(activeSessionId),
+      fetchPage: fetchHistoryPage,
+      messages,
+      setMessages,
+      bumpScroll,
+    });
 
   const { mutateAsync: clearHistoryAsync, isPending: isClearing } = useMutation({
     mutationFn: () => clearSessionMessages(activeSessionId),
@@ -103,7 +56,7 @@ export function useMessageHistory({
 
   return {
     hasMore,
-    isLoadingMore: isPending,
+    isLoadingMore,
     isInitialLoading,
     isClearing,
     loadMore,

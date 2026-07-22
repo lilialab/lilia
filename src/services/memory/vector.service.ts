@@ -156,7 +156,7 @@ export class VectorService {
 
     if (ranked.length === 0) return [];
 
-    // 兜底：软删与删向量非原子，以 MySQL isDeleted=false 为准剔除 ghost 命中
+    // 防御性过滤：软删与删向量非原子，以 MySQL isDeleted=false 为准剔除 ghost 命中
     const activeRows = await prisma.userMemory.findMany({
       where: {
         id: { in: ranked.map((item) => item.id) },

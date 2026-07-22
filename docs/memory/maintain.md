@@ -43,7 +43,7 @@ flowchart TD
 | 阶段 | 规则 |
 |------|------|
 | Chroma | 按游标 `text` 语义距离，取 top `MEMORY_MAINTENANCE_NEIGHBOR_LIMIT`（默认 10） |
-| MySQL | 仅 `isDeleted = false`（软删为 MySQL + Chroma 双写且非原子，此处兜底，与聊天 RAG 一致） |
+| MySQL | 仅 `isDeleted = false`（软删为 MySQL + Chroma 双写且非原子，此处做防御性过滤，与聊天 RAG 一致） |
 | 衰减 | `decay(lastActiveAt) < MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY` 的近邻**硬丢弃**，不进 LLM 簇 |
 
 近邻**不要求** `isMaintained = false`：已维护过的老记忆仍可能因语义相近被卷入合并簇。

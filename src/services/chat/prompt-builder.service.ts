@@ -1,13 +1,8 @@
-import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
-import { VectorService } from '@/services/memory/vector.service';
+import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { loadCharacter, loadPlatformSafety } from '@/prompts/load';
-import {
-  buildRuntimeContextBlock,
-  formatMemoryFragmentLine,
-  type MemoryFragment,
-} from './prompt-format.utils';
+import { buildRuntimeContextBlock, formatMemoryFragmentLine } from './prompt-format.utils';
 import { AppError } from '@/lib/server/app-error';
 
 export interface SystemPromptMeta {
@@ -20,67 +15,34 @@ export interface SystemPromptResult {
   meta: SystemPromptMeta;
 }
 
-const vectorService = new VectorService();
-
-/** 从会话解析 userId 与角色 slug。 */
-export async function resolveSessionContext(
-  sessionId: string,
-): Promise<{ userId: string; characterSlug: string }> {
+/** 从会话解析 userId 与角色。 */
+export async function resolveSessionContext(sessionId: string): Promise<{
+  userId: string;
+  characterId: string;
+  characterSlug: string;
+  characterDisplayName: string;
+}> {
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
     select: {
       userId: true,
-      character: { select: { slug: true } },
+      character: { select: { id: true, slug: true, displayName: true } },
     },
   });
   if (!session?.userId) {
     throw AppError.notFound('会话不存在');
   }
-  return { userId: session.userId, characterSlug: session.character.slug };
+  return {
+    userId: session.userId,
+    characterId: session.character.id,
+    characterSlug: session.character.slug,
+    characterDisplayName: session.character.displayName,
+  };
 }
 
 /** 获取用户画像文本。 */
 async function fetchUserProfile(userId: string): Promise<string> {
   return getUserProfileText(userId);
-}
-
-/** 按用户输入从向量记忆库检索相关历史片段（含衰减重排与命中回写）。 */
-async function fetchHistoricalContext(content: string, userId: string): Promise<MemoryFragment[]> {
-  if (!content) return [];
-  try {
-    const hits = await vectorService.queryMemoryWithDecay(content, undefined, { userId });
-    const ids = hits.map((hit) => hit.id);
-    if (ids.length === 0) return [];
-
-    void vectorService.touchMemories(ids).catch((err) => {
-      logger.warn({ err }, '[Chroma] 记忆 lastActiveAt 回写失败');
-    });
-
-    const rows = await prisma.userMemory.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, type: true, createdAt: true, lastActiveAt: true },
-    });
-    const rowById = new Map(rows.map((row) => [row.id, row]));
-
-    const fragments: MemoryFragment[] = [];
-    for (const hit of hits) {
-      const row = rowById.get(hit.id);
-      if (!row) {
-        logger.warn({ memoryId: hit.id }, '[RAG] Chroma 命中但 MySQL 无对应记忆，已跳过');
-        continue;
-      }
-      fragments.push({
-        text: hit.text,
-        type: row.type as MemoryFragment['type'],
-        recordedAt: row.createdAt,
-        lastActiveAt: row.lastActiveAt,
-      });
-    }
-    return fragments;
-  } catch (err) {
-    logger.error({ err }, '[Chroma] 知识库检索失败');
-    return [];
-  }
 }
 
 export interface BuildSystemPromptOptions {
@@ -104,7 +66,7 @@ export async function buildSystemPrompt(
 
   const [userProfile, memoryFragments] = await Promise.all([
     fetchUserProfile(userId),
-    fetchHistoricalContext(lastUserContent, userId),
+    fetchMemoryFragmentsForPrompt(lastUserContent, userId),
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>

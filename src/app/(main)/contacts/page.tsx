@@ -1,4 +1,4 @@
-import { ContactsScreen } from '@/app/chat/components/ContactsScreen';
+import { ContactsScreen } from '@/app/contacts/components/ContactsScreen';
 
 export default function ContactsPage() {
   return <ContactsScreen />;

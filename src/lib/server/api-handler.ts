@@ -2,14 +2,19 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 
-type RouteContext = {
-  params: Promise<Record<string, string | string[]>>;
+type ApiHandlerContext = {
+  params: Promise<unknown>;
 };
 
-type RouteHandler = (req: NextRequest, context: RouteContext) => Promise<Response> | Response;
+type ApiRouteHandler<C extends ApiHandlerContext> = (
+  req: NextRequest,
+  context: C,
+) => Promise<Response> | Response;
 
-export function withApiHandler(handler: RouteHandler): RouteHandler {
-  return async (req: NextRequest, context: RouteContext) => {
+export function withApiHandler<C extends ApiHandlerContext>(
+  handler: ApiRouteHandler<C>,
+): ApiRouteHandler<C> {
+  return async (req: NextRequest, context: C) => {
     try {
       const response = await handler(req, context);
 
@@ -47,6 +52,15 @@ export function withApiHandler(handler: RouteHandler): RouteHandler {
   };
 }
 
+/** 在 UI Message Stream 的 start 事件写入 metadata。 */
+export function withMessageMetadata<T>(metadata: T) {
+  return {
+    messageMetadata: ({ part }: { part: { type: string } }) => {
+      if (part.type === 'start') return metadata;
+    },
+  };
+}
+
 /** 抛出 400 客户端错误 */
 export function badRequest(message: string): never {
   throw AppError.badRequest(message);
@@ -57,10 +71,10 @@ export function notFound(message: string): never {
   throw AppError.notFound(message);
 }
 
-/** 快速返回 200 成功响应 */
-export function successResponse<T>(data?: T) {
+/** 快速返回 200 成功响应（data 必填）。 */
+export function successResponse<T>(data: T) {
   return NextResponse.json({
     success: true,
-    ...(data ? { data } : {}),
+    data,
   });
 }

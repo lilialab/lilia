@@ -13,6 +13,7 @@ export function proxy(request: NextRequest) {
   const needsAuth =
     pathname.startsWith('/chat/') ||
     pathname.startsWith('/contacts') ||
+    pathname.startsWith('/groups') ||
     pathname === '/me' ||
     pathname.startsWith('/me/');
 
@@ -33,6 +34,8 @@ export const config = {
     '/chat/:path*',
     '/contacts',
     '/contacts/:path*',
+    '/groups',
+    '/groups/:path*',
     '/me',
     '/me/:path*',
     '/login',

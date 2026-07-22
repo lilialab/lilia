@@ -11,8 +11,29 @@ import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.servi
 import { getUserTimeZone } from '@/services/user/users.service';
 import { loadCharacter } from '@/prompts/load';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
+import type { UIMessageStreamPayload } from '@/types/message-kind';
 import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
 import { saveAssistantResponse, getContextMessages } from './message.service';
+
+/** 调度记忆 extract / maintain；入队失败只记日志，不阻断聊天（如 Redis 不可用）。 */
+async function scheduleMemoryJobsBestEffort(sessionId: string, userId: string): Promise<void> {
+  try {
+    await scheduleMemoryExtract(sessionId, userId);
+  } catch (err) {
+    logger.error(
+      { err, sessionId, userId, event: 'memory.extract.schedule_failed' },
+      '[memory] extract 入队失败，已跳过（聊天继续）',
+    );
+  }
+  try {
+    await scheduleMaintainPipeline(userId);
+  } catch (err) {
+    logger.error(
+      { err, userId, event: 'memory.maintain.schedule_failed' },
+      '[memory] maintain 入队失败，已跳过（聊天继续）',
+    );
+  }
+}
 
 /**
  * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流（适配 AI SDK 5.0 Parts 架构）
@@ -24,7 +45,7 @@ export async function streamChatFlow(
   sessionId: string,
   userId: string,
   messages: ChatPostBody['messages'],
-) {
+): Promise<UIMessageStreamPayload> {
   const lastMessage = messages.at(-1);
 
   if (lastMessage?.role !== 'user') {
@@ -40,20 +61,18 @@ export async function streamChatFlow(
   });
   const userMessageId = userMessage.id;
 
-  await scheduleMemoryExtract(sessionId, userId);
-  await scheduleMaintainPipeline(userId);
+  await scheduleMemoryJobsBestEffort(sessionId, userId);
 
   const contextMessages = await getContextMessages(sessionId);
 
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
   const timeZone = await getUserTimeZone(userId);
-  const { characterSlug } = await resolveSessionContext(sessionId);
+  const { characterId, characterSlug, characterDisplayName } =
+    await resolveSessionContext(sessionId);
   const character = loadCharacter(characterSlug);
   const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
 
-  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, {
-    timeZone,
-  });
+  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, { timeZone });
 
   logger.info({
     event: 'llm.chat.request',
@@ -70,7 +89,7 @@ export async function streamChatFlow(
   const startedAt = Date.now();
 
   // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
-  return streamText({
+  const streamResult = streamText({
     model: ollamaProvider(env.OLLAMA_MODEL),
     system: systemPrompt,
     messages: await convertToModelMessages(contextMessages),
@@ -105,9 +124,9 @@ export async function streamChatFlow(
           userMessageId,
           assistantMessageId,
           text,
-          ...(reasoningText ? { reasoningText } : {}),
+          reasoningText,
           durationMs: Date.now() - startedAt,
-          ...(usage ? { usage } : {}),
+          usage,
         });
       } catch (dbErr) {
         logger.error(
@@ -117,4 +136,12 @@ export async function streamChatFlow(
       }
     },
   });
+
+  const metadata = {
+    kind: null,
+    slug: characterSlug,
+    speakerDisplayName: characterDisplayName,
+    speakerCharacterId: characterId,
+  };
+  return { streamResult, metadata };
 }

@@ -1,40 +1,26 @@
 import type { UIMessage } from 'ai';
 
-export function messageHasVisibleContent(message: UIMessage): boolean {
-  return (
-    message.parts?.some((part) => {
-      if (part.type === 'text' || part.type === 'reasoning') {
-        return part.text.trim().length > 0;
-      }
-      return false;
-    }) ?? false
-  );
+type ChatMessageLike = Pick<UIMessage, 'id' | 'role' | 'parts'>;
+
+export function messageHasVisibleContent(message: ChatMessageLike): boolean {
+  if (!message.parts) return false;
+
+  return message.parts.some((part) => {
+    if (part.type !== 'text' && part.type !== 'reasoning') return false;
+    return part.text.trim().length > 0;
+  });
 }
 
 type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
 
-export function isAwaitingAssistantResponse(status: ChatStatus, messages: UIMessage[]): boolean {
-  const lastMessage = messages.at(-1);
+/** submitted/streaming 且最后一条尚无可见正文（空壳助手等）。 */
+export function isAwaitingAssistantResponse(
+  status: ChatStatus,
+  messages: ChatMessageLike[],
+): boolean {
   if (status !== 'submitted' && status !== 'streaming') {
     return false;
   }
-
-  if (lastMessage?.role === 'user') {
-    return true;
-  }
-
-  return lastMessage?.role === 'assistant' && !messageHasVisibleContent(lastMessage);
-}
-
-export function shouldReplaceWithLoadingBubble(
-  message: UIMessage,
-  lastMessage: UIMessage | undefined,
-  awaitingAssistant: boolean,
-): boolean {
-  return (
-    awaitingAssistant &&
-    message.id === lastMessage?.id &&
-    message.role === 'assistant' &&
-    !messageHasVisibleContent(message)
-  );
+  const lastMessage = messages.at(-1);
+  return lastMessage != null && !messageHasVisibleContent(lastMessage);
 }

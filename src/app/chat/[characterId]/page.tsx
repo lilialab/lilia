@@ -1,10 +1,6 @@
 import { ChatScreen } from '../components/ChatScreen';
 
-interface ChatCharacterPageProps {
-  params: Promise<{ characterId: string }>;
-}
-
-export default async function ChatCharacterPage({ params }: ChatCharacterPageProps) {
-  const { characterId } = await params;
+export default async function ChatCharacterPage(props: PageProps<'/chat/[characterId]'>) {
+  const { characterId } = await props.params;
   return <ChatScreen characterId={characterId} />;
 }

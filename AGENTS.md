@@ -26,7 +26,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 | 目录 | 职责 |
 |------|------|
-| `chat/` | 聊天流、prompt 组装、消息 |
+| `chat/` | 单聊流、prompt 组装、消息 |
+| `group/` | 群聊流、群消息、群 prompt |
 | `memory/` | 记忆整理、向量检索、衰减、metadata 解析、用户画像、job |
 | `session/` | 会话 |
 | `character/` | AI 角色目录、通讯录（加好友）、联系人 session |
@@ -48,6 +49,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 **Route / Service**
 
 - Route Handler：薄层，鉴权 + 参数校验 + 调 service + `withApiHandler` / `successResponse`；不写业务分支
+- 成功响应统一 `{ success: true, data }`（`data` 必填；无业务体用 `null` 或 `{ ok: true }`）；失败 `{ success: false, error }`
 - **业务 / 领域错误**（不存在、未加好友、状态不允许等）：在 **service** 抛 `AppError`；route 不要再翻译或重包一层
 - **HTTP 边界错误**（未登录、body/query 解析失败）：在 route / `parse-schema` / `resolveRequestUserId` 抛
 - service **不要**自行 `NextResponse.json`；统一由 `withApiHandler` 把 `AppError` 映射为 JSON
@@ -72,6 +74,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - 聊天流 Cookie 走 `DefaultChatTransport({ credentials: 'include' })`（见 `ChatScreen.tsx`）
 
+**LLM 输出防御性后处理**
+
+- 主约束用 prompt / 协议；已知协议泄漏可保留薄层清洗（如群聊 `(slug):`）
+- 「防御性」写在**调用处**，函数 JSDoc 只描述行为；勿穷举怪癖，新问题优先改 prompt / 协议
+
 ## API schemas
 
 - 入参校验：`src/schemas/api/{domain}/`；共享字段（如 username）→ `src/schemas/shared/`
@@ -85,6 +92,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 数据变换默认 `map` / `filter` / `reduce` / `flatMap`；需顺序副作用或 `await` 时用 `for...of`（勿 `forEach` + async）；`for...in` 禁用（ESLint）
 - 数组更新优先非破坏性：`toSorted` / `toReversed` / `toSpliced` / `with`；负向索引读元素优先 `.at()`；禁止依赖会改原数组的 `sort` / `reverse` / `splice`（ESLint unicorn）
 - 类型导入写 `import type { ... }`；数组类型写 `T[]` 不用 `Array<T>`
+- 组装对象避免 `...(cond ? { key } : {})`；直接写扁平字段（缺省用 `undefined`），由序列化或下游忽略
 - `src/services/` 下 export 函数补简短中文 JSDoc
 - 最小 diff：不顺手重构无关代码；不加用户未请求的测试或文档
 
@@ -98,6 +106,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | 任务 | 先看 |
 |------|------|
 | 聊天 / system prompt | `src/services/chat/prompt-builder.service.ts`；人设与 jobs 文案见 `src/prompts/` |
+| 群聊 | `src/services/group/group-chat.service.ts` + `group-message.service.ts` + `group-prompt.service.ts` |
 | 记忆整理 | `src/services/memory/consolidation.service.ts` + `consolidation.utils.ts` |
 | 记忆检索 / 衰减 | `src/services/memory/vector.service.ts` + `decay.utils.ts` + `metadata.utils.ts` |
 | 用户画像 | `src/services/memory/user-profile.service.ts` |
@@ -116,3 +125,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 非必要不要同时读 chat + memory + knowledge 全链路
 - 不要把业务逻辑放进 `src/utils/`（通用工具如 scroll 除外）
 - 不要恢复 `src/services/` 根目录平铺的旧 import 路径
+- 不要用 `...(cond ? { key: value } : {})` 拼可选字段；写成扁平 `key: value | undefined`
