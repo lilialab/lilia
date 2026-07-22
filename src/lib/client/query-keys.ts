@@ -6,6 +6,5 @@ export const queryKeys = {
   messageHistory: (sessionId: string) => ['messages', sessionId, 'initial'] as const,
   groups: ['groups'] as const,
   group: (groupSessionId: string) => ['groups', groupSessionId] as const,
-  groupMessageHistory: (groupSessionId: string) =>
-    ['groups', groupSessionId, 'messages'] as const,
+  groupMessageHistory: (groupSessionId: string) => ['groups', groupSessionId, 'messages'] as const,
 };

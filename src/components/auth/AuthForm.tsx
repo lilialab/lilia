@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/lib/client/cn';
+import type { ReactNode } from 'react';
 
 interface AuthFieldProps {
   id: string;
@@ -50,9 +50,9 @@ export function AuthShell({ title, children, footer }: AuthShellProps) {
       >
         <h1 className={cn('mb-6 text-center text-xl font-semibold text-zinc-900')}>{title}</h1>
         {children}
-        {footer ? (
-          <div className={cn('mt-6 text-center text-sm text-zinc-500')}>{footer}</div>
-        ) : null}
+        {footer
+          ? <div className={cn('mt-6 text-center text-sm text-zinc-500')}>{footer}</div>
+          : null}
       </div>
     </div>
   );

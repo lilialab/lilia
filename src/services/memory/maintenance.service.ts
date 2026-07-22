@@ -1,26 +1,26 @@
-import { generateText, Output } from 'ai';
-import { z } from 'zod';
-import { prisma } from '@/lib/server/prisma';
-import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
-import { VectorService } from './vector.service';
-import { updateConsolidationJob } from './job.service';
-import { applyMaintenanceMerge, markMemoryMaintained } from './memory-lifecycle.service';
-import {
-  buildMaintenanceClusterDeleteIds,
-  isMaintenanceNeighborActive,
-  mapMaintenanceRewriteOutput,
-  validateMaintenanceRewriteOutput,
-  type MaintenanceMemoryItem,
-} from './maintenance.utils';
+import { getStructuredOllamaModel } from '@/lib/server/ollama';
+import { prisma } from '@/lib/server/prisma';
+import { loadJobPrompt } from '@/prompts/load';
 import type {
   ConsolidationJob,
   MaintenanceJobResult,
   MaintenanceMergedGroup,
 } from '@/types/consolidation-job';
 import { isMemoryType, type MemoryType } from '@/types/memory';
-import { loadJobPrompt } from '@/prompts/load';
+import { generateText, Output } from 'ai';
+import { z } from 'zod';
+import { updateConsolidationJob } from './job.service';
+import {
+  buildMaintenanceClusterDeleteIds,
+  isMaintenanceNeighborActive,
+  type MaintenanceMemoryItem,
+  mapMaintenanceRewriteOutput,
+  validateMaintenanceRewriteOutput,
+} from './maintenance.utils';
+import { applyMaintenanceMerge, markMemoryMaintained } from './memory-lifecycle.service';
+import { VectorService } from './vector.service';
 
 const vectorService = new VectorService();
 
@@ -134,7 +134,9 @@ function buildMaintenancePrompt(cursor: MemoryCursor, neighbors: NeighborCandida
 
   neighbors.forEach((neighbor, index) => {
     lines.push(
-      `${index + 2}. [neighbor, distance=${neighbor.distance.toFixed(3)}, ${neighbor.type}, confidence=${neighbor.confidence.toFixed(2)}] ${neighbor.text}`,
+      `${index + 2}. [neighbor, distance=${
+        neighbor.distance.toFixed(3)
+      }, ${neighbor.type}, confidence=${neighbor.confidence.toFixed(2)}] ${neighbor.text}`,
     );
   });
 
@@ -355,12 +357,11 @@ async function completeMaintenanceJob(
     ...result,
   });
 
-  const progress =
-    result.mergedCount + result.deletedCount === 0
-      ? result.processedCount === 0
-        ? '维护完成：无待维护记忆。'
-        : '维护完成：无记忆需整理。'
-      : `维护完成：处理 ${result.processedCount} 条游标，整理 ${result.mergedCount} 批，软删 ${result.deletedCount} 条。`;
+  const progress = result.mergedCount + result.deletedCount === 0
+    ? result.processedCount === 0
+      ? '维护完成：无待维护记忆。'
+      : '维护完成：无记忆需整理。'
+    : `维护完成：处理 ${result.processedCount} 条游标，整理 ${result.mergedCount} 批，软删 ${result.deletedCount} 条。`;
 
   await updateConsolidationJob(job.id, {
     status: 'completed',

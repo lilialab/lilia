@@ -1,7 +1,7 @@
-import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/server/prisma';
 import { VectorService } from '@/services/memory/vector.service';
 import type { MemoryType } from '@/types/memory';
+import { randomUUID } from 'crypto';
 
 const vectorService = new VectorService();
 

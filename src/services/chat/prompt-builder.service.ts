@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/server/prisma';
-import { getUserProfileText } from '@/services/memory/user-profile.service';
-import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
-import { loadCharacter, loadPlatformSafety } from '@/prompts/load';
-import { buildRuntimeContextBlock, formatMemoryFragmentLine } from './prompt-format.utils';
 import { AppError } from '@/lib/server/app-error';
+import { prisma } from '@/lib/server/prisma';
+import { loadCharacter, loadPlatformSafety } from '@/prompts/load';
+import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
+import { getUserProfileText } from '@/services/memory/user-profile.service';
+import { buildRuntimeContextBlock, formatMemoryFragmentLine } from './prompt-format.utils';
 
 export interface SystemPromptMeta {
   memoryFragments: string[];
@@ -70,11 +70,12 @@ export async function buildSystemPrompt(
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>
-    formatMemoryFragmentLine(index + 1, fragment, timeZone),
+    formatMemoryFragmentLine(index + 1, fragment, timeZone)
   );
 
-  const contextStr =
-    memoryFragmentLines.length > 0 ? memoryFragmentLines.join('\n') : '暂无相关历史记忆。';
+  const contextStr = memoryFragmentLines.length > 0
+    ? memoryFragmentLines.join('\n')
+    : '暂无相关历史记忆。';
 
   const runtimeContext = buildRuntimeContextBlock(now, timeZone);
 

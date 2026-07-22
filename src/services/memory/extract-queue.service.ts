@@ -1,7 +1,7 @@
-import { env } from '@/lib/server/env';
-import { getQueue } from '@/lib/server/redis';
-import { prisma } from '@/lib/server/prisma';
 import { AppError } from '@/lib/server/app-error';
+import { env } from '@/lib/server/env';
+import { prisma } from '@/lib/server/prisma';
+import { getQueue } from '@/lib/server/redis';
 import { assertSessionOwnedByUser } from '@/services/session/sessions.service';
 
 export const MEMORY_EXTRACT_QUEUE = 'memory-extract';

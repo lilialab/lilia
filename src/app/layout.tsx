@@ -1,8 +1,8 @@
-import type { Metadata, Viewport } from 'next';
 import { AppShell } from '@/components/AppShell';
 import { QueryProvider } from '@/components/QueryProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { cn } from '@/lib/client/cn';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {

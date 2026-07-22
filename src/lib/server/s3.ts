@@ -1,6 +1,6 @@
 // lib/s3.ts
-import { S3Client } from '@aws-sdk/client-s3';
 import { env } from '@/lib/server/env';
+import { S3Client } from '@aws-sdk/client-s3';
 
 export const s3Client = new S3Client({
   endpoint: env.MINIO_ENDPOINT,

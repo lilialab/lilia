@@ -1,7 +1,7 @@
-import { createHmac, randomBytes } from 'node:crypto';
-import { type NextResponse } from 'next/server';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import { type NextResponse } from 'next/server';
+import { createHmac, randomBytes } from 'node:crypto';
 
 function hashSessionToken(token: string): string {
   return createHmac('sha256', env.AUTH_SESSION_SECRET).update(token).digest('hex');

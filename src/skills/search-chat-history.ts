@@ -1,13 +1,12 @@
+import { searchUserMessages } from '@/services/chat/message-search.service';
 import { tool } from 'ai';
 import { z } from 'zod';
-import { searchUserMessages } from '@/services/chat/message-search.service';
 
 /** 创建「检索用户聊天历史」tool；userId / characterSlug 由聊天流注入，仅查当前角色。 */
 export function createSearchChatHistoryTool(userId: string, characterSlug: string) {
   return tool({
-    description:
-      '按时间范围检索当前用户与你之间的历史消息。用于回忆上下文窗口之外说过的内容；' +
-      '返回每条消息的原始 parts JSON。',
+    description: '按时间范围检索当前用户与你之间的历史消息。用于回忆上下文窗口之外说过的内容；'
+      + '返回每条消息的原始 parts JSON。',
     inputSchema: z.object({
       from: z
         .string()

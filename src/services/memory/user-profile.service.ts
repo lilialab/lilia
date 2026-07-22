@@ -1,13 +1,13 @@
-import { generateText, Output } from 'ai';
-import { z } from 'zod';
-import { prisma } from '@/lib/server/prisma';
-import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
-import { isMemoryType, type MemoryType } from '@/types/memory';
-import { updateConsolidationJob } from './job.service';
-import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
+import { getStructuredOllamaModel } from '@/lib/server/ollama';
+import { prisma } from '@/lib/server/prisma';
 import { loadJobPrompt } from '@/prompts/load';
+import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
+import { isMemoryType, type MemoryType } from '@/types/memory';
+import { generateText, Output } from 'ai';
+import { z } from 'zod';
+import { updateConsolidationJob } from './job.service';
 
 const EMPTY_PROFILE_TEXT = '目前暂无特殊偏好记录。';
 
@@ -49,13 +49,13 @@ export function formatProfileForPrompt(
   const trimmedSummary = summary?.trim() ?? '';
   const facetLines = facets
     ? (Object.keys(FACET_LABELS) as (keyof ProfileFacets)[]).flatMap((key) => {
-        const value = facets[key];
-        if (value == null) return [];
-        if (Array.isArray(value) && value.length === 0) return [];
-        if (typeof value === 'string' && !value.trim()) return [];
-        const display = Array.isArray(value) ? value.join('、') : value;
-        return [`- ${FACET_LABELS[key]}：${display}`];
-      })
+      const value = facets[key];
+      if (value == null) return [];
+      if (Array.isArray(value) && value.length === 0) return [];
+      if (typeof value === 'string' && !value.trim()) return [];
+      const display = Array.isArray(value) ? value.join('、') : value;
+      return [`- ${FACET_LABELS[key]}：${display}`];
+    })
     : [];
 
   if (!trimmedSummary && facetLines.length === 0) {

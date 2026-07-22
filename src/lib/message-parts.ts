@@ -2,10 +2,10 @@ export type TextMessagePart = { type: 'text'; text: string };
 
 function isTextPart(part: unknown): part is { type: 'text'; text: string } {
   return (
-    typeof part === 'object' &&
-    part !== null &&
-    (part as { type?: unknown }).type === 'text' &&
-    typeof (part as { text?: unknown }).text === 'string'
+    typeof part === 'object'
+    && part !== null
+    && (part as { type?: unknown }).type === 'text'
+    && typeof (part as { text?: unknown }).text === 'string'
   );
 }
 

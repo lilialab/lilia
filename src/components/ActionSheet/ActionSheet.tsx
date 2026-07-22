@@ -1,8 +1,8 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/client/cn';
+import * as Dialog from '@radix-ui/react-dialog';
 
 export type ActionSheetItem = {
   key: string;
@@ -40,18 +40,18 @@ export function ActionSheet({
     >
       <div className={cn('mx-auto w-full max-w-lg px-3 pb-3 pt-2')}>
         <div className={cn('overflow-hidden rounded-xl bg-white shadow-lg')}>
-          {title ? (
-            <Dialog.Title
-              id="action-sheet-title"
-              className={cn(
-                'border-b border-zinc-100 px-4 py-3 text-center text-xs font-medium text-zinc-400',
-              )}
-            >
-              {title}
-            </Dialog.Title>
-          ) : (
-            <Dialog.Title className={cn('sr-only')}>操作菜单</Dialog.Title>
-          )}
+          {title
+            ? (
+              <Dialog.Title
+                id="action-sheet-title"
+                className={cn(
+                  'border-b border-zinc-100 px-4 py-3 text-center text-xs font-medium text-zinc-400',
+                )}
+              >
+                {title}
+              </Dialog.Title>
+            )
+            : <Dialog.Title className={cn('sr-only')}>操作菜单</Dialog.Title>}
           <ul className={cn('divide-y divide-zinc-100')}>
             {items.map((item) => (
               <li key={item.key}>

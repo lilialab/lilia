@@ -1,5 +1,5 @@
-import pino from 'pino';
 import { env } from '@/lib/server/env';
+import pino from 'pino';
 
 function buildLogger(): pino.Logger {
   if (!env.LOG_TO_LOKI) {

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { formatLocalDateTime, isValidIanaTimeZone } from '@/utils/timezone';
+import { describe, expect, it } from 'vitest';
 
 describe('isValidIanaTimeZone', () => {
   it('接受合法 IANA 时区', () => {

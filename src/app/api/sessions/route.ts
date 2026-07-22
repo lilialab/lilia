@@ -1,9 +1,9 @@
-import { type NextRequest } from 'next/server';
-import { withApiHandler, successResponse } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseJsonBody } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
 import { assertIsContact } from '@/services/character/contacts.service';
 import { createSession, listSessions } from '@/services/session/sessions.service';
+import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 
 const createSessionBodySchema = z.object({

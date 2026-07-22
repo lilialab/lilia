@@ -1,6 +1,6 @@
+import { extractTextFromParts } from '@/lib/message-parts';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
-import { extractTextFromParts } from '@/lib/message-parts';
 import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
@@ -43,18 +43,17 @@ function mapGroupMessageRow(row: {
     // Prisma Json → UI parts；库内由写入路径保证形状
     parts: row.parts as UIMessage['parts'],
     createdAt: row.createdAt.toISOString(),
-    metadata:
-      row.role === 'assistant' && row.speakerCharacter && row.speakerCharacterId
-        ? {
-            kind: null,
-            slug: row.speakerCharacter.slug,
-            speakerDisplayName: row.speakerCharacter.displayName,
-            speakerCharacterId: row.speakerCharacterId,
-          }
-        : {
-            kind: row.kind,
-            slug: null,
-          },
+    metadata: row.role === 'assistant' && row.speakerCharacter && row.speakerCharacterId
+      ? {
+        kind: null,
+        slug: row.speakerCharacter.slug,
+        speakerDisplayName: row.speakerCharacter.displayName,
+        speakerCharacterId: row.speakerCharacterId,
+      }
+      : {
+        kind: row.kind,
+        slug: null,
+      },
   };
 }
 
@@ -114,8 +113,8 @@ export async function getGroupHistoryPage(
 
   const rows = items.toReversed();
   const oldest = rows.at(0);
-  const hasMore =
-    rows.length === limit && oldest != null && (await hasOlderMessages(oldest.createdAt));
+  const hasMore = rows.length === limit && oldest != null
+    && (await hasOlderMessages(oldest.createdAt));
 
   return { messages: rows.map(mapGroupMessageRow), hasMore };
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { collectTextParts, extractTextFromParts } from '@/lib/message-parts';
+import { describe, expect, it } from 'vitest';
 
 describe('collectTextParts', () => {
   it('非数组返回空', () => {

@@ -1,8 +1,8 @@
-import { createFileRecord, deleteFileRecord } from './file.service';
-import { VectorService } from '@/services/memory/vector.service';
 import { AppError } from '@/lib/server/app-error';
-import { randomUUID } from 'crypto';
+import { VectorService } from '@/services/memory/vector.service';
 import { MarkdownTextSplitter } from '@langchain/textsplitters';
+import { randomUUID } from 'crypto';
+import { createFileRecord, deleteFileRecord } from './file.service';
 
 const vectorService = new VectorService();
 

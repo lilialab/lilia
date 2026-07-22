@@ -1,19 +1,19 @@
-import { type UIDataTypes, streamText, convertToModelMessages, stepCountIs } from 'ai';
-import type { InputJsonValue } from '@prisma/client/runtime/client';
-import type { ChatPostBody } from '@/schemas/api/chat/post';
+import { AppError } from '@/lib/server/app-error';
+import { env } from '@/lib/server/env';
+import { logger } from '@/lib/server/logger';
 import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
-import { logger } from '@/lib/server/logger';
-import { env } from '@/lib/server/env';
-import { AppError } from '@/lib/server/app-error';
+import { loadCharacter } from '@/prompts/load';
+import type { ChatPostBody } from '@/schemas/api/chat/post';
 import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import { getUserTimeZone } from '@/services/user/users.service';
-import { loadCharacter } from '@/prompts/load';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import type { UIMessageStreamPayload } from '@/types/message-kind';
+import type { InputJsonValue } from '@prisma/client/runtime/client';
+import { convertToModelMessages, stepCountIs, streamText, type UIDataTypes } from 'ai';
+import { getContextMessages, saveAssistantResponse } from './message.service';
 import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
-import { saveAssistantResponse, getContextMessages } from './message.service';
 
 /** 调度记忆 extract / maintain；入队失败只记日志，不阻断聊天（如 Redis 不可用）。 */
 async function scheduleMemoryJobsBestEffort(sessionId: string, userId: string): Promise<void> {
@@ -67,8 +67,9 @@ export async function streamChatFlow(
 
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
   const timeZone = await getUserTimeZone(userId);
-  const { characterId, characterSlug, characterDisplayName } =
-    await resolveSessionContext(sessionId);
+  const { characterId, characterSlug, characterDisplayName } = await resolveSessionContext(
+    sessionId,
+  );
   const character = loadCharacter(characterSlug);
   const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
 

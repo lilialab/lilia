@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { createGroupBodySchema } from '@/schemas/api/groups/post';
 import { groupParamsSchema } from '@/schemas/api/groups/params';
+import { createGroupBodySchema } from '@/schemas/api/groups/post';
+import { describe, expect, it } from 'vitest';
 
 describe('groups schemas', () => {
   it('createGroupBodySchema 接受 title 与空 characterIds', () => {
@@ -23,9 +23,7 @@ describe('groups schemas', () => {
   });
 
   it('createGroupBodySchema 拒绝空字符串 characterId', () => {
-    expect(() =>
-      createGroupBodySchema.parse({ title: '群', characterIds: [''] }),
-    ).toThrow();
+    expect(() => createGroupBodySchema.parse({ title: '群', characterIds: [''] })).toThrow();
   });
 
   it('groupParamsSchema 解析路由参数', () => {

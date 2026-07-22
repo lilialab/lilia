@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
 import { AppError } from '@/lib/server/app-error';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/server/prisma', () => ({
   prisma: {

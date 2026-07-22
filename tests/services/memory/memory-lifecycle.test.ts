@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   mockUpdateMany,
@@ -161,7 +161,7 @@ describe('applyMaintenanceMerge', () => {
           updateMany: mockTransactionUpdateMany,
           createMany: mockTransactionCreateMany,
         },
-      }),
+      })
     );
     mockDeleteMemories.mockResolvedValue(undefined);
     mockAddMemories.mockResolvedValue(undefined);

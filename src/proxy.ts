@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/server/env';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -10,12 +10,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/contacts', request.url));
   }
 
-  const needsAuth =
-    pathname.startsWith('/chat/') ||
-    pathname.startsWith('/contacts') ||
-    pathname.startsWith('/groups') ||
-    pathname === '/me' ||
-    pathname.startsWith('/me/');
+  const needsAuth = pathname.startsWith('/chat/')
+    || pathname.startsWith('/contacts')
+    || pathname.startsWith('/groups')
+    || pathname === '/me'
+    || pathname.startsWith('/me/');
 
   if (needsAuth && !hasSession) {
     return NextResponse.redirect(new URL('/login', request.url));

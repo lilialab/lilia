@@ -1,14 +1,14 @@
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import { MessageBubble } from './MessageBubble';
-import { AssistantLoadingBubble } from './AssistantLoadingBubble';
 import { Divider } from '@/components/Divider';
 import { ScrollToBottomButton } from '@/components/ScrollToBottomButton';
-import { isAtBottom, TOP_THRESHOLD } from '@/utils/scroll';
-import { isAwaitingAssistantResponse } from '../utils/message-content';
-import { buildMessageItems } from '../utils/build-message-items';
 import type { HistoryMessage } from '@/lib/client/api/sessions';
 import { cn } from '@/lib/client/cn';
 import { isDisplayMessage } from '@/types/message-kind';
+import { isAtBottom, TOP_THRESHOLD } from '@/utils/scroll';
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { buildMessageItems } from '../utils/build-message-items';
+import { isAwaitingAssistantResponse } from '../utils/message-content';
+import { AssistantLoadingBubble } from './AssistantLoadingBubble';
+import { MessageBubble } from './MessageBubble';
 
 interface MessageListProps {
   messages: HistoryMessage[];

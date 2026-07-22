@@ -1,11 +1,11 @@
-import { type NextRequest } from 'next/server';
-import { withApiHandler, successResponse } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseRouteParams, parseSearchParams } from '@/lib/server/parse-schema';
+import { resolveRequestUserId } from '@/lib/server/request-user';
 import { sessionHistoryQuerySchema } from '@/schemas/api/sessions/history-query';
 import { sessionParamsSchema } from '@/schemas/api/sessions/params';
 import { getHistoryPage } from '@/services/chat/message.service';
-import { resolveRequestUserId } from '@/lib/server/request-user';
 import { assertSessionOwnedByUser } from '@/services/session/sessions.service';
+import { type NextRequest } from 'next/server';
 
 // 获取指定会话的历史消息列表
 export const GET = withApiHandler(

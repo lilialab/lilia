@@ -1,7 +1,7 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
 import { cn } from '@/lib/client/cn';
+import { useLayoutEffect, useRef } from 'react';
 
 interface ChatInputProps {
   value: string;

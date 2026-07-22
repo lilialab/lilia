@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/lib/client/cn';
+import type { ReactNode } from 'react';
 
 interface PageStatusProps {
   loading?: boolean;
@@ -39,8 +39,8 @@ export function PageStatus({
             type="button"
             onClick={onAction}
             className={cn(
-              actionVariant === 'button' &&
-                'rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50',
+              actionVariant === 'button'
+                && 'rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50',
               actionVariant === 'link' && 'text-sm text-blue-600 hover:underline',
             )}
           >

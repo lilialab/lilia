@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/client/cn';
+import { ChevronLeft } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 const sideSlotClass = cn('flex min-h-10 min-w-10 shrink-0 items-center');
 

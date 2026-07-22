@@ -1,9 +1,9 @@
 'use client';
 
+import { cn } from '@/lib/client/cn';
+import { MessagesSquare, User, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessagesSquare, User, Users } from 'lucide-react';
-import { cn } from '@/lib/client/cn';
 
 const TABS = [
   { href: '/contacts', label: '通讯录', icon: Users },

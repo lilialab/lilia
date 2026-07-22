@@ -1,7 +1,7 @@
-import { type NextRequest } from 'next/server';
 import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
 import { resolveSessionUserId } from '@/lib/server/session';
+import { type NextRequest } from 'next/server';
 
 /** 从请求 Cookie 读取 session token。 */
 export function getSessionTokenFromRequest(req: NextRequest): string | null {

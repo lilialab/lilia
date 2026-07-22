@@ -86,9 +86,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## 代码风格
 
-与 [`eslint.config.mjs`](eslint.config.mjs)、[`.prettierrc`](.prettierrc) 保持一致；**可读性优先，不必为统一风格牺牲可读性**。
+格式化以 [`dprint.json`](dprint.json) 为准（改完 `pnpm format`）；规则以 [`eslint.config.mjs`](eslint.config.mjs) 为准。**可读性优先，不必为统一风格牺牲可读性**。
 
-- 优先 ES2015+（async/await、解构、可选链等）；折行按 Prettier `printWidth: 100`
+- 优先 ES2015+（async/await、解构、可选链等）
 - 数据变换默认 `map` / `filter` / `reduce` / `flatMap`；需顺序副作用或 `await` 时用 `for...of`（勿 `forEach` + async）；`for...in` 禁用（ESLint）
 - 数组更新优先非破坏性：`toSorted` / `toReversed` / `toSpliced` / `with`；负向索引读元素优先 `.at()`；禁止依赖会改原数组的 `sort` / `reverse` / `splice`（ESLint unicorn）
 - 类型导入写 `import type { ... }`；数组类型写 `T[]` 不用 `Array<T>`

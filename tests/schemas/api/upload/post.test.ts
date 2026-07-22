@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { uploadPostBodySchema } from '@/schemas/api/upload/post';
+import { describe, expect, it } from 'vitest';
 
 describe('uploadPostBodySchema', () => {
   it('非 File 或缺少 .md 后缀解析失败', () => {

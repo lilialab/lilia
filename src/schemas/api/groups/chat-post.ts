@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
+import { z } from 'zod';
 
 /** 与单聊一致：历史里可能含 reasoning 等；落库时只取最后一条的 text。 */
 const groupChatMessagePartSchema = z.looseObject({

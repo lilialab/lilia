@@ -1,14 +1,14 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { fetchGroups, type GroupDetail } from '@/lib/client/api/groups';
-import { queryKeys } from '@/lib/client/query-keys';
-import { cn } from '@/lib/client/cn';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { fetchGroups, type GroupDetail } from '@/lib/client/api/groups';
+import { cn } from '@/lib/client/cn';
+import { queryKeys } from '@/lib/client/query-keys';
+import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 function memberSubtitle(group: GroupDetail): string {
   if (group.members.length === 0) return '暂无成员';
@@ -46,9 +46,7 @@ function GroupsList({ groups }: { groups: GroupDetail[] }) {
           <button
             key={group.id}
             type="button"
-            onClick={() =>
-              router.push(`/groups/${group.id}`, { transitionTypes: ['nav-forward'] })
-            }
+            onClick={() => router.push(`/groups/${group.id}`, { transitionTypes: ['nav-forward'] })}
             className={cn(
               'flex w-full items-center gap-3 border-b border-zinc-100 px-4 py-3 text-left',
               'hover:bg-zinc-50',
@@ -107,7 +105,9 @@ export function GroupsScreen() {
       />
 
       <PageStatus loading={isBootstrapping} error={groupsQuery.isError} errorMessage="无法加载群聊">
-        {groups.length === 0 ? <GroupsEmpty onCreate={openCreate} /> : <GroupsList groups={groups} />}
+        {groups.length === 0
+          ? <GroupsEmpty onCreate={openCreate} />
+          : <GroupsList groups={groups} />}
       </PageStatus>
     </div>
   );

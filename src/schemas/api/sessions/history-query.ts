@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { PAGE_SIZE } from '@/services/chat/message.service';
+import { z } from 'zod';
 
 export const sessionHistoryQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).default(PAGE_SIZE),

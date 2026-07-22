@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import { sessionHistoryQuerySchema } from '@/schemas/api/sessions/history-query';
-import { PAGE_SIZE } from '@/services/chat/message.service';
 import { safeParseQueryParams } from '@/schemas/query';
+import { PAGE_SIZE } from '@/services/chat/message.service';
+import { describe, expect, it } from 'vitest';
 
 describe('sessionHistoryQuerySchema', () => {
   it('缺省 query 时使用 PAGE_SIZE', () => {

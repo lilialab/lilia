@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { usernameSchema } from '@/schemas/shared/username';
+import { z } from 'zod';
 
 export const memoryConsolidateQuerySchema = z.object({
   username: usernameSchema,

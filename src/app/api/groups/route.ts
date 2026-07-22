@@ -1,9 +1,9 @@
-import { type NextRequest } from 'next/server';
-import { withApiHandler, successResponse } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseJsonBody } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
 import { createGroupBodySchema } from '@/schemas/api/groups/post';
 import { createGroup, listGroups } from '@/services/group/groups.service';
+import { type NextRequest } from 'next/server';
 
 export const GET = withApiHandler(async (req: NextRequest) => {
   const userId = await resolveRequestUserId(req);

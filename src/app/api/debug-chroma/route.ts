@@ -1,16 +1,16 @@
-import { type NextRequest } from 'next/server';
-import {
-  getCollectionInfo,
-  listAllCollections,
-  insertTestData,
-  deleteCollection,
-  resetCollection,
-} from '@/services/debug/chroma.service';
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseJsonBody, parseSearchParams } from '@/lib/server/parse-schema';
 import { debugChromaDeleteQuerySchema } from '@/schemas/api/debug-chroma/delete-query';
 import { debugChromaGetQuerySchema } from '@/schemas/api/debug-chroma/get-query';
 import { debugChromaPostBodySchema } from '@/schemas/api/debug-chroma/post-body';
+import {
+  deleteCollection,
+  getCollectionInfo,
+  insertTestData,
+  listAllCollections,
+  resetCollection,
+} from '@/services/debug/chroma.service';
+import { type NextRequest } from 'next/server';
 
 /**
  * 【GET】获取数据

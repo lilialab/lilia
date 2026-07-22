@@ -1,8 +1,8 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/client/cn';
+import * as Dialog from '@radix-ui/react-dialog';
 
 interface ConfirmDialogProps {
   open: boolean;

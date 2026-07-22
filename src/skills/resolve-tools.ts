@@ -1,5 +1,5 @@
-import type { ToolSet } from 'ai';
 import { logger } from '@/lib/server/logger';
+import type { ToolSet } from 'ai';
 import { createRegisterSkillTool } from './register-skill';
 import { createSearchChatHistoryTool } from './search-chat-history';
 

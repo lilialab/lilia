@@ -1,6 +1,6 @@
-import { ChromaClient } from 'chromadb';
 import { OllamaEmbeddingFunction } from '@/lib/server/embeddings';
 import { env } from '@/lib/server/env';
+import { ChromaClient } from 'chromadb';
 
 let sharedEmbed: OllamaEmbeddingFunction | undefined;
 

@@ -1,14 +1,14 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { UserPlus } from 'lucide-react';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { fetchContacts, type ContactSummary } from '@/lib/client/api/contacts';
-import { queryKeys } from '@/lib/client/query-keys';
-import { cn } from '@/lib/client/cn';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { type ContactSummary, fetchContacts } from '@/lib/client/api/contacts';
+import { cn } from '@/lib/client/cn';
+import { queryKeys } from '@/lib/client/query-keys';
+import { useQuery } from '@tanstack/react-query';
+import { UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 function ContactsEmpty() {
   return <p className={cn('px-4 py-6 text-sm text-zinc-400')}>还没有 AI 好友，点右上角添加</p>;
@@ -23,9 +23,7 @@ function ContactsList({ contacts }: { contacts: ContactSummary[] }) {
         <li key={contact.id}>
           <button
             type="button"
-            onClick={() =>
-              router.push(`/chat/${contact.id}`, { transitionTypes: ['nav-forward'] })
-            }
+            onClick={() => router.push(`/chat/${contact.id}`, { transitionTypes: ['nav-forward'] })}
             className={cn(
               'flex w-full items-center gap-3 border-t border-zinc-100 px-4 py-3 text-left',
               'hover:bg-zinc-50',

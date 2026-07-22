@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
 import { getMemoryJobQuerySchema } from '@/schemas/api/memory/jobs';
 import { safeParseQueryParams } from '@/schemas/query';
+import { describe, expect, it } from 'vitest';
 
 describe('getMemoryJobQuerySchema', () => {
   it('缺省 jobId 解析失败', () => {

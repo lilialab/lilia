@@ -1,14 +1,14 @@
 'use client';
 
-import { useCallback } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
 import {
   clearSessionMessages,
   fetchHistoryPage,
   type HistoryMessage,
 } from '@/lib/client/api/sessions';
 import { queryKeys } from '@/lib/client/query-keys';
-import { usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 interface UseMessageHistoryOptions {
   activeSessionId: string;
@@ -27,15 +27,16 @@ export function useMessageHistory({
 }: UseMessageHistoryOptions) {
   const queryClient = useQueryClient();
 
-  const { hasMore, isLoadingMore, isInitialLoading, loadMore, setHasMore } =
-    usePagedMessageHistory({
+  const { hasMore, isLoadingMore, isInitialLoading, loadMore, setHasMore } = usePagedMessageHistory(
+    {
       resourceId: activeSessionId,
       queryKey: queryKeys.messageHistory(activeSessionId),
       fetchPage: fetchHistoryPage,
       messages,
       setMessages,
       bumpScroll,
-    });
+    },
+  );
 
   const { mutateAsync: clearHistoryAsync, isPending: isClearing } = useMutation({
     mutationFn: () => clearSessionMessages(activeSessionId),

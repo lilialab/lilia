@@ -7,9 +7,13 @@ interface AssistantLoadingBubbleProps {
 export function AssistantLoadingBubble({ speakerName }: AssistantLoadingBubbleProps) {
   return (
     <div className={cn('flex flex-col items-start gap-1')}>
-      {speakerName ? (
-        <span className={cn('max-w-[85%] truncate px-1 text-xs text-zinc-500')}>{speakerName}</span>
-      ) : null}
+      {speakerName
+        ? (
+          <span className={cn('max-w-[85%] truncate px-1 text-xs text-zinc-500')}>
+            {speakerName}
+          </span>
+        )
+        : null}
       <div
         className={cn('max-w-[85%] rounded-lg bg-zinc-200 px-4 py-3 text-zinc-900')}
         role="status"

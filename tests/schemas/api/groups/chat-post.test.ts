@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { groupChatPostBodySchema } from '@/schemas/api/groups/chat-post';
+import { describe, expect, it } from 'vitest';
 
 function userMessage(overrides: {
   text?: string;
@@ -9,13 +9,12 @@ function userMessage(overrides: {
   id?: string;
 }) {
   const { text = '大家好', kind, slug, role = 'user', id = 'm1' } = overrides;
-  const metadata =
-    kind === undefined && slug === undefined
-      ? undefined
-      : {
-          kind,
-          slug,
-        };
+  const metadata = kind === undefined && slug === undefined
+    ? undefined
+    : {
+      kind,
+      slug,
+    };
 
   return {
     messages: [

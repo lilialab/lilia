@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
 import {
   buildProfileRefreshPrompt,
   formatProfileForPrompt,
 } from '@/services/memory/user-profile.service';
+import { describe, expect, it } from 'vitest';
 
 describe('formatProfileForPrompt', () => {
   it('returns placeholder when summary and facets are empty', () => {

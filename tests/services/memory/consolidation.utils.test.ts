@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
 import {
   mapConsolidationOutput,
   parseFinishedMemoryItem,
   validateAndMergeIds,
 } from '@/services/memory/consolidation.utils';
+import { describe, expect, it } from 'vitest';
 
 const MESSAGE_IDS = ['m0', 'm1', 'm2', 'm3', 'm4'];
 

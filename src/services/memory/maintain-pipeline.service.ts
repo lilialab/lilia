@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/server/prisma';
+import { randomUUID } from 'node:crypto';
 import { prepareConsolidationJob } from './job.service';
 import { runMaintenance } from './maintenance.service';
 import { runProfileRefresh } from './user-profile.service';

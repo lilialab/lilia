@@ -1,11 +1,11 @@
-import { type NextRequest } from 'next/server';
-import { withApiHandler, successResponse } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseRouteParams, parseSearchParams } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
 import { groupHistoryQuerySchema } from '@/schemas/api/groups/history-query';
 import { groupParamsSchema } from '@/schemas/api/groups/params';
 import { getGroupHistoryPage } from '@/services/group/group-message.service';
 import { assertGroupOwnedByUser } from '@/services/group/groups.service';
+import { type NextRequest } from 'next/server';
 
 export const GET = withApiHandler(
   async (req: NextRequest, context: RouteContext<'/api/groups/[id]/messages'>) => {

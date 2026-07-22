@@ -1,15 +1,15 @@
-import { randomUUID } from 'node:crypto';
-import { Worker } from 'bullmq';
-import IORedis from 'ioredis';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { asBullMqConnection } from '@/lib/server/redis';
+import { runConsolidation } from '@/services/memory/consolidation.service';
 import {
   MEMORY_EXTRACT_QUEUE,
   type MemoryExtractJobData,
 } from '@/services/memory/extract-queue.service';
 import { prepareConsolidationJob } from '@/services/memory/job.service';
-import { runConsolidation } from '@/services/memory/consolidation.service';
+import { Worker } from 'bullmq';
+import IORedis from 'ioredis';
+import { randomUUID } from 'node:crypto';
 
 const connection = new IORedis(env.REDIS_URL, {
   maxRetriesPerRequest: null,

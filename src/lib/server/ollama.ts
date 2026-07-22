@@ -1,7 +1,7 @@
 // src/lib/ollama-provider.ts
+import { env } from '@/lib/server/env';
 import { extractJsonMiddleware, wrapLanguageModel } from 'ai';
 import { createOllama } from 'ollama-ai-provider-v2';
-import { env } from '@/lib/server/env';
 
 export const ollamaProvider = createOllama({
   baseURL: env.OLLAMA_BASE_URL,

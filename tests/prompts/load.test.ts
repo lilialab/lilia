@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_CHARACTER_ID,
   loadCharacter,
   loadJobPrompt,
   loadPlatformSafety,
 } from '@/prompts/load';
+import { describe, expect, it } from 'vitest';
 
 describe('prompts/load', () => {
   it('默认角色为 arbor', () => {

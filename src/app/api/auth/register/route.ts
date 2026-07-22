@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from 'next/server';
 import { withApiHandler } from '@/lib/server/api-handler';
 import { parseJsonBody } from '@/lib/server/parse-schema';
+import { createAuthSession, setSessionCookie } from '@/lib/server/session';
 import { registerBodySchema } from '@/schemas/api/auth/register';
 import { registerUser } from '@/services/user/users.service';
-import { createAuthSession, setSessionCookie } from '@/lib/server/session';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   const { username, displayName, password, timeZone } = await parseJsonBody(

@@ -1,13 +1,13 @@
-import type { InputJsonValue } from '@prisma/client/runtime/client';
+import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
-import { AppError } from '@/lib/server/app-error';
 import type {
   ConsolidationJob,
   ConsolidationJobSnapshot,
   JobKind,
   JobStatus,
 } from '@/types/consolidation-job';
+import type { InputJsonValue } from '@prisma/client/runtime/client';
 
 /** 将未知值断言为 Prisma JSON 输入类型。 */
 function toInputJsonValue(value: unknown): InputJsonValue {
@@ -101,7 +101,9 @@ export async function updateConsolidationJob(
   }
   if (patch.snapshot !== undefined) {
     const previous = (existing.snapshot ?? {}) as ConsolidationJobSnapshot;
-    const definedEntries = Object.entries(patch.snapshot).filter(([, value]) => value !== undefined);
+    const definedEntries = Object.entries(patch.snapshot).filter(([, value]) =>
+      value !== undefined
+    );
     data.snapshot = toInputJsonValue({
       ...previous,
       ...Object.fromEntries(definedEntries),

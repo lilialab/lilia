@@ -1,7 +1,7 @@
-import { type NextRequest } from 'next/server';
-import type { z } from 'zod';
 import { badRequest } from '@/lib/server/api-handler';
 import { normalizeQueryRecord } from '@/schemas/query';
+import { type NextRequest } from 'next/server';
+import type { z } from 'zod';
 
 function formatZodError(error: z.ZodError): string {
   const issue = error.issues[0];

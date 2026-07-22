@@ -1,8 +1,8 @@
+import { fetchCurrentUser, logout } from '@/lib/client/api/auth';
+import { queryKeys } from '@/lib/client/query-keys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
-import { fetchCurrentUser, logout } from '@/lib/client/api/auth';
-import { queryKeys } from '@/lib/client/query-keys';
 
 export function useAuth() {
   const router = useRouter();

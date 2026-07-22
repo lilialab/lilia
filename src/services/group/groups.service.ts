@@ -70,7 +70,10 @@ async function assertAllAreContacts(userId: string, characterIds: string[]): Pro
 }
 
 /** 校验群归属；不存在或不属于该用户时抛 404。 */
-export async function assertGroupOwnedByUser(groupSessionId: string, userId: string): Promise<void> {
+export async function assertGroupOwnedByUser(
+  groupSessionId: string,
+  userId: string,
+): Promise<void> {
   const group = await prisma.groupSession.findFirst({
     where: { id: groupSessionId, userId },
     select: { id: true },
@@ -82,7 +85,10 @@ export async function assertGroupOwnedByUser(groupSessionId: string, userId: str
 }
 
 /** 获取群详情；不存在或不属于该用户时抛 404。 */
-export async function getGroupOrThrow(groupSessionId: string, userId: string): Promise<GroupDetail> {
+export async function getGroupOrThrow(
+  groupSessionId: string,
+  userId: string,
+): Promise<GroupDetail> {
   const row = await prisma.groupSession.findFirst({
     where: { id: groupSessionId, userId },
     select: groupDetailSelect,

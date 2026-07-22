@@ -1,6 +1,6 @@
-import type { UIMessage } from 'ai';
 import { MarkdownContent } from '@/components/MarkdownContent';
 import { cn } from '@/lib/client/cn';
+import type { UIMessage } from 'ai';
 
 type MessagePart = UIMessage['parts'][number];
 

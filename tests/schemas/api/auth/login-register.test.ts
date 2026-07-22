@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
 import { loginBodySchema } from '@/schemas/api/auth/login';
 import { registerBodySchema } from '@/schemas/api/auth/register';
+import { describe, expect, it } from 'vitest';
 
 describe('loginBodySchema', () => {
   it('合法登录 body 通过校验', () => {

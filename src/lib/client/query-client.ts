@@ -1,5 +1,5 @@
-import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 export function createAppQueryClient(): QueryClient {
   return new QueryClient({
@@ -21,10 +21,9 @@ export function createAppQueryClient(): QueryClient {
         });
 
         const mutationKey = mutation.options.mutationKey;
-        const id =
-          mutationKey !== undefined
-            ? `mutation:${JSON.stringify(mutationKey)}`
-            : 'mutation:unknown';
+        const id = mutationKey !== undefined
+          ? `mutation:${JSON.stringify(mutationKey)}`
+          : 'mutation:unknown';
 
         showErrorToast(formatClientError(error), id);
       },

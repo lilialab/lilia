@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { AuthField, AuthShell } from '@/components/auth/AuthForm';
 import { login } from '@/lib/client/api/auth';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export function LoginForm() {
   const router = useRouter();

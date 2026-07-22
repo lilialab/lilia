@@ -1,8 +1,8 @@
 // services/file.service.ts
+import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { s3Client } from '@/lib/server/s3';
-import { env } from '@/lib/server/env';
-import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
 /**
  * 在 MySQL 记录元数据并嵌套创建切片占位符，同时上传至 MinIO

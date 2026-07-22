@@ -1,16 +1,16 @@
 'use client';
 
+import { PageStatus } from '@/components/PageStatus';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { type ContactSummary, fetchContacts } from '@/lib/client/api/contacts';
+import { createGroup } from '@/lib/client/api/groups';
+import { cn } from '@/lib/client/cn';
+import { queryKeys } from '@/lib/client/query-keys';
+import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { fetchContacts, type ContactSummary } from '@/lib/client/api/contacts';
-import { createGroup } from '@/lib/client/api/groups';
-import { queryKeys } from '@/lib/client/query-keys';
-import { cn } from '@/lib/client/cn';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
-import { PageStatus } from '@/components/PageStatus';
-import { ScreenHeader } from '@/components/ScreenHeader';
 
 function MemberPickerEmpty() {
   return (
@@ -129,9 +129,7 @@ export function CreateGroupScreen() {
 
           <div className={cn('min-h-0 flex-1 overflow-y-auto')}>
             <h2 className={cn('px-4 py-2 text-xs font-medium text-zinc-500')}>选择成员</h2>
-            {contacts.length === 0 ? (
-              <MemberPickerEmpty />
-            ) : (
+            {contacts.length === 0 ? <MemberPickerEmpty /> : (
               <MemberPickerList
                 contacts={contacts}
                 selectedIds={selectedIds}

@@ -1,6 +1,6 @@
 // app/api/debug-chroma/service.ts
-import { randomUUID } from 'crypto';
 import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
+import { randomUUID } from 'crypto';
 
 /** 列出 Chroma 中全部 collection 及其元信息。 */
 export async function listAllCollections() {

@@ -1,9 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { DirectionalPageTransition } from '@/components/DirectionalPageTransition';
 import { TabBar } from '@/components/TabBar';
 import { cn } from '@/lib/client/cn';
+import { usePathname } from 'next/navigation';
 
 const TAB_BAR_PATHS = new Set(['/contacts', '/groups', '/me']);
 

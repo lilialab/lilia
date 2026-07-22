@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
 import {
   parseConfidence,
   parseLastActiveAt,
   parseMemoryMetadata,
   parseMemoryType,
 } from '@/services/memory/metadata.utils';
+import { describe, expect, it } from 'vitest';
 
 const FALLBACK_MS = 1_700_000_000_000;
 

@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import { queryStringToBoolean } from '@/schemas/query';
 import { usernameSchema } from '@/schemas/shared/username';
+import { z } from 'zod';
 
 const memoryTypeSchema = z.enum(['preference', 'event', 'fact']);
 

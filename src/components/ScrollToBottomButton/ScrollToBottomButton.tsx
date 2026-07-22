@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState, type RefObject } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { isAtBottom } from '@/utils/scroll';
 import { cn } from '@/lib/client/cn';
+import { isAtBottom } from '@/utils/scroll';
+import { ChevronDown } from 'lucide-react';
+import { type RefObject, useCallback, useEffect, useState } from 'react';
 
 interface ScrollToBottomButtonProps {
   scrollRef: RefObject<HTMLDivElement | null>;

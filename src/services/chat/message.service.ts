@@ -26,18 +26,17 @@ function mapMessageRow(
     role: row.role as UIMessage['role'],
     parts: row.parts as UIMessage['parts'],
     createdAt: row.createdAt.toISOString(),
-    metadata:
-      row.role === 'assistant' && speaker
-        ? {
-            kind: null,
-            slug: speaker.slug,
-            speakerDisplayName: speaker.displayName,
-            speakerCharacterId: speaker.characterId,
-          }
-        : {
-            kind: null,
-            slug: null,
-          },
+    metadata: row.role === 'assistant' && speaker
+      ? {
+        kind: null,
+        slug: speaker.slug,
+        speakerDisplayName: speaker.displayName,
+        speakerCharacterId: speaker.characterId,
+      }
+      : {
+        kind: null,
+        slug: null,
+      },
   };
 }
 
@@ -80,10 +79,10 @@ export async function getHistoryPage(
   });
   const speaker = session?.character
     ? {
-        characterId: session.character.id,
-        slug: session.character.slug,
-        displayName: session.character.displayName,
-      }
+      characterId: session.character.id,
+      slug: session.character.slug,
+      displayName: session.character.displayName,
+    }
     : null;
   const mapRow = (row: { id: string; role: string; parts: unknown; createdAt: Date }) =>
     mapMessageRow(row, speaker);
@@ -124,8 +123,8 @@ export async function getHistoryPage(
 
   const rows = items.toReversed();
   const oldest = rows.at(0);
-  const hasMore =
-    rows.length === limit && oldest != null && (await hasOlderMessages(oldest.createdAt));
+  const hasMore = rows.length === limit && oldest != null
+    && (await hasOlderMessages(oldest.createdAt));
 
   return { messages: rows.map(mapRow), hasMore };
 }

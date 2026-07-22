@@ -53,11 +53,11 @@ export function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
   const confidence = parseConfidence(record.confidence);
 
   if (
-    !text ||
-    typeof type !== 'string' ||
-    !isMemoryType(type) ||
-    sourceMessageIds.length === 0 ||
-    confidence === null
+    !text
+    || typeof type !== 'string'
+    || !isMemoryType(type)
+    || sourceMessageIds.length === 0
+    || confidence === null
   ) {
     return null;
   }

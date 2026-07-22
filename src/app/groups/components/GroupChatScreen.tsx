@@ -1,22 +1,22 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ChatInput } from '@/app/chat/components/ChatInput';
 import { MessageList } from '@/app/chat/components/MessageList';
 import { useGroupMessageHistory } from '@/app/groups/hooks/useGroupMessageHistory';
-import { fetchGroup, type GroupHistoryMessage } from '@/lib/client/api/groups';
-import { queryKeys } from '@/lib/client/query-keys';
-import { cn } from '@/lib/client/cn';
-import { extractTextFromParts } from '@/lib/message-parts';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { fetchGroup, type GroupHistoryMessage } from '@/lib/client/api/groups';
+import { cn } from '@/lib/client/cn';
+import { queryKeys } from '@/lib/client/query-keys';
+import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { extractTextFromParts } from '@/lib/message-parts';
 import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
+import { useChat } from '@ai-sdk/react';
+import { useQuery } from '@tanstack/react-query';
+import { DefaultChatTransport } from 'ai';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
 import { buildTurnCueText, extractFirstMentionSlug } from './GroupChatScreen.utils';
 
 interface GroupChatScreenProps {

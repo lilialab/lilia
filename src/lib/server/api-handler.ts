@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
+import { type NextRequest, NextResponse } from 'next/server';
 
 type ApiHandlerContext = {
   params: Promise<unknown>;

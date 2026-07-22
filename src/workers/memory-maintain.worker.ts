@@ -1,18 +1,18 @@
-import { Worker } from 'bullmq';
-import IORedis from 'ioredis';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { asBullMqConnection } from '@/lib/server/redis';
 import {
-  MEMORY_MAINTAIN_PIPELINE_JOB,
-  MEMORY_MAINTAIN_QUEUE,
-  scheduleMaintainPipeline,
-  type MemoryMaintainPipelineJobData,
-} from '@/services/memory/maintain-queue.service';
-import {
   getLastMemoryPipelineAt,
   runMaintainPipelineForUser,
 } from '@/services/memory/maintain-pipeline.service';
+import {
+  MEMORY_MAINTAIN_PIPELINE_JOB,
+  MEMORY_MAINTAIN_QUEUE,
+  type MemoryMaintainPipelineJobData,
+  scheduleMaintainPipeline,
+} from '@/services/memory/maintain-queue.service';
+import { Worker } from 'bullmq';
+import IORedis from 'ioredis';
 
 function minIntervalMs(): number {
   return env.MEMORY_MAINTAIN_MIN_INTERVAL_HOURS * 60 * 60 * 1000;

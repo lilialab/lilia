@@ -1,9 +1,9 @@
-import { type NextRequest } from 'next/server';
-import { withApiHandler, successResponse } from '@/lib/server/api-handler';
+import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseRouteParams } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
 import { contactCharacterParamsSchema } from '@/schemas/api/contacts/params';
 import { removeContact } from '@/services/character/contacts.service';
+import { type NextRequest } from 'next/server';
 
 export const DELETE = withApiHandler(
   async (req: NextRequest, context: RouteContext<'/api/contacts/[characterId]'>) => {

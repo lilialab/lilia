@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { createSession } from '@/services/session/sessions.service';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
+import { createSession } from '@/services/session/sessions.service';
 
 const characterSelect = {
   id: true,

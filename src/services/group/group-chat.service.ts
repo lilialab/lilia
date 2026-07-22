@@ -1,15 +1,15 @@
-import { type UIDataTypes, streamText, convertToModelMessages, stepCountIs } from 'ai';
+import { extractTextFromParts } from '@/lib/message-parts';
 import { AppError } from '@/lib/server/app-error';
+import { env } from '@/lib/server/env';
+import { logger } from '@/lib/server/logger';
 import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
-import { logger } from '@/lib/server/logger';
-import { env } from '@/lib/server/env';
-import { extractTextFromParts } from '@/lib/message-parts';
+import { DEFAULT_CHARACTER_ID, loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
 import { getUserTimeZone } from '@/services/user/users.service';
-import { DEFAULT_CHARACTER_ID, loadCharacter } from '@/prompts/load';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
+import { convertToModelMessages, stepCountIs, streamText, type UIDataTypes } from 'ai';
 import {
   createGroupUserMessage,
   getGroupContextMessages,
@@ -183,9 +183,8 @@ export async function streamGroupChatFlow(
     });
   }
 
-  const speaker =
-    (slug !== null ? await findGroupMemberBySlug(groupSessionId, slug) : null) ??
-    (await findGroupMemberBySlug(groupSessionId, DEFAULT_CHARACTER_ID));
+  const speaker = (slug !== null ? await findGroupMemberBySlug(groupSessionId, slug) : null)
+    ?? (await findGroupMemberBySlug(groupSessionId, DEFAULT_CHARACTER_ID));
 
   if (!speaker) {
     throw AppError.badRequest('群聊须包含 arbor');

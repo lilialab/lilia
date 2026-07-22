@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { addContactBodySchema } from '@/schemas/api/contacts/post';
 import { contactCharacterParamsSchema } from '@/schemas/api/contacts/params';
+import { addContactBodySchema } from '@/schemas/api/contacts/post';
+import { describe, expect, it } from 'vitest';
 
 describe('contacts schemas', () => {
   it('addContactBodySchema 接受非空 characterId', () => {

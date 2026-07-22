@@ -1,8 +1,8 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { fetchContactSession } from '@/lib/client/api/contacts';
 import { queryKeys } from '@/lib/client/query-keys';
+import { useQuery } from '@tanstack/react-query';
 
 export function useCharacterSession(characterId: string) {
   const { data, isLoading, isError, error } = useQuery({

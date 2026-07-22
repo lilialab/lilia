@@ -1,6 +1,6 @@
+import { logger } from '@/lib/server/logger';
 import { tool } from 'ai';
 import { z } from 'zod';
-import { logger } from '@/lib/server/logger';
 
 /**
  * Meta-tool 占位：登记/创建新 skill（dynamic tool creation）。
@@ -8,10 +8,9 @@ import { logger } from '@/lib/server/logger';
  */
 export function createRegisterSkillTool(userId: string) {
   return tool({
-    description:
-      '登记或创建一个新的 skill（能力），供后续对话中调用。' +
-      '能力边界（占位约定）：仅允许只读查询类能力；不可生成或执行任意代码；' +
-      '新 skill 需经系统登记后方可使用。当前为未实现占位，调用只会得到 not_implemented 响应。',
+    description: '登记或创建一个新的 skill（能力），供后续对话中调用。'
+      + '能力边界（占位约定）：仅允许只读查询类能力；不可生成或执行任意代码；'
+      + '新 skill 需经系统登记后方可使用。当前为未实现占位，调用只会得到 not_implemented 响应。',
     inputSchema: z.object({
       name: z
         .string()

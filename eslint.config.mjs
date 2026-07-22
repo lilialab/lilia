@@ -1,8 +1,8 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -81,7 +81,7 @@ const eslintConfig = defineConfig([
     },
   },
 
-  // 强行覆盖并关闭前面所有冲突的样式规则
+  // 关闭与外部格式化工具（dprint）冲突的 ESLint 样式规则
   eslintConfigPrettier,
 
   // Override default ignores of eslint-config-next.

@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
 import {
   buildRuntimeContextBlock,
   formatMemoryFragmentLine,
   formatUtcIso,
 } from '@/services/chat/prompt-format.utils';
+import { describe, expect, it } from 'vitest';
 
 const TIME_ZONE = 'Asia/Shanghai';
 

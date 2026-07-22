@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/server/prisma';
-import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { AppError } from '@/lib/server/app-error';
+import { hashPassword, verifyPassword } from '@/lib/server/password';
+import { prisma } from '@/lib/server/prisma';
 
 export interface PublicUser {
   id: string;

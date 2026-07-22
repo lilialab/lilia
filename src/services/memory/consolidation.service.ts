@@ -1,19 +1,19 @@
-import { generateText, Output } from 'ai';
-import { z } from 'zod';
-import { prisma } from '@/lib/server/prisma';
-import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
-import { updateConsolidationJob } from './job.service';
-import { buildUserMemoryWritePayload, syncUserMemoriesToChroma } from './memory-lifecycle.service';
+import { getStructuredOllamaModel } from '@/lib/server/ollama';
+import { prisma } from '@/lib/server/prisma';
+import { loadJobPrompt } from '@/prompts/load';
+import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
+import { generateText, Output } from 'ai';
+import { z } from 'zod';
 import {
-  mapConsolidationOutput,
-  validateAndMergeIds,
   type ConsolidationParseResult,
   type FinishedMemory,
+  mapConsolidationOutput,
+  validateAndMergeIds,
 } from './consolidation.utils';
-import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
-import { loadJobPrompt } from '@/prompts/load';
+import { updateConsolidationJob } from './job.service';
+import { buildUserMemoryWritePayload, syncUserMemoriesToChroma } from './memory-lifecycle.service';
 
 const MEMORY_EXTRACTION_PROMPT = loadJobPrompt('extract');
 

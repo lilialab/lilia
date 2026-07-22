@@ -1,7 +1,7 @@
 'use client';
 
-import { ViewTransition } from 'react';
 import { usePathname } from 'next/navigation';
+import { ViewTransition } from 'react';
 
 /**
  * 根布局级 ViewTransition：进聊天推入、返回滑出、Tab 切换淡入淡出。

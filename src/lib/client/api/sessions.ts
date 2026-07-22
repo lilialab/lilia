@@ -1,6 +1,6 @@
-import type { UIMessage } from 'ai';
 import { apiFetchJson } from '@/lib/client/api-fetch';
 import type { MessageMetadata } from '@/types/message-kind';
+import type { UIMessage } from 'ai';
 
 const PAGE_SIZE = 10;
 

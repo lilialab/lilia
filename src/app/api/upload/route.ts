@@ -1,8 +1,8 @@
-import { type NextRequest } from 'next/server';
-import { importMarkdownFile } from '@/services/knowledge/knowledge.service';
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseInput } from '@/lib/server/parse-schema';
 import { uploadPostBodySchema } from '@/schemas/api/upload/post';
+import { importMarkdownFile } from '@/services/knowledge/knowledge.service';
+import { type NextRequest } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   const formData = await req.formData();

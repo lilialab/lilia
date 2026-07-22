@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import { usernameSchema } from '@/schemas/shared/username';
 import { isValidIanaTimeZone } from '@/utils/timezone';
+import { z } from 'zod';
 
 export const registerBodySchema = z
   .object({

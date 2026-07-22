@@ -1,9 +1,9 @@
-import { type NextRequest } from 'next/server';
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { parseSearchParams } from '@/lib/server/parse-schema';
 import { memoryConsolidateQuerySchema } from '@/schemas/api/memory/consolidate';
 import { enqueueMemoryExtractJobs } from '@/services/memory/extract-queue.service';
 import { resolveUserIdByUsername } from '@/services/user/users.service';
+import { type NextRequest } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   const { username, sessionId } = parseSearchParams(

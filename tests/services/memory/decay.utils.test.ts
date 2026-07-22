@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { env } from '@/lib/server/env';
 import {
   decay,
@@ -6,6 +5,7 @@ import {
   getHalfLifeDays,
   similarityFromDistance,
 } from '@/services/memory/decay.utils';
+import { describe, expect, it } from 'vitest';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const BASE = Date.parse('2026-01-01T00:00:00Z');

@@ -1,7 +1,7 @@
 'use client';
 
+import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMutation, useQuery, type QueryKey } from '@tanstack/react-query';
 
 export interface MessageHistoryPage<T> {
   messages: T[];

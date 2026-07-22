@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { extractFirstMentionSlug } from '@/app/groups/components/GroupChatScreen.utils';
+import { describe, expect, it } from 'vitest';
 
 describe('extractFirstMentionSlug', () => {
   it('无 @ 时返回 null', () => {

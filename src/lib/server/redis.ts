@@ -1,6 +1,6 @@
-import { Queue, type ConnectionOptions } from 'bullmq';
-import IORedis from 'ioredis';
 import { env } from '@/lib/server/env';
+import { type ConnectionOptions, Queue } from 'bullmq';
+import IORedis from 'ioredis';
 
 /**
  * BullMQ 声明依赖 ioredis@5.10.1，项目 override 到 5.11.1 后

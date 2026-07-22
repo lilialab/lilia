@@ -1,0 +1,24 @@
+{
+  "lineWidth": 100,
+  "indentWidth": 2,
+  "useTabs": false,
+  "newLineKind": "lf",
+  "typescript": {
+    "quoteStyle": "preferSingle",
+    "jsx.quoteStyle": "preferDouble"
+  },
+  "json": {
+    "trailingCommas": "never"
+  },
+  "excludes": [
+    "**/node_modules",
+    "**/.next",
+    "**/docker-volumes",
+    "**/*.md",
+    "pnpm-lock.yaml"
+  ],
+  "plugins": [
+    "npm:@dprint/typescript",
+    "npm:@dprint/json"
+  ]
+}

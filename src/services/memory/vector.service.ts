@@ -1,10 +1,10 @@
 import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import type { MemoryType } from '@/types/memory';
 import type { Where } from 'chromadb';
 import { effectiveScore } from './decay.utils';
 import { parseMemoryMetadata } from './metadata.utils';
-import type { MemoryType } from '@/types/memory';
 
 interface AddChunksInput {
   fileId: string;

@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint && tsc --noEmit",
+    "format": "dprint fmt",
     "test": "vitest",
     "test:run": "vitest run",
     "worker:memory-extract": "tsx src/workers/memory-extract.worker.ts",
@@ -44,12 +45,15 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@dprint/json": "^0.23.0",
+    "@dprint/typescript": "^0.96.1",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^10.0.3",
+    "dprint": "^0.55.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "eslint-config-prettier": "^10.1.8",

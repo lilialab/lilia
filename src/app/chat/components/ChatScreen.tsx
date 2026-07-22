@@ -1,25 +1,25 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
-import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-import { useCharacterSession } from '../hooks/useCharacterSession';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useMessageHistory } from '../hooks/useMessageHistory';
-import { MessageList } from './MessageList';
-import { ChatInput } from './ChatInput';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
-import { MoreHorizontal } from 'lucide-react';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { removeContact } from '@/lib/client/api/contacts';
 import type { HistoryMessage } from '@/lib/client/api/sessions';
-import { queryKeys } from '@/lib/client/query-keys';
 import { cn } from '@/lib/client/cn';
+import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { useChat } from '@ai-sdk/react';
+import { useQueryClient } from '@tanstack/react-query';
+import { DefaultChatTransport } from 'ai';
+import { MoreHorizontal } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
+import { useCharacterSession } from '../hooks/useCharacterSession';
+import { useMessageHistory } from '../hooks/useMessageHistory';
+import { ChatInput } from './ChatInput';
+import { MessageList } from './MessageList';
 
 interface ChatScreenProps {
   characterId: string;
@@ -158,7 +158,9 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       <ConfirmDialog
         open={confirmDeleteOpen}
         title="删除 AI"
-        description={`确定将「${displayName || '该 AI'}」从通讯录中移除吗？聊天记录将一并删除且无法恢复。`}
+        description={`确定将「${
+          displayName ?? '该 AI'
+        }」从通讯录中移除吗？聊天记录将一并删除且无法恢复。`}
         confirmLabel="删除"
         variant="danger"
         onConfirm={() => void handleConfirmDelete()}

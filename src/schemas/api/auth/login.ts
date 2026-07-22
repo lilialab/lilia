@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { usernameSchema } from '@/schemas/shared/username';
+import { z } from 'zod';
 
 const passwordSchema = z.string().min(8, '密码至少 8 位');
 

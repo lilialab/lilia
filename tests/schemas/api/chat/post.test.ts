@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { chatPostBodySchema } from '@/schemas/api/chat/post';
+import { describe, expect, it } from 'vitest';
 
 describe('chatPostBodySchema', () => {
   it('缺省 sessionId 或 messages 解析失败', () => {
