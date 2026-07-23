@@ -1,5 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
+import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { createSession } from '@/services/session/sessions.service';
 
@@ -17,8 +18,28 @@ export async function listCharacters() {
   });
 }
 
-/** 列出用户已添加的 AI 通讯录。 */
+/**
+ * 确保用户通讯录含默认角色 arbor（幂等）。
+ * @returns arbor 的 characterId
+ */
+export async function ensureArborContact(userId: string): Promise<string> {
+  const arbor = await prisma.character.findUnique({
+    where: { slug: DEFAULT_CHARACTER_ID },
+    select: { id: true },
+  });
+
+  if (!arbor) {
+    throw AppError.internal('默认角色 arbor 不存在，请先执行 seed');
+  }
+
+  await addContact(userId, arbor.id);
+  return arbor.id;
+}
+
+/** 列出用户已添加的 AI 通讯录（会懒补齐 arbor）。 */
 export async function listContacts(userId: string) {
+  await ensureArborContact(userId);
+
   const rows = await prisma.userCharacter.findMany({
     where: { userId },
     orderBy: { createdAt: 'asc' },
@@ -101,9 +122,18 @@ export async function addContact(userId: string, characterId: string) {
 
 /**
  * 删除 AI 好友：移除通讯录关系，并删除对应 ChatSession（消息 cascade）。
- * 已写入的用户记忆 / 画像不受影响。
+ * 已写入的用户记忆 / 画像不受影响。默认角色 arbor 不可删。
  */
 export async function removeContact(userId: string, characterId: string) {
+  const character = await prisma.character.findUnique({
+    where: { id: characterId },
+    select: { slug: true },
+  });
+
+  if (character?.slug === DEFAULT_CHARACTER_ID) {
+    throw AppError.badRequest('不能删除默认好友');
+  }
+
   const existing = await prisma.userCharacter.findUnique({
     where: {
       userId_characterId: { userId, characterId },

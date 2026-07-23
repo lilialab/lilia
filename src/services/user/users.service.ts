@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
+import { ensureArborContact } from '@/services/character/contacts.service';
 
 export interface PublicUser {
   id: string;
@@ -115,7 +116,7 @@ export async function registerUser(input: {
 
   const passwordHash = await hashPassword(input.password);
 
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       username: input.username,
       displayName: input.displayName,
@@ -124,4 +125,7 @@ export async function registerUser(input: {
     },
     select: publicUserSelect,
   });
+
+  await ensureArborContact(user.id);
+  return user;
 }

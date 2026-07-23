@@ -1,5 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
+import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
 
 const characterSelect = {
   id: true,
@@ -50,22 +51,27 @@ function mapGroupDetail(row: {
   };
 }
 
-/** 校验全部 characterId 均在用户通讯录中。 */
-async function assertAllAreContacts(userId: string, characterIds: string[]): Promise<void> {
-  if (characterIds.length === 0) return;
-
+/** 校验全部 characterId 均在用户通讯录中，且含默认角色 arbor。 */
+async function assertGroupMembersValid(userId: string, characterIds: string[]): Promise<void> {
   const contacts = await prisma.userCharacter.findMany({
     where: {
       userId,
       characterId: { in: characterIds },
     },
-    select: { characterId: true },
+    select: {
+      characterId: true,
+      character: { select: { slug: true } },
+    },
   });
 
   const found = new Set(contacts.map((c) => c.characterId));
   const missing = characterIds.filter((id) => !found.has(id));
   if (missing.length > 0) {
     throw AppError.badRequest('请先将所选 AI 添加为好友');
+  }
+
+  if (!contacts.some((c) => c.character.slug === DEFAULT_CHARACTER_ID)) {
+    throw AppError.badRequest('群聊须包含 arbor');
   }
 }
 
@@ -113,15 +119,15 @@ export async function listGroups(userId: string): Promise<GroupDetail[]> {
 }
 
 /**
- * 创建群聊（同批成员可建多个群；characterIds 可为空）。
- * 成员须已在通讯录中。
+ * 创建群聊（同批成员可建多个群）。
+ * 成员须已在通讯录中，且必须包含 arbor。
  */
 export async function createGroup(
   userId: string,
   options: { title: string; characterIds: string[] },
 ): Promise<GroupDetail> {
   const { title, characterIds } = options;
-  await assertAllAreContacts(userId, characterIds);
+  await assertGroupMembersValid(userId, characterIds);
 
   const row = await prisma.groupSession.create({
     data: {

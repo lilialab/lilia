@@ -3,15 +3,13 @@ import { createGroupBodySchema } from '@/schemas/api/groups/post';
 import { describe, expect, it } from 'vitest';
 
 describe('groups schemas', () => {
-  it('createGroupBodySchema 接受 title 与空 characterIds', () => {
-    expect(createGroupBodySchema.parse({ title: ' 测试群 ' })).toEqual({
-      title: '测试群',
-      characterIds: [],
-    });
+  it('createGroupBodySchema 拒绝缺省或空 characterIds', () => {
+    expect(() => createGroupBodySchema.parse({ title: '测试群' })).toThrow();
+    expect(() => createGroupBodySchema.parse({ title: '测试群', characterIds: [] })).toThrow();
   });
 
   it('createGroupBodySchema 拒绝空 title', () => {
-    expect(() => createGroupBodySchema.parse({ title: '  ' })).toThrow();
+    expect(() => createGroupBodySchema.parse({ title: '  ', characterIds: ['a'] })).toThrow();
   });
 
   it('createGroupBodySchema 对 characterIds 去重', () => {

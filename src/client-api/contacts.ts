@@ -1,5 +1,5 @@
-import { apiFetchJson } from '@/lib/client/api-fetch';
 import type { CharacterSummary } from '@/client-api/characters';
+import { apiFetchJson } from '@/lib/client/api-fetch';
 
 export interface ContactSummary extends CharacterSummary {
   createdAt: string;

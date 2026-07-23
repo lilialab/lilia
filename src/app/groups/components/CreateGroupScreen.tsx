@@ -1,10 +1,10 @@
 'use client';
 
+import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
+import { createGroup } from '@/client-api/groups';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
-import { createGroup } from '@/client-api/groups';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -12,10 +12,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+/** 与 DEFAULT_CHARACTER_ID / seed slug 对齐；勿从 prompts/load 导入（含 fs）。 */
+const DEFAULT_CHARACTER_SLUG = 'arbor';
+
 function MemberPickerEmpty() {
   return (
     <p className={cn('px-4 py-4 text-sm text-zinc-400')}>
-      通讯录暂无 AI，可先创建空群，或先去通讯录添加好友
+      通讯录加载异常，请返回后重试
     </p>
   );
 }
@@ -23,36 +26,36 @@ function MemberPickerEmpty() {
 type MemberPickerListProps = {
   contacts: ContactSummary[];
   selectedIds: Set<string>;
-  onSelectedIdsChange: (next: Set<string>) => void;
+  onToggle: (contact: ContactSummary) => void;
 };
 
-function MemberPickerList({ contacts, selectedIds, onSelectedIdsChange }: MemberPickerListProps) {
-  const toggleMember = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    onSelectedIdsChange(next);
-  };
-
+function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPickerListProps) {
   return (
     <section className={cn('bg-white')}>
       {contacts.map((contact) => {
+        const isArbor = contact.slug === DEFAULT_CHARACTER_SLUG;
         const checked = selectedIds.has(contact.id);
         return (
           <label
             key={contact.id}
             className={cn(
-              'flex cursor-pointer items-center gap-3 border-b border-zinc-100 px-4 py-3',
-              'hover:bg-zinc-50',
+              'flex items-center gap-3 border-b border-zinc-100 px-4 py-3',
+              isArbor ? 'cursor-default' : 'cursor-pointer hover:bg-zinc-50',
             )}
           >
             <input
               type="checkbox"
               checked={checked}
-              onChange={() => toggleMember(contact.id)}
+              disabled={isArbor}
+              onChange={() => onToggle(contact)}
               className={cn('h-4 w-4 rounded border-zinc-300')}
             />
-            <span className={cn('text-sm text-zinc-900')}>{contact.displayName}</span>
+            <span className={cn('text-sm text-zinc-900')}>
+              {contact.displayName}
+              {isArbor && (
+                <span className={cn('ml-2 text-xs font-normal text-zinc-400')}>默认成员</span>
+              )}
+            </span>
           </label>
         );
       })}
@@ -65,13 +68,19 @@ export function CreateGroupScreen() {
   const queryClient = useQueryClient();
   const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
   const [title, setTitle] = useState('');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  /** 用户可切换的成员；arbor 由下方 selectedIds 派生强制选中 */
+  const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string>>(new Set());
 
   const contactsQuery = useQuery({
     queryKey: queryKeys.contacts,
     queryFn: fetchContacts,
     enabled: Boolean(user),
   });
+
+  const contacts = contactsQuery.data ?? [];
+  const arborId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
+  const selectedIds = new Set(extraSelectedIds);
+  if (arborId) selectedIds.add(arborId);
 
   const createMutation = useMutation({
     mutationFn: createGroup,
@@ -88,9 +97,18 @@ export function CreateGroupScreen() {
     return null;
   }
 
-  const contacts = contactsQuery.data ?? [];
   const isBootstrapping = isAuthLoading || contactsQuery.isLoading;
   const canSubmit = title.trim().length > 0 && !createMutation.isPending;
+
+  const handleToggle = (contact: ContactSummary) => {
+    if (contact.slug === DEFAULT_CHARACTER_SLUG) return;
+    setExtraSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(contact.id)) next.delete(contact.id);
+      else next.add(contact.id);
+      return next;
+    });
+  };
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -133,7 +151,7 @@ export function CreateGroupScreen() {
               <MemberPickerList
                 contacts={contacts}
                 selectedIds={selectedIds}
-                onSelectedIdsChange={setSelectedIds}
+                onToggle={handleToggle}
               />
             )}
           </div>
