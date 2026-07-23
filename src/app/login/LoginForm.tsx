@@ -1,7 +1,7 @@
 'use client';
 
 import { login } from '@/client-api/auth';
-import { AuthField, AuthShell } from '@/components/auth/AuthForm';
+import { AuthField, AuthShell } from '@/components/auth';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import Link from 'next/link';
