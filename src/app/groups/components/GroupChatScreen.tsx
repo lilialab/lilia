@@ -3,7 +3,12 @@
 import { ChatInput } from '@/app/chat/components/ChatInput';
 import { MessageList } from '@/app/chat/components/MessageList';
 import { useGroupMessageHistory } from '@/app/groups/hooks/useGroupMessageHistory';
-import { deleteGroup, fetchGroup, type GroupHistoryMessage } from '@/client-api/groups';
+import {
+  deleteGroup,
+  fetchGroup,
+  type GroupHistoryMessage,
+  type GroupMemberSummary,
+} from '@/client-api/groups';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
@@ -20,11 +25,13 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  appendMentionSlug,
-  buildUserOutboundMetadata,
+  buildUserOutboundMessage,
   MAX_TURN_CUE_HOPS,
+  readStoredMentionSlug,
   sendTurnCueIfMentioned,
+  writeStoredMentionSlug,
 } from './GroupChatScreen.utils';
+import { DEFAULT_CHARACTER_SLUG } from './MemberPicker';
 
 interface GroupChatScreenProps {
   groupSessionId: string;
@@ -38,6 +45,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mentionOpen, setMentionOpen] = useState(false);
+  /** 用户点选；未点选时为 null，selectedMember 再回落 storage → arbor */
+  const [pickedMember, setPickedMember] = useState<GroupMemberSummary | null>(null);
   const [inputFocusKey, setInputFocusKey] = useState<number | undefined>();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   /** 本轮用户发言后已发出的 turn_cue 次数；用户主动发送时归零 */
@@ -58,6 +67,9 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   });
 
   const members = groupQuery.data?.members ?? [];
+  const selectedMember = pickedMember
+    ?? members.find((m) => m.slug === readStoredMentionSlug(groupSessionId))
+    ?? members.find((m) => m.slug === DEFAULT_CHARACTER_SLUG);
 
   const chatTransport = useMemo(
     () =>
@@ -129,14 +141,16 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || isBusy) return;
+    if (!text || isBusy || !selectedMember) return;
 
+    const outbound = buildUserOutboundMessage(text, selectedMember.slug);
+    writeStoredMentionSlug(groupSessionId, selectedMember.slug);
     setInput('');
     turnCueHopCountRef.current = 0;
     try {
       await sendMessage({
-        text,
-        metadata: buildUserOutboundMetadata(text),
+        text: outbound.text,
+        metadata: outbound.metadata,
       });
     } catch (err) {
       showErrorToast(formatClientError(err), 'group-send');
@@ -150,6 +164,11 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     } catch (err) {
       showErrorToast(formatClientError(err), 'group-history-more');
     }
+  };
+
+  const handleSelectMention = (member: GroupMemberSummary) => {
+    setPickedMember(member);
+    writeStoredMentionSlug(groupSessionId, member.slug);
   };
 
   return (
@@ -198,11 +217,13 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           e.preventDefault();
           setInputFocusKey((k) => (k ?? 0) + 1);
         }}
-        items={members.map((member) => ({
-          key: member.id,
-          label: `${member.displayName} (@${member.slug})`,
+        items={members.map((m) => ({
+          key: m.id,
+          label: selectedMember?.slug === m.slug
+            ? `${m.displayName}（当前）`
+            : m.displayName,
           onSelect: () => {
-            setInput((prev) => appendMentionSlug(prev, member.slug));
+            handleSelectMention(m);
           },
         }))}
       />
@@ -241,7 +262,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           onSubmit={handleFormSubmit}
           disabled={isBusy}
           isStreaming={isBusy}
-          onAtClick={() => setMentionOpen(true)}
+          mentionDisplayName={selectedMember?.displayName}
+          onMentionClick={selectedMember ? () => setMentionOpen(true) : undefined}
           focusKey={inputFocusKey}
         />
       </PageStatus>

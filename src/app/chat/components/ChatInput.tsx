@@ -9,8 +9,9 @@ interface ChatInputProps {
   onSubmit: (e: React.SubmitEvent) => void;
   disabled: boolean;
   isStreaming: boolean;
-  /** 有值时在输入框左侧显示 @ 按钮（如群聊成员选择） */
-  onAtClick?: () => void;
+  /** 左侧 @ 选人按钮展示名；与 onMentionClick 成对传入 */
+  mentionDisplayName?: string;
+  onMentionClick?: () => void;
   /** 变化时聚焦 textarea 并将光标移到末尾 */
   focusKey?: number;
 }
@@ -24,10 +25,12 @@ export function ChatInput({
   onSubmit,
   disabled,
   isStreaming,
-  onAtClick,
+  mentionDisplayName,
+  onMentionClick,
   focusKey,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const showMention = Boolean(onMentionClick) && Boolean(mentionDisplayName);
 
   useLayoutEffect(() => {
     const el = textareaRef.current;
@@ -53,19 +56,19 @@ export function ChatInput({
       )}
     >
       <div className={cn('flex items-end gap-2')}>
-        {onAtClick && (
+        {showMention && (
           <button
             type="button"
-            aria-label="选择要 @ 的成员"
+            aria-label={`当前 @ ${mentionDisplayName}，点击更换`}
             disabled={disabled}
-            onClick={onAtClick}
+            onClick={onMentionClick}
             className={cn(
-              'min-h-11 min-w-11 shrink-0 rounded-md border border-zinc-300 bg-white',
-              'text-base font-medium text-zinc-700 transition-colors',
+              'min-h-11 max-w-28 shrink-0 truncate rounded-md border border-zinc-300 bg-white px-2',
+              'text-sm font-medium text-zinc-700 transition-colors',
               'hover:bg-zinc-50 disabled:bg-zinc-100 disabled:text-zinc-400',
             )}
           >
-            @
+            @{mentionDisplayName}
           </button>
         )}
         <textarea

@@ -4,18 +4,21 @@
 
 ## 说明
 
-- **谁决定召唤谁**：前端。从用户正文或助手正文解析第一个 `@slug`，写入消息 `metadata.slug`（及可选 `kind`）。用户可用输入区 **@ 按钮** 从成员列表选人，将 `@slug` **追加到输入末尾**（亦可手打）。被召唤角色的 system 含 **`<group_roster>`**（人类用户 displayName + AI 成员展示名/slug/`shortBio`）。
-- **后端不猜 @**：只读最后一条 user 的 `metadata.kind` / `metadata.slug`，校验成员后选 speaker 流式回复。
+- **谁决定召唤谁**：
+  - **用户主动发送**：左侧单选展示当前成员 **displayName**（`localStorage` 按群 sticky）；发送时正文前拼 `@slug `，`metadata.slug` **由单选直接写入**（不解析用户正文）。
+  - **助手续聊**：仍从助手正文解析第一个 `@slug`，发 `turn_cue`。
+- **后端**：只读最后一条 user 的 `metadata.kind` / `metadata.slug`；普通用户消息**必须**带有效群内 slug（**无默认 arbor**）；校验成员后选 speaker。
+- **被召唤角色** system 含 **`<group_roster>`**（人类用户 displayName + AI 成员展示名/slug/`shortBio`）。
 - **turn_cue**：特殊用户消息（`kind: 'turn_cue'`），正文是系统触发语，**不进气泡列表**（`isDisplayMessage`）；**不进**历史分页（`getGroupHistoryPage`）与上下文窗口（`getGroupContextMessages`）；**本次召唤**仍把 cue 正文作为 ephemeral user 回合注入 LLM（否则对话以 assistant 结尾易空回复）；RAG 取上下文末条干净正文（用户句或上一助手句，见 `extractLatestContextTextForRag`）；进模型前再经 `withGroupSpeakerLabelsForModel` 加 `(slug):`。
 
-### @slug 规则
+### 助手正文 @slug 规则（turn_cue）
 
 正则：`/@([a-zA-Z0-9_-]+)/`，取**第一处**。
 
 - 合法：`@arbor`、`@ai_bot-2`
 - 中文等会截断或匹配失败：`@arbor你好` → `arbor`；`@阿尔博` → 无 slug
 
-实现：`GroupChatScreen.utils.ts` 内私有 `extractFirstMentionSlug`。
+实现：`GroupChatScreen.utils.ts` 内私有 `extractFirstMentionSlug`（仅助手续聊用）。
 
 ## 流程
 
@@ -27,10 +30,10 @@ sequenceDiagram
   participant API as POST /api/groups/:id/chat
   participant Svc as streamGroupChatFlow
 
-  User->>UI: 发送（可含 @slug）
-  UI->>UI: buildUserOutboundMetadata(text)
-  UI->>API: user 消息 metadata.kind=null, slug=?
-  API->>Svc: 按 slug 选成员（无则默认 arbor）
+  User->>UI: 发送正文（单选已定 slug）
+  UI->>UI: buildUserOutboundMessage(text, slug)
+  UI->>API: 正文含 @slug；metadata.kind=null, slug
+  API->>Svc: 校验 slug 为群成员（无则 400）
   Svc-->>UI: 助手流式回复
 
   UI->>Cue: onFinish(assistant)
@@ -48,9 +51,10 @@ sequenceDiagram
 
 | 步骤 | 行为 |
 |------|------|
-| 组 metadata | `buildUserOutboundMetadata(text)` → `{ kind: null, slug }` |
-| 后端 | `slug` 命中群成员则该角色答；否则默认 `arbor`（群内必须有 arbor） |
-| RAG | 用本条用户正文 |
+| 选人 | 左侧单选 displayName；`localStorage` 按群 sticky；无效回落 arbor |
+| 组出站 | `buildUserOutboundMessage(text, slug)` → 正文 `@slug …` + `{ kind: null, slug }` |
+| 后端 | **必须**带 slug 且为群成员；否则 400（无默认 arbor） |
+| RAG | 用本条用户正文（含 `@slug` 前缀） |
 
 ### 2. 助手结束后自动续聊
 
@@ -69,7 +73,7 @@ sequenceDiagram
 | 层级 | 路径 |
 |------|------|
 | 前端编排 | `src/app/groups/components/GroupChatScreen.tsx`（`onFinish` / 用户提交） |
-| @ / turn_cue 工具 | `src/app/groups/components/GroupChatScreen.utils.ts` |
+| @ 选人 / sticky / turn_cue 工具 | `src/app/groups/components/GroupChatScreen.utils.ts` |
 | 单测 | `tests/app/groups/GroupChatScreen.utils.test.ts` |
 | metadata / 展示过滤 | `src/types/message-kind.ts`（`MESSAGE_KIND_TURN_CUE`、`isDisplayMessage`） |
 | API body | `src/schemas/api/groups/chat-post.ts` |
@@ -78,6 +82,6 @@ sequenceDiagram
 
 ## 注意
 
-- 前端解析 @ 给**出站 metadata**；助手气泡里的 `@xxx` 仍是模型自由文本，靠 prompt 约束，不是第二套后端解析。
+- 用户出站 **不**解析正文 `@`；`metadata.slug` 来自单选。助手气泡里的 `@xxx` 仍是模型自由文本，靠 prompt 约束，由前端解析后发 turn_cue。
 - turn_cue 会出现在 `useChat` 的 `messages` 里（供链路与 loading），但 UI 列表应过滤掉。
-- 改触发语文案只动 `buildTurnCueText`（utils 内私有）；改匹配规则动 `extractFirstMentionSlug`。
+- 改触发语文案只动 `buildTurnCueText`（utils 内私有）；改助手 @ 匹配规则动 `extractFirstMentionSlug`。

@@ -1,49 +1,28 @@
 import {
-  appendMentionSlug,
-  buildUserOutboundMetadata,
+  buildUserOutboundMessage,
+  groupMentionStorageKey,
   MAX_TURN_CUE_HOPS,
   sendTurnCueIfMentioned,
 } from '@/app/groups/components/GroupChatScreen.utils';
 import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
 import { describe, expect, it, vi } from 'vitest';
 
-describe('appendMentionSlug', () => {
-  it('空串直接追加 @slug 与尾空格', () => {
-    expect(appendMentionSlug('', 'bob')).toBe('@bob ');
-  });
-
-  it('非空白结尾时先补空格再追加', () => {
-    expect(appendMentionSlug('hello', 'bob')).toBe('hello @bob ');
-  });
-
-  it('已以空白结尾时不重复前导空格', () => {
-    expect(appendMentionSlug('hello ', 'bob')).toBe('hello @bob ');
-    expect(appendMentionSlug('hello\n', 'arbor')).toBe('hello\n@arbor ');
+describe('groupMentionStorageKey', () => {
+  it('按群 id 区分', () => {
+    expect(groupMentionStorageKey('g1')).toBe('pai-arbor:group-mention:g1');
   });
 });
 
-describe('buildUserOutboundMetadata', () => {
-  it('无 @ 时 slug 为 null', () => {
-    expect(buildUserOutboundMetadata('你好')).toEqual({ kind: null, slug: null });
-    expect(buildUserOutboundMetadata('')).toEqual({ kind: null, slug: null });
-  });
-
-  it('提取第一个 @slug', () => {
-    expect(buildUserOutboundMetadata('请 @arbor 帮忙')).toEqual({ kind: null, slug: 'arbor' });
-    expect(buildUserOutboundMetadata('@bob 你好')).toEqual({ kind: null, slug: 'bob' });
-  });
-
-  it('多个 @ 只取第一处', () => {
-    expect(buildUserOutboundMetadata('@arbor 再叫 @bob')).toEqual({ kind: null, slug: 'arbor' });
-  });
-
-  it('支持数字下划线和连字符', () => {
-    expect(buildUserOutboundMetadata('hi @ai_bot-2')).toEqual({ kind: null, slug: 'ai_bot-2' });
-  });
-
-  it('中文等非法字符截断 slug', () => {
-    expect(buildUserOutboundMetadata('@arbor你好')).toEqual({ kind: null, slug: 'arbor' });
-    expect(buildUserOutboundMetadata('@阿尔博')).toEqual({ kind: null, slug: null });
+describe('buildUserOutboundMessage', () => {
+  it('正文前拼 @slug，metadata 直接带 slug', () => {
+    expect(buildUserOutboundMessage('你好', 'bob')).toEqual({
+      text: '@bob 你好',
+      metadata: { kind: null, slug: 'bob' },
+    });
+    expect(buildUserOutboundMessage('  hi  ', 'arbor')).toEqual({
+      text: '@arbor hi',
+      metadata: { kind: null, slug: 'arbor' },
+    });
   });
 });
 

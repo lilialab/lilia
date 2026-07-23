@@ -4,9 +4,12 @@ import { extractTextFromParts } from '@/utils/message-parts';
 /** 一次用户发言后，自动 turn_cue 续聊最多轮次。 */
 export const MAX_TURN_CUE_HOPS = 5;
 
+const GROUP_MENTION_STORAGE_PREFIX = 'pai-arbor:group-mention:';
+
 /**
  * 从文本中提取第一个 @slug（精确匹配用）。
  * 规则：/@([a-zA-Z0-9_-]+)/ 取第一处。
+ * 仅用于助手正文 → turn_cue；用户出站不再解析正文。
  */
 function extractFirstMentionSlug(text: string): string | null {
   const match = /@([a-zA-Z0-9_-]+)/.exec(text);
@@ -23,18 +26,38 @@ export type TurnCueSendMessage = (message: {
   metadata: MessageMetadata;
 }) => unknown;
 
-/** 用户主动发送时的 metadata（普通消息 + 可选 @slug）。 */
-export function buildUserOutboundMetadata(text: string): MessageMetadata {
-  return {
-    kind: null,
-    slug: extractFirstMentionSlug(text),
-  };
+export function groupMentionStorageKey(groupSessionId: string): string {
+  return `${GROUP_MENTION_STORAGE_PREFIX}${groupSessionId}`;
 }
 
-/** 将 `@slug` 追加到输入末尾（尾随空格；末尾已有空白则不重复前导空格）。 */
-export function appendMentionSlug(text: string, slug: string): string {
-  const needsSpace = text.length > 0 && !/\s$/.test(text);
-  return `${text}${needsSpace ? ' ' : ''}@${slug} `;
+/** 读取该群上次选中的 @ slug（无则 null）。 */
+export function readStoredMentionSlug(groupSessionId: string): string | null {
+  try {
+    const value = localStorage.getItem(groupMentionStorageKey(groupSessionId));
+    return value && value.length > 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 写入该群选中的 @ slug。 */
+export function writeStoredMentionSlug(groupSessionId: string, slug: string): void {
+  try {
+    localStorage.setItem(groupMentionStorageKey(groupSessionId), slug);
+  } catch {
+    // 隐私模式等写失败时忽略
+  }
+}
+
+/** 用户主动发送：正文前拼 `@slug `，metadata.slug 由单选传入。 */
+export function buildUserOutboundMessage(
+  text: string,
+  slug: string,
+): { text: string; metadata: MessageMetadata } {
+  return {
+    text: `@${slug} ${text.trim()}`,
+    metadata: { kind: null, slug },
+  };
 }
 
 export type SendTurnCueResult = 'sent' | 'noop' | 'capped';

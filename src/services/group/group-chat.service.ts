@@ -3,7 +3,7 @@ import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
-import { DEFAULT_CHARACTER_ID, loadCharacter } from '@/prompts/load';
+import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
 import { getUserById, getUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
@@ -240,11 +240,12 @@ export async function streamGroupChatFlow(
     });
   }
 
-  const speaker = (slug !== null ? await findGroupMemberBySlug(groupSessionId, slug) : null)
-    ?? (await findGroupMemberBySlug(groupSessionId, DEFAULT_CHARACTER_ID));
-
+  if (!slug) {
+    throw AppError.badRequest('须指定要 @ 的群成员');
+  }
+  const speaker = await findGroupMemberBySlug(groupSessionId, slug);
   if (!speaker) {
-    throw AppError.badRequest('群聊须包含 arbor');
+    throw AppError.badRequest('该角色不在群内');
   }
 
   return streamGroupAssistantReply({
