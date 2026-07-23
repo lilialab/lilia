@@ -53,6 +53,9 @@ const eslintConfig = defineConfig([
       // 严格禁止同一个文件重复 import 同一个模块
       'no-duplicate-imports': 'error',
 
+      // 禁止 == / !=，统一使用 === / !==
+      eqeqeq: 'error',
+
       // 禁止代码中出现完全无意义的自我比较（如 `if (x === x)`）
       'no-self-compare': 'error',
 

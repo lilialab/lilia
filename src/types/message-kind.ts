@@ -39,5 +39,5 @@ export function getMessageKind(message: { metadata?: unknown }): string | null {
 
 /** 气泡列表要展示的普通消息（无特殊 kind）。 */
 export function isDisplayMessage(message: { metadata?: unknown }): boolean {
-  return getMessageKind(message) == null;
+  return getMessageKind(message) === null;
 }

@@ -68,7 +68,7 @@ async function listSessionIdsWithPendingMessages(userId: string): Promise<string
     distinct: ['sessionId'],
     select: { sessionId: true },
   });
-  return rows.map((row) => row.sessionId).filter((id): id is string => id != null);
+  return rows.map((row) => row.sessionId).filter((id): id is string => id !== null);
 }
 
 export type EnqueuedExtractJob = {

@@ -20,5 +20,5 @@ export function isAwaitingAssistantResponse(
     return false;
   }
   const lastMessage = messages.at(-1);
-  return lastMessage != null && !messageHasVisibleContent(lastMessage);
+  return lastMessage !== undefined && !messageHasVisibleContent(lastMessage);
 }

@@ -31,6 +31,12 @@ export function buildUserOutboundMetadata(text: string): MessageMetadata {
   };
 }
 
+/** 将 `@slug` 追加到输入末尾（尾随空格；末尾已有空白则不重复前导空格）。 */
+export function appendMentionSlug(text: string, slug: string): string {
+  const needsSpace = text.length > 0 && !/\s$/.test(text);
+  return `${text}${needsSpace ? ' ' : ''}@${slug} `;
+}
+
 export type SendTurnCueResult = 'sent' | 'noop' | 'capped';
 
 /**

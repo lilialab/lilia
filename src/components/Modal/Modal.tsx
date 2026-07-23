@@ -13,6 +13,8 @@ interface ModalProps {
   'aria-label'?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
+  /** 关闭后自动聚焦回调；可 e.preventDefault() 阻止回到触发器 */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 export function Modal({
@@ -24,6 +26,7 @@ export function Modal({
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
+  onCloseAutoFocus,
 }: ModalProps) {
   return (
     <Dialog.Root
@@ -39,6 +42,7 @@ export function Modal({
           aria-labelledby={ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
           className={cn(className, panelClassName)}
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           {children}
         </Dialog.Content>

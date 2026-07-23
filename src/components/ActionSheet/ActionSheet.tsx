@@ -18,6 +18,7 @@ interface ActionSheetProps {
   items: ActionSheetItem[];
   cancelLabel?: string;
   onClose: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 export function ActionSheet({
@@ -26,11 +27,13 @@ export function ActionSheet({
   items,
   cancelLabel = '取消',
   onClose,
+  onCloseAutoFocus,
 }: ActionSheetProps) {
   return (
     <Modal
       open={open}
       onClose={onClose}
+      onCloseAutoFocus={onCloseAutoFocus}
       panelClassName={cn(
         'fixed inset-x-0 bottom-0 w-full outline-none',
         'pb-[env(safe-area-inset-bottom)]',

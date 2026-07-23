@@ -4,7 +4,7 @@
 
 ## 说明
 
-- **谁决定召唤谁**：前端。从用户正文或助手正文解析第一个 `@slug`，写入消息 `metadata.slug`（及可选 `kind`）。
+- **谁决定召唤谁**：前端。从用户正文或助手正文解析第一个 `@slug`，写入消息 `metadata.slug`（及可选 `kind`）。用户可用输入区 **@ 按钮** 从成员列表选人，将 `@slug` **追加到输入末尾**（亦可手打）。
 - **后端不猜 @**：只读最后一条 user 的 `metadata.kind` / `metadata.slug`，校验成员后选 speaker 流式回复。
 - **turn_cue**：特殊用户消息（`kind: 'turn_cue'`），正文是系统触发语，**不进气泡列表**（`isDisplayMessage`）；**不进**历史分页（`getGroupHistoryPage`）与上下文窗口（`getGroupContextMessages`）；**本次召唤**仍把 cue 正文作为 ephemeral user 回合注入 LLM（否则对话以 assistant 结尾易空回复）；RAG 取上下文末条干净正文（用户句或上一助手句，见 `extractLatestContextTextForRag`）；进模型前再经 `withGroupSpeakerLabelsForModel` 加 `(slug):`。
 

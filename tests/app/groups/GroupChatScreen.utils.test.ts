@@ -1,10 +1,26 @@
 import {
+  appendMentionSlug,
   buildUserOutboundMetadata,
   MAX_TURN_CUE_HOPS,
   sendTurnCueIfMentioned,
 } from '@/app/groups/components/GroupChatScreen.utils';
 import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
 import { describe, expect, it, vi } from 'vitest';
+
+describe('appendMentionSlug', () => {
+  it('空串直接追加 @slug 与尾空格', () => {
+    expect(appendMentionSlug('', 'bob')).toBe('@bob ');
+  });
+
+  it('非空白结尾时先补空格再追加', () => {
+    expect(appendMentionSlug('hello', 'bob')).toBe('hello @bob ');
+  });
+
+  it('已以空白结尾时不重复前导空格', () => {
+    expect(appendMentionSlug('hello ', 'bob')).toBe('hello @bob ');
+    expect(appendMentionSlug('hello\n', 'arbor')).toBe('hello\n@arbor ');
+  });
+});
 
 describe('buildUserOutboundMetadata', () => {
   it('无 @ 时 slug 为 null', () => {

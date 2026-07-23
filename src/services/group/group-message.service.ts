@@ -114,7 +114,7 @@ export async function getGroupHistoryPage(
 
   const rows = items.toReversed();
   const oldest = rows.at(0);
-  const hasMore = rows.length === limit && oldest != null
+  const hasMore = rows.length === limit && oldest !== undefined
     && (await hasOlderMessages(oldest.createdAt));
 
   return { messages: rows.map(mapGroupMessageRow), hasMore };

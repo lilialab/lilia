@@ -50,7 +50,7 @@ export function formatProfileForPrompt(
   const facetLines = facets
     ? (Object.keys(FACET_LABELS) as (keyof ProfileFacets)[]).flatMap((key) => {
       const value = facets[key];
-      if (value == null) return [];
+      if (value === null || value === undefined) return [];
       if (Array.isArray(value) && value.length === 0) return [];
       if (typeof value === 'string' && !value.trim()) return [];
       const display = Array.isArray(value) ? value.join('、') : value;

@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
+  appendMentionSlug,
   buildUserOutboundMetadata,
   MAX_TURN_CUE_HOPS,
   sendTurnCueIfMentioned,
@@ -36,6 +37,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [inputFocusKey, setInputFocusKey] = useState<number | undefined>();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   /** 本轮用户发言后已发出的 turn_cue 次数；用户主动发送时归零 */
   const turnCueHopCountRef = useRef(0);
@@ -187,6 +190,23 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         ]}
       />
 
+      <ActionSheet
+        open={mentionOpen}
+        title="选择成员"
+        onClose={() => setMentionOpen(false)}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          setInputFocusKey((k) => (k ?? 0) + 1);
+        }}
+        items={members.map((member) => ({
+          key: member.id,
+          label: `${member.displayName} (@${member.slug})`,
+          onSelect: () => {
+            setInput((prev) => appendMentionSlug(prev, member.slug));
+          },
+        }))}
+      />
+
       <ConfirmDialog
         open={confirmDeleteOpen}
         title="删除群聊"
@@ -221,6 +241,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           onSubmit={handleFormSubmit}
           disabled={isBusy}
           isStreaming={isBusy}
+          onAtClick={() => setMentionOpen(true)}
+          focusKey={inputFocusKey}
         />
       </PageStatus>
     </div>
