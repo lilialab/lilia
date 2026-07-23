@@ -1,7 +1,7 @@
 'use client';
 
-import { usePagedMessageHistory, type SetMessages } from '@/hooks/usePagedMessageHistory';
 import { fetchGroupHistoryPage, type GroupHistoryMessage } from '@/client-api/groups';
+import { type SetMessages, usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
 import { queryKeys } from '@/lib/client/query-keys';
 
 interface UseGroupMessageHistoryOptions {

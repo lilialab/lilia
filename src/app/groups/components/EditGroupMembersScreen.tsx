@@ -9,7 +9,7 @@ import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { fetchGroup, replaceGroupMembers } from '@/client-api/groups';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -24,7 +24,7 @@ interface EditGroupMembersScreenProps {
 export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
   /** null = 尚未本地改动，勾选跟随群详情；非 null = 用户已编辑 */
   const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string> | null>(null);
 
@@ -67,11 +67,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
     },
   });
 
-  if (isUnauthenticated) {
-    return null;
-  }
-
-  const isBootstrapping = isAuthLoading || groupQuery.isLoading || contactsQuery.isLoading;
+  const isBootstrapping = groupQuery.isLoading || contactsQuery.isLoading;
   const isLoadError = groupQuery.isError || contactsQuery.isError;
   const canSubmit = Boolean(groupQuery.data) && !saveMutation.isPending;
 

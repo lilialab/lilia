@@ -13,7 +13,7 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -40,7 +40,7 @@ interface GroupChatScreenProps {
 export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -118,12 +118,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
   const isBusy = status === 'submitted' || status === 'streaming';
   const deleteDisabled = isBusy;
-  const isBootstrapping = isAuthLoading || groupQuery.isLoading || isInitialLoading;
+  const isBootstrapping = groupQuery.isLoading || isInitialLoading;
   const isLoadError = groupQuery.isError || isHistoryError;
-
-  if (isUnauthenticated) {
-    return null;
-  }
 
   const handleConfirmDelete = async () => {
     setConfirmDeleteOpen(false);

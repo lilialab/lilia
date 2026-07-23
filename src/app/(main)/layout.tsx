@@ -1,3 +1,4 @@
+import { RequireAuth } from '@/components/RequireAuth';
 import { cn } from '@/lib/client/cn';
 
 interface MainLayoutProps {
@@ -5,5 +6,9 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  return <div className={cn('flex h-full flex-col bg-zinc-50')}>{children}</div>;
+  return (
+    <RequireAuth>
+      <div className={cn('flex h-full flex-col bg-zinc-50')}>{children}</div>
+    </RequireAuth>
+  );
 }

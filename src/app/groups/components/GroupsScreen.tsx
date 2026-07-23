@@ -3,7 +3,7 @@
 import { fetchGroups, type GroupDetail } from '@/client-api/groups';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
@@ -82,7 +82,7 @@ function GroupsList({ groups }: GroupsListProps) {
 
 export function GroupsScreen() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
 
   const groupsQuery = useQuery({
     queryKey: queryKeys.groups,
@@ -90,11 +90,6 @@ export function GroupsScreen() {
     enabled: Boolean(user),
   });
 
-  if (isUnauthenticated) {
-    return null;
-  }
-
-  const isBootstrapping = isAuthLoading || groupsQuery.isLoading;
   const groups = groupsQuery.data ?? [];
 
   const openCreate = () => {
@@ -112,7 +107,11 @@ export function GroupsScreen() {
         }
       />
 
-      <PageStatus loading={isBootstrapping} error={groupsQuery.isError} errorMessage="无法加载群聊">
+      <PageStatus
+        loading={groupsQuery.isLoading}
+        error={groupsQuery.isError}
+        errorMessage="无法加载群聊"
+      >
         {groups.length === 0
           ? <GroupsEmpty onCreate={openCreate} />
           : <GroupsList groups={groups} />}

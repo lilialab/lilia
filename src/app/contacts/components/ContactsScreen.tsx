@@ -3,7 +3,7 @@
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
@@ -56,7 +56,7 @@ function ContactsList({ contacts }: ContactsListProps) {
 
 export function ContactsScreen() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
 
   const contactsQuery = useQuery({
     queryKey: queryKeys.contacts,
@@ -64,11 +64,6 @@ export function ContactsScreen() {
     enabled: Boolean(user),
   });
 
-  if (isUnauthenticated) {
-    return null;
-  }
-
-  const isBootstrapping = isAuthLoading || contactsQuery.isLoading;
   const contacts = contactsQuery.data ?? [];
 
   return (
@@ -86,7 +81,7 @@ export function ContactsScreen() {
       />
 
       <PageStatus
-        loading={isBootstrapping}
+        loading={contactsQuery.isLoading}
         error={contactsQuery.isError}
         errorMessage="无法加载通讯录"
       >

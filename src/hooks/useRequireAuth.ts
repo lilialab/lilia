@@ -3,7 +3,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 /**
- * 基于 useAuth：未登录时跳转 /login，并暴露 isUnauthenticated 供页面提前 return null。
+ * 基于 useAuth：未登录时跳转 /login，并暴露 isUnauthenticated。
+ * 页面侧请用 RequireAuth 布局门闸，勿在各 Screen 重复处理。
  */
 export function useRequireAuth() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export function useRequireAuth() {
 
   return {
     ...auth,
-    /** 鉴权已结束且未登录，页面应 return null */
+    /** 鉴权已结束且未登录；由 RequireAuth 消费 */
     isUnauthenticated: !auth.isLoading && auth.user === null,
   };
 }

@@ -6,7 +6,7 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -28,7 +28,7 @@ interface ChatScreenProps {
 export function ChatScreen({ characterId }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
   const { sessionId, displayName, isLoading, isError } = useCharacterSession(characterId);
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
@@ -65,8 +65,6 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const isStreaming = status === 'submitted' || status === 'streaming';
   const clearDisabled = isStreaming || messages.length === 0 || isInitialLoading;
   const deleteDisabled = isStreaming;
-  const isBootstrapping = isAuthLoading || isLoading;
-
   const handleConfirmClear = async () => {
     setConfirmClearOpen(false);
     try {
@@ -103,10 +101,6 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       setInput(currentInput);
     }
   };
-
-  if (isUnauthenticated) {
-    return null;
-  }
 
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
@@ -168,7 +162,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       />
 
       <PageStatus
-        loading={isBootstrapping}
+        loading={isLoading}
         error={isError || !sessionId}
         errorMessage="无法加载会话，请先添加该 AI 好友"
         actionLabel="返回通讯录"

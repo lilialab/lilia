@@ -9,7 +9,7 @@ import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { createGroup } from '@/client-api/groups';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -20,7 +20,7 @@ import { useState } from 'react';
 export function CreateGroupScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   /** 用户可切换的成员；arbor 由下方 selectedIds 派生强制选中 */
   const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string>>(new Set());
@@ -47,11 +47,7 @@ export function CreateGroupScreen() {
     },
   });
 
-  if (isUnauthenticated) {
-    return null;
-  }
-
-  const isBootstrapping = isAuthLoading || contactsQuery.isLoading;
+  const isBootstrapping = contactsQuery.isLoading;
   const canSubmit = title.trim().length > 0 && !createMutation.isPending;
 
   const handleToggle = (contact: ContactSummary) => {

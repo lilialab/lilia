@@ -1,11 +1,7 @@
 'use client';
 
-import { usePagedMessageHistory, type SetMessages } from '@/hooks/usePagedMessageHistory';
-import {
-  clearSessionMessages,
-  fetchHistoryPage,
-  type HistoryMessage,
-} from '@/client-api/sessions';
+import { clearSessionMessages, fetchHistoryPage, type HistoryMessage } from '@/client-api/sessions';
+import { type SetMessages, usePagedMessageHistory } from '@/hooks/usePagedMessageHistory';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';

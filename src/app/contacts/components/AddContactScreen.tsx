@@ -4,7 +4,7 @@ import { type CharacterSummary, fetchCharacters } from '@/client-api/characters'
 import { addContact, fetchContacts } from '@/client-api/contacts';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -71,7 +71,7 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
 
 export function AddContactScreen() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
+  const { user } = useAuth();
 
   const contactsQuery = useQuery({
     queryKey: queryKeys.contacts,
@@ -95,11 +95,7 @@ export function AddContactScreen() {
     [charactersQuery.data, contactIds],
   );
 
-  if (isUnauthenticated) {
-    return null;
-  }
-
-  const isBootstrapping = isAuthLoading || contactsQuery.isLoading || charactersQuery.isLoading;
+  const isBootstrapping = contactsQuery.isLoading || charactersQuery.isLoading;
 
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>

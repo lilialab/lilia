@@ -1,7 +1,7 @@
 'use client';
 
-import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

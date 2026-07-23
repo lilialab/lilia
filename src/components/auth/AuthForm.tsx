@@ -50,9 +50,7 @@ export function AuthShell({ title, children, footer }: AuthShellProps) {
       >
         <h1 className={cn('mb-6 text-center text-xl font-semibold text-zinc-900')}>{title}</h1>
         {children}
-        {footer && (
-          <div className={cn('mt-6 text-center text-sm text-zinc-500')}>{footer}</div>
-        )}
+        {footer && <div className={cn('mt-6 text-center text-sm text-zinc-500')}>{footer}</div>}
       </div>
     </div>
   );

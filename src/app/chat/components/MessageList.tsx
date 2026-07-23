@@ -1,6 +1,6 @@
+import type { HistoryMessage } from '@/client-api/sessions';
 import { Divider } from '@/components/Divider';
 import { ScrollToBottomButton } from '@/components/ScrollToBottomButton';
-import type { HistoryMessage } from '@/client-api/sessions';
 import { cn } from '@/lib/client/cn';
 import { isDisplayMessage } from '@/types/message-kind';
 import { isAtBottom, TOP_THRESHOLD } from '@/utils/scroll';

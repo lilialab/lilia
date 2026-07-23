@@ -1,5 +1,5 @@
-import { groupParamsSchema } from '@/schemas/api/groups/params';
 import { replaceGroupMembersBodySchema } from '@/schemas/api/groups/members-put';
+import { groupParamsSchema } from '@/schemas/api/groups/params';
 import { createGroupBodySchema } from '@/schemas/api/groups/post';
 import { describe, expect, it } from 'vitest';
 
