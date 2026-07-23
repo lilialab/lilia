@@ -23,7 +23,9 @@
 # misc
 .DS_Store
 *.pem
-TODO.md
+
+# personal scratch (TODO, requirements drafts)
+/.scratch/
 
 # debug
 npm-debug.log*

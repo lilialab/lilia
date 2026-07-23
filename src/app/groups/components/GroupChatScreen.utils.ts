@@ -1,6 +1,9 @@
 import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
 
+/** 一次用户发言后，自动 turn_cue 续聊最多轮次。 */
+export const MAX_TURN_CUE_HOPS = 5;
+
 /**
  * 从文本中提取第一个 @slug（精确匹配用）。
  * 规则：/@([a-zA-Z0-9_-]+)/ 取第一处。
@@ -28,21 +31,35 @@ export function buildUserOutboundMetadata(text: string): MessageMetadata {
   };
 }
 
+export type SendTurnCueResult = 'sent' | 'noop' | 'capped';
+
 /**
  * 助手一轮结束后：若正文 @ 了群内成员，则发送 turn_cue 触发其续聊。
- * 无有效 @、或不在成员列表时 noop。
+ * 无有效 @、或不在成员列表时 noop；已达 hop 上限时 capped（不发送）。
  */
 export function sendTurnCueIfMentioned(options: {
   assistantParts: unknown;
   members: readonly { slug: string }[];
   sendMessage: TurnCueSendMessage;
-}): void {
-  const { assistantParts, members, sendMessage } = options;
+  /** 本轮用户发言后已发出的 turn_cue 次数 */
+  hopCount: number;
+  maxHops?: number;
+}): SendTurnCueResult {
+  const {
+    assistantParts,
+    members,
+    sendMessage,
+    hopCount,
+    maxHops = MAX_TURN_CUE_HOPS,
+  } = options;
   const slug = extractFirstMentionSlug(extractTextFromParts(assistantParts));
-  if (!slug || !members.some((m) => m.slug === slug)) return;
+  if (!slug || !members.some((m) => m.slug === slug)) return 'noop';
+
+  if (hopCount >= maxHops) return 'capped';
 
   void sendMessage({
     text: buildTurnCueText(slug),
     metadata: { kind: MESSAGE_KIND_TURN_CUE, slug },
   });
+  return 'sent';
 }

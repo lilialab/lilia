@@ -1,4 +1,3 @@
-import { extractTextFromParts } from '@/utils/message-parts';
 import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
@@ -9,13 +8,17 @@ import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
 import { getUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
-import { convertToModelMessages, stepCountIs, streamText, type UIDataTypes } from 'ai';
+import { extractTextFromParts } from '@/utils/message-parts';
+import { convertToModelMessages, stepCountIs, streamText, type UIDataTypes, type UIMessage } from 'ai';
 import {
   createGroupUserMessage,
   getGroupContextMessages,
-  getLatestRealUserMessageText,
   saveGroupAssistantResponse,
 } from './group-message.service';
+import {
+  extractLatestContextTextForRag,
+  withGroupSpeakerLabelsForModel,
+} from './group-message.utils';
 import { buildGroupSystemPrompt } from './group-prompt.service';
 
 type GroupSpeaker = { characterId: string; slug: string };
@@ -41,16 +44,26 @@ async function findGroupMemberBySlug(
 }
 
 /** 群成员流式回复（上下文来自 DB；调用方已落库 user / turn_cue，并解析好 speaker）。 */
-export async function streamGroupAssistantReply(options: {
+interface StreamGroupAssistantReplyOptions {
   groupSessionId: string;
   userId: string;
   speaker: GroupSpeaker;
-  lastUserContentForRag: string;
   /** 关联日志用，用户主动发送时有值 */
   userMessageId?: string;
-}): Promise<UIMessageStreamPayload> {
-  const { groupSessionId, userId, speaker, lastUserContentForRag, userMessageId } = options;
+  /**
+   * 仅注入本次 LLM 请求末尾的 user 回合（不落库上下文）。
+   * turn_cue 历史已从 getGroupContextMessages 排除，召唤时必须带上，否则对话以 assistant 结尾易空回复。
+   */
+  ephemeralUserText?: string;
+}
 
+export async function streamGroupAssistantReply({
+  groupSessionId,
+  userId,
+  speaker,
+  userMessageId,
+  ephemeralUserText,
+}: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
   const timeZone = await getUserTimeZone(userId);
   const character = loadCharacter(speaker.slug);
   const tools = resolveToolsForCharacter(character.skills, {
@@ -58,10 +71,20 @@ export async function streamGroupAssistantReply(options: {
     characterSlug: speaker.slug,
   });
   const contextMessages = await getGroupContextMessages(groupSessionId);
+  const ragQueryText = extractLatestContextTextForRag(contextMessages);
+  const labeledContext = withGroupSpeakerLabelsForModel(contextMessages);
+  const messagesForModel: UIMessage[] = [...labeledContext];
+  if (ephemeralUserText) {
+    messagesForModel.push({
+      id: `ephemeral-turn-cue-${userMessageId ?? 'now'}`,
+      role: 'user',
+      parts: [{ type: 'text', text: ephemeralUserText }],
+    });
+  }
   const { systemPrompt, meta } = await buildGroupSystemPrompt({
     userId,
     characterSlug: speaker.slug,
-    lastUserContent: lastUserContentForRag,
+    lastUserContent: ragQueryText,
     timeZone,
   });
 
@@ -71,7 +94,8 @@ export async function streamGroupAssistantReply(options: {
     model: env.OLLAMA_MODEL,
     userMessageId,
     characterSlug: speaker.slug,
-    userContent: lastUserContentForRag,
+    userContent: ragQueryText,
+    ephemeralUserText: ephemeralUserText ?? null,
     contextMessageCount: contextMessages.length,
     memoryFragments: meta.memoryFragments,
     userProfile: meta.userProfile,
@@ -83,7 +107,7 @@ export async function streamGroupAssistantReply(options: {
   const streamResult = streamText({
     model: ollamaProvider(env.OLLAMA_MODEL),
     system: systemPrompt,
-    messages: await convertToModelMessages(contextMessages),
+    messages: await convertToModelMessages(messagesForModel),
     tools,
     stopWhen: stepCountIs(5),
 
@@ -178,8 +202,8 @@ export async function streamGroupChatFlow(
       groupSessionId,
       userId,
       speaker,
-      lastUserContentForRag: await getLatestRealUserMessageText(groupSessionId),
       userMessageId,
+      ephemeralUserText: text,
     });
   }
 
@@ -194,7 +218,6 @@ export async function streamGroupChatFlow(
     groupSessionId,
     userId,
     speaker,
-    lastUserContentForRag: text,
     userMessageId,
   });
 }

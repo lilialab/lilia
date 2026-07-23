@@ -1,21 +1,20 @@
-import { extractTextFromParts } from '@/utils/message-parts';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';
+import { extractTextFromParts } from '@/utils/message-parts';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
+import { stripLeadingSpeakerLabels } from './group-message.utils';
 
 export const PAGE_SIZE = 10;
 export const CONTEXT_MESSAGE_LIMIT = env.CHAT_CONTEXT_MESSAGE_LIMIT;
 
 export const activeMessageFilter = { isDeleted: false };
 
-const LEADING_SPEAKER_LABELS = /^(?:\([a-zA-Z0-9_-]+\):\s*)+/;
-
-/** 去掉正文开头已有的 (slug): 标签（防与上下文前缀叠写）。 */
-function stripLeadingSpeakerLabels(text: string): string {
-  return text.replace(LEADING_SPEAKER_LABELS, '').trimStart();
-}
+/** 历史 / 上下文均不返回 turn_cue（编排用，非可读气泡）。 */
+const excludeTurnCueFilter = {
+  OR: [{ kind: null }, { kind: { not: MESSAGE_KIND_TURN_CUE } }],
+};
 
 function mapGroupMessageRole(role: string): UIMessage['role'] {
   if (role === 'user' || role === 'assistant' || role === 'system') return role;
@@ -68,7 +67,7 @@ const groupMessageSelect = {
 } as const;
 
 /**
- * 分页拉取群聊历史消息，支持 before 游标向上翻页。
+ * 分页拉取群聊历史消息，支持 before 游标向上翻页；排除 turn_cue。
  * @param options.before 上一页最早消息的 id，不传则取最新一页
  */
 export async function getGroupHistoryPage(
@@ -82,6 +81,7 @@ export async function getGroupHistoryPage(
       where: {
         groupSessionId,
         ...activeMessageFilter,
+        ...excludeTurnCueFilter,
         createdAt: { lt: oldestCreatedAt },
       },
     });
@@ -104,6 +104,7 @@ export async function getGroupHistoryPage(
     where: {
       groupSessionId,
       ...activeMessageFilter,
+      ...excludeTurnCueFilter,
       createdAt: beforeCreatedAt ? { lt: beforeCreatedAt } : undefined,
     },
     orderBy: { createdAt: 'desc' },
@@ -148,14 +149,18 @@ export async function createGroupUserMessage(
 }
 
 /**
- * 获取群聊最近 N 条消息，按时间正序；助手消息文本加 (slug): 前缀供模型区分说话人。
+ * 获取群聊最近 N 条消息，按时间正序；排除 turn_cue；助手为纯正文 + metadata.slug（不加模型前缀）。
  */
 export async function getGroupContextMessages(
   groupSessionId: string,
   limit = CONTEXT_MESSAGE_LIMIT,
 ): Promise<UIMessage[]> {
   const items = await prisma.message.findMany({
-    where: { groupSessionId, ...activeMessageFilter },
+    where: {
+      groupSessionId,
+      ...activeMessageFilter,
+      ...excludeTurnCueFilter,
+    },
     orderBy: { createdAt: 'desc' },
     take: limit,
     select: {
@@ -176,32 +181,19 @@ export async function getGroupContextMessages(
       };
     }
 
-    const slug = row.speakerCharacter?.slug ?? 'assistant';
-    // 防御性后处理：库内应已是纯正文；strip 防残留标签与下方前缀叠写
+    // 防御性后处理：库内应已是纯正文；strip 防残留标签
     const text = stripLeadingSpeakerLabels(extractTextFromParts(row.parts));
+    const slug = row.speakerCharacter?.slug ?? 'assistant';
     return {
       id: row.id,
       role,
-      parts: [{ type: 'text' as const, text: `(${slug}): ${text}` }],
+      parts: [{ type: 'text' as const, text }],
+      metadata: {
+        kind: null,
+        slug,
+      } satisfies MessageMetadata,
     };
   });
-}
-
-/**
- * 最近一条普通用户消息正文（排除 turn_cue，供 RAG）。
- */
-export async function getLatestRealUserMessageText(groupSessionId: string): Promise<string> {
-  const row = await prisma.message.findFirst({
-    where: {
-      groupSessionId,
-      role: 'user',
-      ...activeMessageFilter,
-      OR: [{ kind: null }, { kind: { not: MESSAGE_KIND_TURN_CUE } }],
-    },
-    orderBy: { createdAt: 'desc' },
-    select: { parts: true },
-  });
-  return row ? extractTextFromParts(row.parts) : '';
 }
 
 /**

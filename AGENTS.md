@@ -90,6 +90,7 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 
 - 格式：[`dprint.json`](dprint.json)（改完 `pnpm format`）；Lint：[`eslint.config.mjs`](eslint.config.mjs)。冲突时可读性优先。
 - 分层（`utils` / `services` / `lib`）见「代码导航」，此处不重复。
+- 用户对代码风格 / 实现提出异议或质疑时（如「这样写有问题吗」「我不太喜欢」「为什么不…」）：优先对照社区主流做法与共识强弱（主流约定 / 常见偏好 / 有争议）来评估，再说明本仓库现有约定。不要默认维护现状或只给个人偏好；本仓与社区冲突时先讲清差异，再让用户决定跟谁。
 
 细则：
 

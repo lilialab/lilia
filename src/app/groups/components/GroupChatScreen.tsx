@@ -17,8 +17,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport } from 'ai';
 import { MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
-import { buildUserOutboundMetadata, sendTurnCueIfMentioned } from './GroupChatScreen.utils';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import {
+  buildUserOutboundMetadata,
+  MAX_TURN_CUE_HOPS,
+  sendTurnCueIfMentioned,
+} from './GroupChatScreen.utils';
 
 interface GroupChatScreenProps {
   groupSessionId: string;
@@ -32,6 +37,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  /** 本轮用户发言后已发出的 turn_cue 次数；用户主动发送时归零 */
+  const turnCueHopCountRef = useRef(0);
 
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
@@ -65,11 +72,19 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     onFinish: ({ message, isAbort, isDisconnect, isError }) => {
       if (isAbort || isDisconnect || isError || message.role !== 'assistant') return;
 
-      sendTurnCueIfMentioned({
+      const result = sendTurnCueIfMentioned({
         assistantParts: message.parts,
         members,
         sendMessage,
+        hopCount: turnCueHopCountRef.current,
+        maxHops: MAX_TURN_CUE_HOPS,
       });
+
+      if (result === 'sent') {
+        turnCueHopCountRef.current += 1;
+      } else if (result === 'capped') {
+        toast.message('续聊轮次已达上限', { id: 'group-turn-cue-cap' });
+      }
     },
   });
 
@@ -114,6 +129,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     if (!text || isBusy) return;
 
     setInput('');
+    turnCueHopCountRef.current = 0;
     try {
       await sendMessage({
         text,
