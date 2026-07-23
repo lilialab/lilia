@@ -1,5 +1,6 @@
 {
   "id": "arbor",
   "displayName": "阿尔博",
+  "shortBio": "成长型个人 AI 助理，语气家常平视，偏陪伴与习惯养成。",
   "skills": ["searchChatHistory"]
 }

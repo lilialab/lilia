@@ -9,6 +9,8 @@ export interface CharacterPrompt {
   id: string;
   displayName: string;
   persona: string;
+  /** 群花名册用短简介；缺省则花名册不写简介。 */
+  shortBio: string | undefined;
   /** 角色可用的 skill id 列表（如 searchChatHistory）。 */
   skills: string[];
 }
@@ -38,6 +40,7 @@ export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPro
   const meta = JSON.parse(metaRaw) as {
     id: string;
     displayName: string;
+    shortBio?: string;
     skills?: string[];
   };
   const persona = readPromptFile('characters', slug, 'persona.md');
@@ -46,10 +49,13 @@ export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPro
     throw new Error(`角色 meta.id (${meta.id}) 与目录名 (${slug}) 不一致`);
   }
 
+  const shortBio = typeof meta.shortBio === 'string' ? meta.shortBio.trim() : '';
+
   return {
     id: slug,
     displayName: meta.displayName,
     persona,
+    shortBio: shortBio.length > 0 ? shortBio : undefined,
     skills: Array.isArray(meta.skills) ? meta.skills : [],
   };
 }

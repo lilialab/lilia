@@ -14,6 +14,7 @@ describe('prompts/load', () => {
     expect(character.displayName).toBe('阿尔博');
     expect(character.persona).toContain('阿尔博');
     expect(character.skills).toEqual(['searchChatHistory']);
+    expect(character.shortBio).toContain('成长型');
   });
 
   it('可加载占位角色 bob / cindy / dave', () => {
@@ -22,16 +23,19 @@ describe('prompts/load', () => {
     expect(bob.displayName).toBe('鲍勃');
     expect(bob.persona).toContain('鲍勃');
     expect(bob.skills).toEqual([]);
+    expect(bob.shortBio).toBeTruthy();
 
     const cindy = loadCharacter('cindy');
     expect(cindy.id).toBe('cindy');
     expect(cindy.displayName).toBe('辛迪');
     expect(cindy.skills).toEqual([]);
+    expect(cindy.shortBio).toBeTruthy();
 
     const dave = loadCharacter('dave');
     expect(dave.id).toBe('dave');
     expect(dave.displayName).toBe('戴夫');
     expect(dave.skills).toEqual([]);
+    expect(dave.shortBio).toBeTruthy();
   });
 
   it('loadJobPrompt(extract) 含核心规则与弱模型约束', () => {

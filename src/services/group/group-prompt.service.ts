@@ -5,10 +5,13 @@ import {
 } from '@/services/chat/prompt-format.utils';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
+import { formatGroupRosterBlock, type GroupRosterMember } from './group-prompt.utils';
 
 export interface GroupSystemPromptMeta {
   memoryFragments: string[];
   userProfile: string;
+  groupChatRules: string;
+  rosterBlock: string;
 }
 
 export interface GroupSystemPromptResult {
@@ -16,19 +19,34 @@ export interface GroupSystemPromptResult {
   meta: GroupSystemPromptMeta;
 }
 
-/**
- * 组装群聊 system prompt：被 @ 角色的人设 + 共享画像/记忆 + 群聊约束。
- */
-export async function buildGroupSystemPrompt(options: {
+export interface BuildGroupSystemPromptOptions {
   userId: string;
+  userDisplayName: string;
   characterSlug: string;
+  members: readonly GroupRosterMember[];
   lastUserContent: string;
   timeZone: string;
-}): Promise<GroupSystemPromptResult> {
-  const { userId, characterSlug, lastUserContent, timeZone } = options;
+}
+
+/**
+ * 组装群聊 system prompt：被 @ 角色的人设 + 群花名册 + 共享画像/记忆 + 群聊约束。
+ */
+export async function buildGroupSystemPrompt({
+  userId,
+  userDisplayName,
+  characterSlug,
+  members,
+  lastUserContent,
+  timeZone,
+}: BuildGroupSystemPromptOptions): Promise<GroupSystemPromptResult> {
   const now = new Date();
   const character = loadCharacter(characterSlug);
   const platformSafety = loadPlatformSafety();
+  const rosterBlock = formatGroupRosterBlock({
+    userDisplayName,
+    currentSlug: characterSlug,
+    members,
+  });
 
   const [userProfile, memoryFragments] = await Promise.all([
     getUserProfileText(userId),
@@ -45,6 +63,14 @@ export async function buildGroupSystemPrompt(options: {
 
   const runtimeContext = buildRuntimeContextBlock(now, timeZone);
 
+  const groupChatRules = `<group_chat_rules>
+    你在群聊中，只代表自己（显示名：${character.displayName}，slug：${character.id}）。
+    用户或其他成员通过 @${character.id} 点名你时你才应被召唤回复；不要假扮其他成员发言。
+    历史消息中助手发言可能带有 (slug): 前缀，仅供你区分说话人，属于系统标注。
+    你的回复必须是纯正文：不要输出 (slug): 或 (${character.id}): 这类前缀；不要续写其他成员的台词。
+    若需召唤其他成员，只在正文中写 @对方slug，由系统再召唤对方，不要代替对方回答。
+    </group_chat_rules>`;
+
   const systemPrompt = `
     # 【第一层：核心宪法】(开发者定义，最高权重)
     <platform_safety>
@@ -56,13 +82,9 @@ export async function buildGroupSystemPrompt(options: {
     </system_mandate>
 
     # 【群聊约束】
-    <group_chat_rules>
-    你在群聊中，只代表自己（显示名：${character.displayName}，slug：${character.id}）。
-    用户或其他成员通过 @${character.id} 点名你时你才应被召唤回复；不要假扮其他成员发言。
-    历史消息中助手发言可能带有 (slug): 前缀，仅供你区分说话人，属于系统标注。
-    你的回复必须是纯正文：不要输出 (slug): 或 (${character.id}): 这类前缀；不要续写其他成员的台词。
-    若需召唤其他成员，只在正文中写 @对方slug，由系统再召唤对方，不要代替对方回答。
-    </group_chat_rules>
+    ${groupChatRules}
+
+    ${rosterBlock}
 
     # 【第二层：动态画像与记忆】(由 AI 持续观察并维护)
     <user_profile>
@@ -86,6 +108,8 @@ export async function buildGroupSystemPrompt(options: {
     meta: {
       memoryFragments: memoryFragmentLines,
       userProfile,
+      groupChatRules,
+      rosterBlock,
     },
   };
 }

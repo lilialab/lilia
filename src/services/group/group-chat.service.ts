@@ -5,11 +5,17 @@ import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { DEFAULT_CHARACTER_ID, loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
-import { getUserTimeZone } from '@/services/user/users.service';
+import { getUserById, getUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
-import { convertToModelMessages, stepCountIs, streamText, type UIDataTypes, type UIMessage } from 'ai';
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  type UIDataTypes,
+  type UIMessage,
+} from 'ai';
 import {
   createGroupUserMessage,
   getGroupContextMessages,
@@ -20,8 +26,27 @@ import {
   withGroupSpeakerLabelsForModel,
 } from './group-message.utils';
 import { buildGroupSystemPrompt } from './group-prompt.service';
+import type { GroupRosterMember } from './group-prompt.utils';
 
 type GroupSpeaker = { characterId: string; slug: string };
+
+/** 拉取群内 AI 成员并映射为花名册条目（简介来自 meta.shortBio）。 */
+async function listGroupRosterMembers(groupSessionId: string): Promise<GroupRosterMember[]> {
+  const rows = await prisma.groupMember.findMany({
+    where: { groupSessionId },
+    select: { character: { select: { slug: true } } },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  return rows.map((row) => {
+    const character = loadCharacter(row.character.slug);
+    return {
+      slug: character.id,
+      displayName: character.displayName,
+      shortBio: character.shortBio,
+    };
+  });
+}
 
 /** 解析 slug 是否为该群成员；命中则返回角色 id 与 slug。 */
 async function findGroupMemberBySlug(
@@ -64,7 +89,11 @@ export async function streamGroupAssistantReply({
   userMessageId,
   ephemeralUserText,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
-  const timeZone = await getUserTimeZone(userId);
+  const [timeZone, user, members] = await Promise.all([
+    getUserTimeZone(userId),
+    getUserById(userId),
+    listGroupRosterMembers(groupSessionId),
+  ]);
   const character = loadCharacter(speaker.slug);
   const tools = resolveToolsForCharacter(character.skills, {
     userId,
@@ -83,7 +112,9 @@ export async function streamGroupAssistantReply({
   }
   const { systemPrompt, meta } = await buildGroupSystemPrompt({
     userId,
+    userDisplayName: user?.displayName ?? '用户',
     characterSlug: speaker.slug,
+    members,
     lastUserContent: ragQueryText,
     timeZone,
   });
@@ -99,6 +130,8 @@ export async function streamGroupAssistantReply({
     contextMessageCount: contextMessages.length,
     memoryFragments: meta.memoryFragments,
     userProfile: meta.userProfile,
+    groupChatRules: meta.groupChatRules,
+    rosterBlock: meta.rosterBlock,
     skills: character.skills,
   });
 
