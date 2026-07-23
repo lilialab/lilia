@@ -150,6 +150,16 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         onClose={() => setMenuOpen(false)}
         items={[
           {
+            key: 'members',
+            label: '管理成员',
+            disabled: deleteDisabled,
+            onSelect: () => {
+              router.push(`/groups/${groupSessionId}/members`, {
+                transitionTypes: ['nav-forward'],
+              });
+            },
+          },
+          {
             key: 'delete',
             label: '删除群聊',
             variant: 'danger',

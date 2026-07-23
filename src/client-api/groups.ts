@@ -54,6 +54,22 @@ export async function deleteGroup(groupSessionId: string): Promise<void> {
   });
 }
 
+/** 整表覆盖群成员。 */
+export async function replaceGroupMembers(
+  groupSessionId: string,
+  options: { characterIds: string[] },
+): Promise<GroupDetail> {
+  const data = await apiFetchJson<{ group: GroupDetail }>(
+    `/api/groups/${groupSessionId}/members`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(options),
+    },
+  );
+  return data.group;
+}
+
 /** 分页拉取群聊历史。 */
 export async function fetchGroupHistoryPage(
   groupSessionId: string,

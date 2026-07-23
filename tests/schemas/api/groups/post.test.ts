@@ -1,3 +1,4 @@
+import { replaceGroupMembersBodySchema } from '@/schemas/api/groups/members-put';
 import { groupParamsSchema } from '@/schemas/api/groups/params';
 import { createGroupBodySchema } from '@/schemas/api/groups/post';
 import { describe, expect, it } from 'vitest';
@@ -22,6 +23,16 @@ describe('groups schemas', () => {
 
   it('createGroupBodySchema 拒绝空字符串 characterId', () => {
     expect(() => createGroupBodySchema.parse({ title: '群', characterIds: [''] })).toThrow();
+  });
+
+  it('replaceGroupMembersBodySchema 接受去重后的 characterIds', () => {
+    expect(
+      replaceGroupMembersBodySchema.parse({ characterIds: ['a', 'a', '  b  '] }),
+    ).toEqual({ characterIds: ['a', 'b'] });
+  });
+
+  it('replaceGroupMembersBodySchema 拒绝空列表', () => {
+    expect(() => replaceGroupMembersBodySchema.parse({ characterIds: [] })).toThrow();
   });
 
   it('groupParamsSchema 解析路由参数', () => {

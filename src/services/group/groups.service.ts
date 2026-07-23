@@ -150,3 +150,49 @@ export async function deleteGroup(groupSessionId: string, userId: string): Promi
   await assertGroupOwnedByUser(groupSessionId, userId);
   await prisma.groupSession.delete({ where: { id: groupSessionId } });
 }
+
+/**
+ * 整表覆盖群成员（须含 arbor、须为好友）；踢人只删 GroupMember，不动消息。
+ */
+export async function replaceGroupMembers(
+  groupSessionId: string,
+  userId: string,
+  characterIds: string[],
+): Promise<GroupDetail> {
+  await assertGroupOwnedByUser(groupSessionId, userId);
+  await assertGroupMembersValid(userId, characterIds);
+
+  const existing = await prisma.groupMember.findMany({
+    where: { groupSessionId },
+    select: { characterId: true },
+  });
+  const existingIds = new Set(existing.map((m) => m.characterId));
+  const nextIds = new Set(characterIds);
+
+  const toRemove = [...existingIds].filter((id) => !nextIds.has(id));
+  const toAdd = characterIds.filter((id) => !existingIds.has(id));
+
+  await prisma.$transaction(async (tx) => {
+    if (toRemove.length > 0) {
+      await tx.groupMember.deleteMany({
+        where: {
+          groupSessionId,
+          characterId: { in: toRemove },
+        },
+      });
+    }
+
+    if (toAdd.length > 0) {
+      await tx.groupMember.createMany({
+        data: toAdd.map((characterId) => ({ groupSessionId, characterId })),
+      });
+    }
+
+    await tx.groupSession.update({
+      where: { id: groupSessionId },
+      data: { updatedAt: new Date() },
+    });
+  });
+
+  return getGroupOrThrow(groupSessionId, userId);
+}
