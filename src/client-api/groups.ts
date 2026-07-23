@@ -1,6 +1,6 @@
-import { apiFetchJson } from '@/lib/client/api-fetch';
 import type { CharacterSummary } from '@/client-api/characters';
 import type { HistoryMessage } from '@/client-api/sessions';
+import { apiFetchJson } from '@/lib/client/api-fetch';
 import type { MessageMetadata } from '@/types/message-kind';
 
 const PAGE_SIZE = 10;
@@ -45,6 +45,13 @@ export async function createGroup(options: {
     body: JSON.stringify(options),
   });
   return data.group;
+}
+
+/** 硬删群聊（含消息与成员关系）。 */
+export async function deleteGroup(groupSessionId: string): Promise<void> {
+  await apiFetchJson<{ ok: boolean }>(`/api/groups/${groupSessionId}`, {
+    method: 'DELETE',
+  });
 }
 
 /** 分页拉取群聊历史。 */

@@ -3,7 +3,7 @@ name: requirements-audit
 description: >-
   Clarifies product and feature requirements through collaborative Q&A before any
   implementation. Use when the user proposes a new feature, product change, UX
-  flow, API/behavior change, or says 需求、想做、讨论一下、先对一下、需求审计,
+  flow, API/behavior change, or says 需求、对齐需求、想做、讨论一下、先对一下、需求审计,
   or has not yet said to implement / 开干 / 按 plan 实现.
 ---
 

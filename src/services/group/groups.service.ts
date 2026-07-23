@@ -142,3 +142,11 @@ export async function createGroup(
 
   return mapGroupDetail(row);
 }
+
+/**
+ * 硬删群聊（cascade 成员与消息）；不存在或不属于该用户时抛 404。
+ */
+export async function deleteGroup(groupSessionId: string, userId: string): Promise<void> {
+  await assertGroupOwnedByUser(groupSessionId, userId);
+  await prisma.groupSession.delete({ where: { id: groupSessionId } });
+}

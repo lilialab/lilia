@@ -82,7 +82,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       await removeContact(characterId);
       queryClient.removeQueries({ queryKey: queryKeys.characterSession(characterId) });
       queryClient.removeQueries({ queryKey: queryKeys.messageHistory(sessionId) });
-
+      await queryClient.invalidateQueries({ queryKey: queryKeys.contacts });
       router.push('/contacts', { transitionTypes: ['nav-back'] });
     } catch (err) {
       showErrorToast(formatClientError(err), 'chat-delete-contact');

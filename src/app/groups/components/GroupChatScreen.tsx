@@ -3,16 +3,19 @@
 import { ChatInput } from '@/app/chat/components/ChatInput';
 import { MessageList } from '@/app/chat/components/MessageList';
 import { useGroupMessageHistory } from '@/app/groups/hooks/useGroupMessageHistory';
-import { fetchGroup, type GroupHistoryMessage } from '@/client-api/groups';
+import { deleteGroup, fetchGroup, type GroupHistoryMessage } from '@/client-api/groups';
+import { ActionSheet } from '@/components/ActionSheet';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import { useChat } from '@ai-sdk/react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport } from 'ai';
+import { MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { buildUserOutboundMetadata, sendTurnCueIfMentioned } from './GroupChatScreen.utils';
@@ -23,9 +26,12 @@ interface GroupChatScreenProps {
 
 export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, isLoading: isAuthLoading, isUnauthenticated } = useRequireAuth();
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
@@ -81,12 +87,26 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   });
 
   const isBusy = status === 'submitted' || status === 'streaming';
+  const deleteDisabled = isBusy;
   const isBootstrapping = isAuthLoading || groupQuery.isLoading || isInitialLoading;
   const isLoadError = groupQuery.isError || isHistoryError;
 
   if (isUnauthenticated) {
     return null;
   }
+
+  const handleConfirmDelete = async () => {
+    setConfirmDeleteOpen(false);
+    try {
+      await deleteGroup(groupSessionId);
+      queryClient.removeQueries({ queryKey: queryKeys.group(groupSessionId) });
+      queryClient.removeQueries({ queryKey: queryKeys.groupMessageHistory(groupSessionId) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups });
+      router.replace('/groups', { transitionTypes: ['nav-back'] });
+    } catch (err) {
+      showErrorToast(formatClientError(err), 'group-delete');
+    }
+  };
 
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -115,7 +135,43 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
   return (
     <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
-      <ScreenHeader title={groupQuery.data?.title ?? '...'} onBack={goBackToGroups} />
+      <ScreenHeader
+        title={groupQuery.data?.title ?? '...'}
+        onBack={goBackToGroups}
+        right={
+          <HeaderIconButton aria-label="更多操作" onClick={() => setMenuOpen(true)}>
+            <MoreHorizontal className={cn('h-5 w-5')} aria-hidden />
+          </HeaderIconButton>
+        }
+      />
+
+      <ActionSheet
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        items={[
+          {
+            key: 'delete',
+            label: '删除群聊',
+            variant: 'danger',
+            disabled: deleteDisabled,
+            onSelect: () => {
+              queueMicrotask(() => setConfirmDeleteOpen(true));
+            },
+          },
+        ]}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="删除群聊"
+        description={`确定删除「${
+          groupQuery.data?.title ?? '该群'
+        }」吗？群消息将一并删除且无法恢复。`}
+        confirmLabel="删除"
+        variant="danger"
+        onConfirm={() => void handleConfirmDelete()}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
 
       <PageStatus
         loading={isBootstrapping}
