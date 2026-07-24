@@ -59,14 +59,14 @@ export async function buildSystemPrompt(
   options: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
   const { timeZone } = options;
-  const { userId, characterSlug } = await resolveSessionContext(sessionId);
+  const { userId, characterId, characterSlug } = await resolveSessionContext(sessionId);
   const now = new Date();
   const character = loadCharacter(characterSlug);
   const platformSafety = loadPlatformSafety();
 
   const [userProfile, memoryFragments] = await Promise.all([
     fetchUserProfile(userId),
-    fetchMemoryFragmentsForPrompt(lastUserContent, userId),
+    fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>

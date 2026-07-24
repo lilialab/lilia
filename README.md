@@ -144,20 +144,21 @@ pnpm worker:memory-extract  # 记忆整理 Worker（需 Redis；另开终端）
 pnpm worker:memory-maintain  # maintain→profile 闲置窗口（需 Redis；另开终端）
 
 
-# 根据你的 schema.prisma 文件，生成专属于你这个项目的 Prisma Client (TypeScript 类型和方法)。
-# 一般 migrate dev 和 db push 内部会自动触发它
+# 根据 schema 生成 Prisma Client（类型与 API）；migrate / db push 通常会顺带跑
 pnpm exec prisma generate
 
-# 开发环境用，将 schema.prisma 结构同步到数据库
+# 开发：把 schema 同步到数据库（不生成迁移文件）
 pnpm exec prisma db push
 
-# 开发环境用，清库重建
+# 开发：清空库并按 schema 重建（会丢数据）
 pnpm exec prisma db push --force-reset
 
-# 上线前用，对比本地的 schema.prisma 和当前的迁移历史，生成一个新的 SQL 迁移文件，并应用到本地开发数据库。
+# 灌入种子数据（如默认角色 arbor）
+pnpm exec prisma db seed
+
+# 开发：根据 schema 变更生成迁移并应用到本地库
 pnpm exec prisma migrate dev
 
-# 生产环境用，将 prisma/migrations 里面还没在数据库里执行过的 SQL 跑一遍
+# 生产：执行 migrations 里尚未跑过的 SQL
 pnpm exec prisma migrate deploy
-
 ```

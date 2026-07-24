@@ -39,6 +39,7 @@ const maintenanceOutputSchema = z.object({
 interface MemoryCursor {
   id: string;
   userId: string;
+  characterId: string;
   text: string;
   type: MemoryType;
   confidence: number;
@@ -73,6 +74,7 @@ async function findNextUnmaintainedMemory(userId: string): Promise<MemoryCursor 
     select: {
       id: true,
       userId: true,
+      characterId: true,
       text: true,
       type: true,
       confidence: true,
@@ -84,6 +86,7 @@ async function findNextUnmaintainedMemory(userId: string): Promise<MemoryCursor 
   return {
     id: row.id,
     userId: row.userId,
+    characterId: row.characterId,
     text: row.text,
     type: row.type,
     confidence: row.confidence,
@@ -104,6 +107,7 @@ async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<N
     select: {
       id: true,
       userId: true,
+      characterId: true,
       text: true,
       type: true,
       confidence: true,
@@ -117,6 +121,7 @@ async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<N
       {
         id: row.id,
         userId: row.userId,
+        characterId: row.characterId,
         text: row.text,
         type: row.type,
         confidence: row.confidence,
@@ -171,6 +176,7 @@ async function applyClusterRewrite(
     deleteIds,
     newMemories: memories.map((memory) => ({
       userId: cursor.userId,
+      characterId: cursor.characterId,
       text: memory.text,
       type: memory.type,
       confidence: memory.confidence,

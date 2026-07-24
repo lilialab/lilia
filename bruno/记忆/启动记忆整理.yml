@@ -5,10 +5,13 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/memory/consolidate?username=tom
+  url: http://localhost:3000/api/memory/consolidate?username=tom&sessionId=502d3282-58d7-4cee-b9cc-a4194ccaf87c
   params:
     - name: username
       value: tom
+      type: query
+    - name: sessionId
+      value: 502d3282-58d7-4cee-b9cc-a4194ccaf87c
       type: query
   auth: inherit
 

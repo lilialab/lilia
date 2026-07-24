@@ -22,6 +22,7 @@ export interface GroupSystemPromptResult {
 export interface BuildGroupSystemPromptOptions {
   userId: string;
   userDisplayName: string;
+  characterId: string;
   characterSlug: string;
   members: readonly GroupRosterMember[];
   lastUserContent: string;
@@ -29,11 +30,12 @@ export interface BuildGroupSystemPromptOptions {
 }
 
 /**
- * 组装群聊 system prompt：被 @ 角色的人设 + 群花名册 + 共享画像/记忆 + 群聊约束。
+ * 组装群聊 system prompt：被 @ 角色的人设 + 群花名册 + 共享画像 / 当前角色私有记忆 + 群聊约束。
  */
 export async function buildGroupSystemPrompt({
   userId,
   userDisplayName,
+  characterId,
   characterSlug,
   members,
   lastUserContent,
@@ -50,7 +52,7 @@ export async function buildGroupSystemPrompt({
 
   const [userProfile, memoryFragments] = await Promise.all([
     getUserProfileText(userId),
-    fetchMemoryFragmentsForPrompt(lastUserContent, userId),
+    fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 
   const memoryFragmentLines = memoryFragments.map((fragment, index) =>

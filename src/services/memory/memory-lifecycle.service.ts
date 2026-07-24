@@ -8,6 +8,7 @@ const vectorService = new VectorService();
 export interface CreateUserMemoryInput {
   id?: string;
   userId: string;
+  characterId: string;
   text: string;
   type: MemoryType;
   confidence: number;
@@ -23,6 +24,7 @@ export interface CreateUserMemoriesOptions {
 interface UserMemoryChromaRecord {
   id: string;
   userId: string;
+  characterId: string;
   text: string;
   timestamp: number;
   type: MemoryType;
@@ -35,6 +37,7 @@ interface PreparedUserMemoryWrite {
   mysqlRows: {
     id: string;
     userId: string;
+    characterId: string;
     text: string;
     type: MemoryType;
     confidence: number;
@@ -76,6 +79,7 @@ function prepareUserMemoryWrite(
     mysqlRows.push({
       id,
       userId: input.userId,
+      characterId: input.characterId,
       text: input.text,
       type: input.type,
       confidence: input.confidence,
@@ -85,6 +89,7 @@ function prepareUserMemoryWrite(
     chromaRecords.push({
       id,
       userId: input.userId,
+      characterId: input.characterId,
       text: input.text,
       timestamp,
       type: input.type,
@@ -158,6 +163,7 @@ export async function updateMemoryRecord(input: {
   await vectorService.updateMemory({
     id: row.id,
     userId: row.userId,
+    characterId: row.characterId,
     text: row.text,
     type: input.type,
     confidence: row.confidence,

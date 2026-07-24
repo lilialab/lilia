@@ -14,6 +14,7 @@ interface AddChunksInput {
 interface AddMemoryInput {
   id: string;
   userId: string;
+  characterId: string;
   text: string;
   timestamp: number;
   type: MemoryType;
@@ -24,6 +25,7 @@ interface AddMemoryInput {
 export interface UpdateMemoryInput {
   id: string;
   userId: string;
+  characterId: string;
   text: string;
   timestamp: number;
   type: MemoryType;
@@ -47,6 +49,7 @@ export interface MemoryCandidate {
 
 interface QueryMemoryWithDecayOptions {
   userId: string;
+  characterId: string;
   startTime?: number;
   nowMs?: number;
   candidateMultiplier?: number;
@@ -71,14 +74,16 @@ export class VectorService {
     });
   }
 
-  private buildMemoryWhereClause(userId: string, startTime?: number): Where {
-    if (startTime === undefined) {
-      return { user_id: userId };
+  private buildMemoryWhereClause(
+    userId: string,
+    characterId: string,
+    startTime?: number,
+  ): Where {
+    const filters: Where[] = [{ user_id: userId }, { character_id: characterId }];
+    if (startTime !== undefined) {
+      filters.push({ timestamp: { $gte: startTime } });
     }
-
-    return {
-      $and: [{ user_id: userId }, { timestamp: { $gte: startTime } }],
-    };
+    return { $and: filters };
   }
 
   // ==================== 个人记忆库 业务逻辑 ====================
@@ -95,6 +100,7 @@ export class VectorService {
       documents: memories.map((m) => m.text),
       metadatas: memories.map((m) => ({
         user_id: m.userId,
+        character_id: m.characterId,
         timestamp: m.timestamp,
         type: m.type,
         confidence: m.confidence,
@@ -116,7 +122,11 @@ export class VectorService {
     const candidateMultiplier = options.candidateMultiplier ?? env.MEMORY_RAG_CANDIDATE_MULTIPLIER;
     const collection = await this.getCollection(this.memoryCollectionName);
 
-    const whereClause = this.buildMemoryWhereClause(options.userId, options.startTime);
+    const whereClause = this.buildMemoryWhereClause(
+      options.userId,
+      options.characterId,
+      options.startTime,
+    );
 
     const response = await collection.query({
       queryTexts: [queryText],
@@ -161,6 +171,7 @@ export class VectorService {
       where: {
         id: { in: ranked.map((item) => item.id) },
         userId: options.userId,
+        characterId: options.characterId,
         isDeleted: false,
       },
       select: { id: true },
@@ -214,6 +225,7 @@ export class VectorService {
       metadatas: [
         {
           user_id: input.userId,
+          character_id: input.characterId,
           timestamp: input.timestamp,
           type: input.type,
           confidence: input.confidence,
@@ -229,10 +241,15 @@ export class VectorService {
   async queryMemory(
     queryText: string,
     userId: string,
+    characterId: string,
     limit = env.MEMORY_RAG_LIMIT,
     startTime?: number,
   ): Promise<string[]> {
-    const hits = await this.queryMemoryWithDecay(queryText, limit, { userId, startTime });
+    const hits = await this.queryMemoryWithDecay(queryText, limit, {
+      userId,
+      characterId,
+      startTime,
+    });
     return hits.map((hit) => hit.text);
   }
 
@@ -247,7 +264,7 @@ export class VectorService {
 
     const rows = await prisma.userMemory.findMany({
       where: { id: { in: ids }, isDeleted: false },
-      select: { id: true, userId: true },
+      select: { id: true, userId: true, characterId: true },
     });
 
     if (rows.length === 0) return;
@@ -262,6 +279,7 @@ export class VectorService {
       ids: rows.map((row) => row.id),
       metadatas: rows.map((row) => ({
         user_id: row.userId,
+        character_id: row.characterId,
         last_active_at: nowMs,
       })),
     });

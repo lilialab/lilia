@@ -1,14 +1,14 @@
 info:
   name: 启动画像维护
   type: http
-  seq: 6
+  seq: 4
 
 http:
   method: POST
-  url: http://localhost:3000/api/memory/profile?username=jerry
+  url: http://localhost:3000/api/memory/profile?username=tom
   params:
     - name: username
-      value: jerry
+      value: tom
       type: query
 
 settings:

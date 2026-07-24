@@ -113,6 +113,7 @@ export async function streamGroupAssistantReply({
   const { systemPrompt, meta } = await buildGroupSystemPrompt({
     userId,
     userDisplayName: user?.displayName ?? '用户',
+    characterId: speaker.characterId,
     characterSlug: speaker.slug,
     members,
     lastUserContent: ragQueryText,

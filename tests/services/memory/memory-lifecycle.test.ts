@@ -110,12 +110,14 @@ describe('createUserMemories', () => {
       [
         {
           userId: 'default',
+          characterId: 'char-a',
           text: '用户喜欢跑步',
           type: 'preference',
           confidence: 0.9,
         },
         {
           userId: 'default',
+          characterId: 'char-a',
           text: '用户是工程师',
           type: 'fact',
           confidence: 0.85,
@@ -129,6 +131,7 @@ describe('createUserMemories', () => {
       data: expect.arrayContaining([
         expect.objectContaining({
           userId: 'default',
+          characterId: 'char-a',
           text: '用户喜欢跑步',
           type: 'preference',
           confidence: 0.9,
@@ -136,6 +139,7 @@ describe('createUserMemories', () => {
         }),
         expect.objectContaining({
           userId: 'default',
+          characterId: 'char-a',
           text: '用户是工程师',
           type: 'fact',
           confidence: 0.85,
@@ -144,8 +148,18 @@ describe('createUserMemories', () => {
       ]),
     });
     expect(mockAddMemories).toHaveBeenCalledWith([
-      expect.objectContaining({ userId: 'default', text: '用户喜欢跑步', type: 'preference' }),
-      expect.objectContaining({ userId: 'default', text: '用户是工程师', type: 'fact' }),
+      expect.objectContaining({
+        userId: 'default',
+        characterId: 'char-a',
+        text: '用户喜欢跑步',
+        type: 'preference',
+      }),
+      expect.objectContaining({
+        userId: 'default',
+        characterId: 'char-a',
+        text: '用户是工程师',
+        type: 'fact',
+      }),
     ]);
   });
 });
@@ -173,6 +187,7 @@ describe('applyMaintenanceMerge', () => {
       newMemories: [
         {
           userId: 'default',
+          characterId: 'char-a',
           text: '用户喜欢跑步',
           type: 'preference',
           confidence: 0.9,
@@ -191,6 +206,7 @@ describe('applyMaintenanceMerge', () => {
       data: [
         expect.objectContaining({
           userId: 'default',
+          characterId: 'char-a',
           text: '用户喜欢跑步',
           isMaintained: true,
         }),
@@ -200,6 +216,7 @@ describe('applyMaintenanceMerge', () => {
     expect(mockAddMemories).toHaveBeenCalledWith([
       expect.objectContaining({
         userId: 'default',
+        characterId: 'char-a',
         text: '用户喜欢跑步',
         type: 'preference',
         confidence: 0.9,
@@ -217,12 +234,14 @@ describe('applyMaintenanceMerge', () => {
       newMemories: [
         {
           userId: 'default',
+          characterId: 'char-a',
           text: '用户喜欢跑步',
           type: 'preference',
           confidence: 0.9,
         },
         {
           userId: 'default',
+          characterId: 'char-a',
           text: '用户住在上海',
           type: 'fact',
           confidence: 0.85,
@@ -233,13 +252,29 @@ describe('applyMaintenanceMerge', () => {
     expect(result.ids).toHaveLength(2);
     expect(mockTransactionCreateMany).toHaveBeenCalledWith({
       data: expect.arrayContaining([
-        expect.objectContaining({ text: '用户喜欢跑步', isMaintained: true }),
-        expect.objectContaining({ text: '用户住在上海', isMaintained: true }),
+        expect.objectContaining({
+          text: '用户喜欢跑步',
+          characterId: 'char-a',
+          isMaintained: true,
+        }),
+        expect.objectContaining({
+          text: '用户住在上海',
+          characterId: 'char-a',
+          isMaintained: true,
+        }),
       ]),
     });
     expect(mockAddMemories).toHaveBeenCalledWith([
-      expect.objectContaining({ userId: 'default', text: '用户喜欢跑步' }),
-      expect.objectContaining({ userId: 'default', text: '用户住在上海' }),
+      expect.objectContaining({
+        userId: 'default',
+        characterId: 'char-a',
+        text: '用户喜欢跑步',
+      }),
+      expect.objectContaining({
+        userId: 'default',
+        characterId: 'char-a',
+        text: '用户住在上海',
+      }),
     ]);
   });
 });

@@ -32,6 +32,7 @@ interface TranscriptResult {
   transcript: string;
   messageIds: string[];
   userId: string;
+  characterId: string;
 }
 
 /** 将单条消息格式化为 LLM 可读的 XML 片段；无有效文本时返回 null。 */
@@ -49,7 +50,7 @@ function formatMessageXml(id: string, seq: number, role: string, parts: unknown)
 }
 
 /**
- * 捞取指定会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
+ * 捞取指定单聊会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
  */
 async function buildTranscript(sessionId: string): Promise<TranscriptResult | null> {
   const messages = await prisma.message.findMany({
@@ -62,14 +63,14 @@ async function buildTranscript(sessionId: string): Promise<TranscriptResult | nu
       id: true,
       role: true,
       parts: true,
-      session: { select: { userId: true } },
+      session: { select: { userId: true, characterId: true } },
     },
   });
 
   if (messages.length === 0) return null;
 
-  const userId = messages[0]?.session?.userId;
-  if (!userId) return null;
+  const session = messages[0]?.session;
+  if (!session) return null;
   const messageIds = messages.map((message) => message.id);
 
   const lines = messages.flatMap((message, seq) => {
@@ -80,7 +81,8 @@ async function buildTranscript(sessionId: string): Promise<TranscriptResult | nu
   return {
     transcript: lines.join('\n'),
     messageIds,
-    userId,
+    userId: session.userId,
+    characterId: session.characterId,
   };
 }
 
@@ -194,9 +196,11 @@ async function persistConsolidation(
   finishedMemories: FinishedMemory[],
   consolidatedIds: string[],
   userId: string,
+  characterId: string,
 ): Promise<void> {
   const inputs = finishedMemories.map((memory) => ({
     userId,
+    characterId,
     text: memory.text,
     type: memory.type,
     confidence: memory.confidence,
@@ -222,7 +226,7 @@ async function persistConsolidation(
 }
 
 /**
- * 记忆整理主流程：按会话捞 transcript，记忆写入共享的 userId。
+ * 记忆整理主流程：按单聊会话捞 transcript，记忆写入该会话角色的 userId+characterId。
  */
 export async function runConsolidation(
   job: ConsolidationJob,
@@ -244,7 +248,7 @@ export async function runConsolidation(
       return;
     }
 
-    const { transcript, messageIds } = transcriptResult;
+    const { transcript, messageIds, characterId } = transcriptResult;
 
     if (!transcript) {
       await completeJob(
@@ -304,7 +308,7 @@ export async function runConsolidation(
       return;
     }
 
-    await persistConsolidation(job, finishedMemories, consolidatedIds, userId);
+    await persistConsolidation(job, finishedMemories, consolidatedIds, userId, characterId);
 
     const result = {
       memoriesExtracted: finishedMemories.length,
@@ -317,6 +321,7 @@ export async function runConsolidation(
       event: 'llm.consolidation.complete',
       jobId: job.id,
       sessionId,
+      characterId,
       memoriesExtracted: result.memoriesExtracted,
       consolidatedMessageCount: result.consolidatedMessageCount,
       unfinishedMessageCount: result.unfinishedMessageCount,

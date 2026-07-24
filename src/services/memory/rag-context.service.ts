@@ -7,15 +7,19 @@ const vectorService = new VectorService();
 
 /**
  * 按用户输入从向量记忆库检索相关历史片段（含衰减重排与命中回写）。
- * 供单聊 / 群聊 system prompt 组装共用。
+ * 仅召回该 userId + characterId 下的私有记忆。
  */
 export async function fetchMemoryFragmentsForPrompt(
   content: string,
   userId: string,
+  characterId: string,
 ): Promise<MemoryFragment[]> {
   if (!content) return [];
   try {
-    const hits = await vectorService.queryMemoryWithDecay(content, undefined, { userId });
+    const hits = await vectorService.queryMemoryWithDecay(content, undefined, {
+      userId,
+      characterId,
+    });
     const ids = hits.map((hit) => hit.id);
     if (ids.length === 0) return [];
 
@@ -24,7 +28,7 @@ export async function fetchMemoryFragmentsForPrompt(
     });
 
     const rows = await prisma.userMemory.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, userId, characterId },
       select: { id: true, type: true, createdAt: true, lastActiveAt: true },
     });
     const rowById = new Map(rows.map((row) => [row.id, row]));

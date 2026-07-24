@@ -8,7 +8,7 @@ datasource db {
 }
 
 /**
- * 登录用户；记忆与画像按 userId 共享，跨单聊/群聊角色
+ * 登录用户；画像按 userId 共享；长期记忆按 userId+characterId 私有（见 UserMemory）
  */
 model User {
   id                   String    @id @default(uuid())
@@ -49,6 +49,7 @@ model Character {
   groupMembers   GroupMember[]
   spokenMessages Message[]
   userCharacters UserCharacter[]
+  memories       UserMemory[]
 
   @@map("characters")
 }
@@ -172,11 +173,12 @@ model Message {
 }
 
 /**
- * 长期用户记忆条目（preference / event / fact）；按 userId 共享，供 RAG / maintain
+ * 长期用户记忆条目（preference / event / fact）；按 userId + characterId 私有，供 RAG / maintain
  */
 model UserMemory {
   id           String   @id @default(uuid())
   userId       String   @map("user_id")
+  characterId  String   @map("character_id")
   text         String   @db.Text
   type         String // preference | event | fact
   confidence   Float    @default(0.7)
@@ -186,10 +188,11 @@ model UserMemory {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isDeleted])
-  @@index([userId, isDeleted, lastActiveAt])
-  @@index([userId, isDeleted, isMaintained, createdAt])
+  @@index([userId, characterId, isDeleted])
+  @@index([userId, characterId, isDeleted, lastActiveAt])
+  @@index([userId, characterId, isDeleted, isMaintained, createdAt])
   @@map("user_memories")
 }
 

@@ -1,7 +1,7 @@
 info:
   name: 查询已存储记忆
   type: http
-  seq: 8
+  seq: 5
 
 http:
   method: GET

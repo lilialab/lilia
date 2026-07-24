@@ -72,7 +72,7 @@ services:
     environment:
       <<: *timezone
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: password
       GF_USERS_ALLOW_SIGN_UP: 'false'
     volumes:
       - ./docker-volumes/grafana-data:/var/lib/grafana
