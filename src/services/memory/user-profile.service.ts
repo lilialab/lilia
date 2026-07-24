@@ -113,10 +113,10 @@ export function buildProfileRefreshPrompt(input: {
   ].join('\n');
 }
 
-/** 从数据库读取用户画像并格式化为 prompt 文本。 */
-export async function getUserProfileText(userId: string): Promise<string> {
+/** 从数据库读取该用户×角色画像并格式化为 prompt 文本。 */
+export async function getUserProfileText(userId: string, characterId: string): Promise<string> {
   const profile = await prisma.userProfile.findUnique({
-    where: { userId },
+    where: { userId_characterId: { userId, characterId } },
     select: { summary: true, facets: true },
   });
 
@@ -127,11 +127,11 @@ export async function getUserProfileText(userId: string): Promise<string> {
   return formatProfileForPrompt(profile.summary, facets);
 }
 
-/** 统计活跃记忆数量与各类型分布。 */
-async function loadMemoryStats(userId: string): Promise<ProfileMemoryStats> {
+/** 统计该角色下活跃记忆数量与各类型分布。 */
+async function loadMemoryStats(userId: string, characterId: string): Promise<ProfileMemoryStats> {
   const rows = await prisma.userMemory.groupBy({
     by: ['type'],
-    where: { userId, isDeleted: false },
+    where: { userId, characterId, isDeleted: false },
     _count: { id: true },
   });
 
@@ -146,18 +146,23 @@ async function loadMemoryStats(userId: string): Promise<ProfileMemoryStats> {
   return { activeMemoryCount, byType };
 }
 
-/** 用 LLM rollup 更新 UserProfile。 */
-export async function refreshUserProfile(userId: string): Promise<{ sourceVersion: number }> {
+/** 用 LLM rollup 更新该用户×角色的 UserProfile。 */
+export async function refreshUserProfile(
+  userId: string,
+  characterId: string,
+): Promise<{ sourceVersion: number }> {
   const [existingProfile, referenceMemories, stats] = await Promise.all([
-    prisma.userProfile.findUnique({ where: { userId } }),
+    prisma.userProfile.findUnique({
+      where: { userId_characterId: { userId, characterId } },
+    }),
     // 参考记忆仅供长期画像 rollup，不含 event（一次性日程由 RAG 处理）
     prisma.userMemory.findMany({
-      where: { userId, isDeleted: false, type: { not: 'event' } },
+      where: { userId, characterId, isDeleted: false, type: { not: 'event' } },
       orderBy: [{ confidence: 'desc' }, { lastActiveAt: 'desc' }],
       take: env.MEMORY_PROFILE_REFERENCE_LIMIT,
       select: { text: true, type: true, confidence: true },
     }),
-    loadMemoryStats(userId),
+    loadMemoryStats(userId, characterId),
   ]);
 
   const existingFacets = existingProfile?.facets
@@ -174,6 +179,7 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
   logger.info({
     event: 'llm.profile.request',
     userId,
+    characterId,
     model: env.OLLAMA_MODEL,
     referenceMemoryCount: referenceMemories.length,
     prompt: userPrompt,
@@ -190,6 +196,7 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
   logger.info({
     event: 'llm.profile.response',
     userId,
+    characterId,
     model: env.OLLAMA_MODEL,
     response: text,
     output,
@@ -200,9 +207,10 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
   }
 
   const profile = await prisma.userProfile.upsert({
-    where: { userId },
+    where: { userId_characterId: { userId, characterId } },
     create: {
       userId,
+      characterId,
       summary: output.summary.trim(),
       facets: output.facets,
       sourceVersion: 1,
@@ -217,18 +225,22 @@ export async function refreshUserProfile(userId: string): Promise<{ sourceVersio
   return { sourceVersion: profile.sourceVersion };
 }
 
-/** 用户画像刷新主流程，由 API 路由以 fire-and-forget 方式调用。 */
-export async function runProfileRefresh(job: ConsolidationJob, userId: string): Promise<void> {
+/** 用户×角色画像刷新主流程，由 API / 管线以 fire-and-forget 或 await 调用。 */
+export async function runProfileRefresh(
+  job: ConsolidationJob,
+  userId: string,
+  characterId: string,
+): Promise<void> {
   await updateConsolidationJob(job.id, {
     status: 'running',
     progress: '正在加载记忆与现有画像...',
-    snapshot: { userId },
+    snapshot: { userId, characterId },
   });
 
   try {
     await updateConsolidationJob(job.id, { progress: '正在调用模型更新用户画像...' });
 
-    const { sourceVersion } = await refreshUserProfile(userId);
+    const { sourceVersion } = await refreshUserProfile(userId, characterId);
 
     const result: ProfileJobResult = { sourceVersion };
 
@@ -236,6 +248,7 @@ export async function runProfileRefresh(job: ConsolidationJob, userId: string): 
       event: 'llm.profile.complete',
       jobId: job.id,
       userId,
+      characterId,
       sourceVersion,
     });
 
@@ -247,7 +260,7 @@ export async function runProfileRefresh(job: ConsolidationJob, userId: string): 
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '未知错误';
-    logger.error({ err, jobId: job.id }, '[ProfileRefresh] 用户画像更新失败');
+    logger.error({ err, jobId: job.id, userId, characterId }, '[ProfileRefresh] 用户画像更新失败');
     await updateConsolidationJob(job.id, {
       status: 'failed',
       completedAt: Date.now(),

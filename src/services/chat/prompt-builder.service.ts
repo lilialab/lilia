@@ -40,9 +40,9 @@ export async function resolveSessionContext(sessionId: string): Promise<{
   };
 }
 
-/** 获取用户画像文本。 */
-async function fetchUserProfile(userId: string): Promise<string> {
-  return getUserProfileText(userId);
+/** 获取该角色下的用户画像文本。 */
+async function fetchUserProfile(userId: string, characterId: string): Promise<string> {
+  return getUserProfileText(userId, characterId);
 }
 
 export interface BuildSystemPromptOptions {
@@ -65,7 +65,7 @@ export async function buildSystemPrompt(
   const platformSafety = loadPlatformSafety();
 
   const [userProfile, memoryFragments] = await Promise.all([
-    fetchUserProfile(userId),
+    fetchUserProfile(userId, characterId),
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 

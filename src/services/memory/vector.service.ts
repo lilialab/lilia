@@ -57,6 +57,7 @@ interface QueryMemoryWithDecayOptions {
 
 interface FindMemoryNeighborsOptions {
   userId: string;
+  characterId: string;
   excludeId?: string;
 }
 
@@ -192,7 +193,9 @@ export class VectorService {
     const response = await collection.query({
       queryTexts: [queryText],
       nResults: limit + (options.excludeId ? 1 : 0),
-      where: { user_id: options.userId },
+      where: {
+        $and: [{ user_id: options.userId }, { character_id: options.characterId }],
+      },
       include: ['distances'],
     });
 

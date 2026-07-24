@@ -63,10 +63,14 @@ interface MaintainOneResult {
 /**
  * 捞下一条待维护游标（未删除且 isMaintained=false）。
  */
-async function findNextUnmaintainedMemory(userId: string): Promise<MemoryCursor | null> {
+async function findNextUnmaintainedMemory(
+  userId: string,
+  characterId: string,
+): Promise<MemoryCursor | null> {
   const row = await prisma.userMemory.findFirst({
     where: {
       userId,
+      characterId,
       isDeleted: false,
       isMaintained: false,
     },
@@ -99,11 +103,20 @@ async function findNextUnmaintainedMemory(userId: string): Promise<MemoryCursor 
  * Chroma 可能仍命中已软删 id，此处用 isDeleted=false 做防御性过滤（与 queryMemoryWithDecay 一致）。
  * 不过滤 isMaintained（已维护老记忆仍可作合并近邻）；衰减过滤在 maintainOneMemory 另行处理。
  */
-async function loadActiveMemoriesByIds(userId: string, ids: string[]): Promise<NeighborMemory[]> {
+async function loadActiveMemoriesByIds(
+  userId: string,
+  characterId: string,
+  ids: string[],
+): Promise<NeighborMemory[]> {
   if (ids.length === 0) return [];
 
   const rows = await prisma.userMemory.findMany({
-    where: { userId, isDeleted: false, id: { in: ids } },
+    where: {
+      userId,
+      characterId,
+      isDeleted: false,
+      id: { in: ids },
+    },
     select: {
       id: true,
       userId: true,
@@ -264,11 +277,12 @@ async function maintainOneMemory(
   const chromaNeighbors = await vectorService.findMemoryNeighbors(
     cursor.text,
     env.MEMORY_MAINTENANCE_NEIGHBOR_LIMIT,
-    { userId: cursor.userId, excludeId: cursor.id },
+    { userId: cursor.userId, characterId: cursor.characterId, excludeId: cursor.id },
   );
 
   const neighborMemories = await loadActiveMemoriesByIds(
     cursor.userId,
+    cursor.characterId,
     chromaNeighbors.map((neighbor) => neighbor.id),
   );
 
@@ -324,6 +338,7 @@ async function maintainOneMemory(
 async function runMaintenanceLoop(
   job: ConsolidationJob,
   userId: string,
+  characterId: string,
 ): Promise<{
   processedCount: number;
   mergedGroups: MaintenanceMergedGroup[];
@@ -334,7 +349,7 @@ async function runMaintenanceLoop(
   const maintenanceDeletedIds: string[] = [];
 
   while (true) {
-    const cursor = await findNextUnmaintainedMemory(userId);
+    const cursor = await findNextUnmaintainedMemory(userId, characterId);
     if (!cursor) break;
 
     processedCount += 1;
@@ -377,18 +392,23 @@ async function completeMaintenanceJob(
   });
 }
 
-/** 串行记忆维护：逐条游标整理（LLM 或 touch）。 */
-export async function runMaintenance(job: ConsolidationJob, userId: string): Promise<void> {
+/** 串行记忆维护：逐条游标整理（LLM 或 touch），范围限定 userId + characterId。 */
+export async function runMaintenance(
+  job: ConsolidationJob,
+  userId: string,
+  characterId: string,
+): Promise<void> {
   await updateConsolidationJob(job.id, {
     status: 'running',
     progress: '正在查找待维护记忆...',
-    snapshot: { userId },
+    snapshot: { userId, characterId },
   });
 
   try {
     const { processedCount, mergedGroups, maintenanceDeletedIds } = await runMaintenanceLoop(
       job,
       userId,
+      characterId,
     );
 
     await completeMaintenanceJob(job, {
@@ -400,7 +420,7 @@ export async function runMaintenance(job: ConsolidationJob, userId: string): Pro
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '未知错误';
-    logger.error({ err }, '[MemoryMaintenance] 记忆维护失败');
+    logger.error({ err, userId, characterId }, '[MemoryMaintenance] 记忆维护失败');
     await updateConsolidationJob(job.id, {
       status: 'failed',
       completedAt: Date.now(),

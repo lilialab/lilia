@@ -8,30 +8,26 @@ datasource db {
 }
 
 /**
- * 登录用户；画像按 userId 共享；长期记忆按 userId+characterId 私有（见 UserMemory）
+ * 登录用户；画像与长期记忆均按 userId+characterId 私有
  */
 model User {
-  id                   String    @id @default(uuid())
-  username             String    @unique
-  passwordHash         String    @map("password_hash")
-  displayName          String    @map("display_name")
+  id            String    @id @default(uuid())
+  username      String    @unique
+  passwordHash  String    @map("password_hash")
+  displayName   String    @map("display_name")
   /**
    * IANA 时区，聊天 prompt 本地时间以库为准
    */
-  timeZone             String    @default("Asia/Shanghai") @map("time_zone")
-  /**
-   * maintain→profile 管线上次两者都成功完成的时刻
-   */
-  lastMemoryPipelineAt DateTime? @map("last_memory_pipeline_at")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  timeZone      String    @default("Asia/Shanghai") @map("time_zone")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   authSessions   AuthSession[]
   sessions       ChatSession[]
   groupSessions  GroupSession[]
   userCharacters UserCharacter[]
   memories       UserMemory[]
-  profile        UserProfile?
+  profiles       UserProfile[]
 
   @@map("users")
 }
@@ -50,6 +46,7 @@ model Character {
   spokenMessages Message[]
   userCharacters UserCharacter[]
   memories       UserMemory[]
+  profiles       UserProfile[]
 
   @@map("characters")
 }
@@ -58,12 +55,16 @@ model Character {
  * 用户通讯录：已添加的 AI 好友（单聊前提；建群成员须已在此）
  */
 model UserCharacter {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  characterId String    @map("character_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(uuid())
+  userId               String    @map("user_id")
+  characterId          String    @map("character_id")
+  /**
+   * 该用户×角色 maintain→profile 管线上次两者都成功完成的时刻
+   */
+  lastMemoryPipelineAt DateTime? @map("last_memory_pipeline_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character            Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@unique([userId, characterId])
   @@index([userId])
@@ -197,17 +198,20 @@ model UserMemory {
 }
 
 /**
- * 用户画像摘要（maintain→profile 产物）；每用户一行
+ * 用户×角色画像摘要（maintain→profile 产物）；按 userId + characterId 私有
  */
 model UserProfile {
-  userId        String   @id @map("user_id")
+  userId        String   @map("user_id")
+  characterId   String   @map("character_id")
   summary       String?  @db.Text
   facets        Json?
   sourceVersion Int      @default(0) @map("source_version")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
+  @@id([userId, characterId])
   @@map("user_profiles")
 }
 

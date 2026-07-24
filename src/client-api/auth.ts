@@ -11,12 +11,10 @@ export interface AuthUser {
   updatedAt: string;
 }
 
-/** 获取当前登录用户；未登录时返回 null。 */
-export async function fetchCurrentUser(): Promise<AuthUser | null> {
-  const data = await apiFetchJson<{ user: AuthUser } | null>('/api/auth/me', {
-    nullOnUnauthorized: true,
-  });
-  return data?.user ?? null;
+/** 获取当前登录用户；未登录时由 apiFetchJson 统一踢回 /login。 */
+export async function fetchCurrentUser(): Promise<AuthUser> {
+  const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me');
+  return data.user;
 }
 
 /** 登录并写入 session Cookie。 */

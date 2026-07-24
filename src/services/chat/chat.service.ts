@@ -16,7 +16,11 @@ import { getContextMessages, saveAssistantResponse } from './message.service';
 import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
 
 /** 调度记忆 extract / maintain；入队失败只记日志，不阻断聊天（如 Redis 不可用）。 */
-async function scheduleMemoryJobsBestEffort(sessionId: string, userId: string): Promise<void> {
+async function scheduleMemoryJobsBestEffort(
+  sessionId: string,
+  userId: string,
+  characterId: string,
+): Promise<void> {
   try {
     await scheduleMemoryExtract(sessionId, userId);
   } catch (err) {
@@ -26,10 +30,10 @@ async function scheduleMemoryJobsBestEffort(sessionId: string, userId: string): 
     );
   }
   try {
-    await scheduleMaintainPipeline(userId);
+    await scheduleMaintainPipeline(userId, characterId);
   } catch (err) {
     logger.error(
-      { err, userId, event: 'memory.maintain.schedule_failed' },
+      { err, userId, characterId, event: 'memory.maintain.schedule_failed' },
       '[memory] maintain 入队失败，已跳过（聊天继续）',
     );
   }
@@ -61,15 +65,15 @@ export async function streamChatFlow(
   });
   const userMessageId = userMessage.id;
 
-  await scheduleMemoryJobsBestEffort(sessionId, userId);
+  const { characterId, characterSlug, characterDisplayName } = await resolveSessionContext(
+    sessionId,
+  );
+  await scheduleMemoryJobsBestEffort(sessionId, userId, characterId);
 
   const contextMessages = await getContextMessages(sessionId);
 
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
   const timeZone = await getUserTimeZone(userId);
-  const { characterId, characterSlug, characterDisplayName } = await resolveSessionContext(
-    sessionId,
-  );
   const character = loadCharacter(characterSlug);
   const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
 

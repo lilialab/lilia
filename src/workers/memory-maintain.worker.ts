@@ -3,7 +3,7 @@ import { logger } from '@/lib/server/logger';
 import { asBullMqConnection } from '@/lib/server/redis';
 import {
   getLastMemoryPipelineAt,
-  runMaintainPipelineForUser,
+  runMaintainPipelineForUserCharacter,
 } from '@/services/memory/maintain-pipeline.service';
 import {
   MEMORY_MAINTAIN_PIPELINE_JOB,
@@ -34,20 +34,21 @@ async function main() {
         return;
       }
 
-      const { userId } = bullJob.data as MemoryMaintainPipelineJobData;
-      const lastMemoryPipelineAt = await getLastMemoryPipelineAt(userId);
+      const { userId, characterId } = bullJob.data as MemoryMaintainPipelineJobData;
+      const lastMemoryPipelineAt = await getLastMemoryPipelineAt(userId, characterId);
       const intervalMs = minIntervalMs();
 
       if (lastMemoryPipelineAt) {
         const elapsed = Date.now() - lastMemoryPipelineAt.getTime();
         if (elapsed < intervalMs) {
           const delayMs = intervalMs - elapsed;
-          await scheduleMaintainPipeline(userId, { delayMs });
+          await scheduleMaintainPipeline(userId, characterId, { delayMs });
           logger.info(
             {
               event: 'memory.maintain.worker.cooldown',
               bullJobId: bullJob.id,
               userId,
+              characterId,
               delayMs,
               lastMemoryPipelineAt: lastMemoryPipelineAt.toISOString(),
             },
@@ -62,10 +63,11 @@ async function main() {
           event: 'memory.maintain.worker.start',
           bullJobId: bullJob.id,
           userId,
+          characterId,
         },
         '[Worker] 开始 maintain→profile',
       );
-      await runMaintainPipelineForUser(userId);
+      await runMaintainPipelineForUserCharacter(userId, characterId);
     },
     {
       connection: asBullMqConnection(connection),
@@ -74,22 +76,26 @@ async function main() {
   );
 
   worker.on('completed', (bullJob) => {
+    const data = bullJob.data as MemoryMaintainPipelineJobData | undefined;
     logger.info(
       {
         event: 'memory.maintain.worker.completed',
         bullJobId: bullJob.id,
-        userId: (bullJob.data as MemoryMaintainPipelineJobData | undefined)?.userId,
+        userId: data?.userId,
+        characterId: data?.characterId,
       },
       '[Worker] maintain pipeline 任务完成',
     );
   });
 
   worker.on('failed', (bullJob, err) => {
+    const data = bullJob?.data as MemoryMaintainPipelineJobData | undefined;
     logger.error(
       {
         event: 'memory.maintain.worker.failed',
         bullJobId: bullJob?.id,
-        userId: (bullJob?.data as MemoryMaintainPipelineJobData | undefined)?.userId,
+        userId: data?.userId,
+        characterId: data?.characterId,
         err,
       },
       '[Worker] maintain pipeline 任务失败',

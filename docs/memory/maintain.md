@@ -25,16 +25,17 @@ flowchart TD
 
 ### 目的
 
-对库内 `UserMemory` 做语义去重与合并（删旧建新），减少 [extract](./extract.md) 产生的重复或近义条目。
+对库内该用户×角色下的 `UserMemory` 做语义去重与合并（删旧建新），减少 [extract](./extract.md) 产生的重复或近义条目。
 
 ### 游标（本批主条）
 
 每条游标是一条待维护记忆，选取条件：
 
+- 属于当前 `userId + characterId`
 - `isDeleted = false`
 - `isMaintained = false`
 
-游标按 `createdAt` 升序串行处理。管线冷却时钟见 [`User.lastMemoryPipelineAt`](./pipeline.md)（maintain→profile 都成功后才更新，与游标选取无关）。
+游标按 `createdAt` 升序串行处理。管线冷却时钟见 [`UserCharacter.lastMemoryPipelineAt`](./pipeline.md)（该角色 maintain→该角色 profile 都成功后才更新，与游标选取无关）。
 
 ### 近邻召回与过滤
 
@@ -42,8 +43,8 @@ flowchart TD
 
 | 阶段 | 规则 |
 |------|------|
-| Chroma | 按游标 `text` 语义距离，取 top `MEMORY_MAINTENANCE_NEIGHBOR_LIMIT`（默认 10） |
-| MySQL | 仅 `isDeleted = false`（软删为 MySQL + Chroma 双写且非原子，此处做防御性过滤，与聊天 RAG 一致） |
+| Chroma | 按游标 `text` 语义距离，且 `user_id`+`character_id` 过滤，取 top `MEMORY_MAINTENANCE_NEIGHBOR_LIMIT`（默认 10） |
+| MySQL | 仅同角色且 `isDeleted = false`（软删为 MySQL + Chroma 双写且非原子，此处做防御性过滤，与聊天 RAG 一致） |
 | 衰减 | `decay(lastActiveAt) < MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY` 的近邻**硬丢弃**，不进 LLM 簇 |
 
 近邻**不要求** `isMaintained = false`：已维护过的老记忆仍可能因语义相近被卷入合并簇。

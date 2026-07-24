@@ -13,7 +13,7 @@ flowchart TD
   BuildTranscript --> LlmExtract[LLM 提炼长期记忆]
   LlmExtract --> ParseValidate[解析并校验 LLM 输出]
   ParseValidate --> MarkMessages["globalMax 前缀标记已整理消息"]
-  MarkMessages --> Persist["事务写库 UserMemory userId 共享"]
+  MarkMessages --> Persist["事务写库 UserMemory userId+characterId"]
   Persist --> SyncVector[同步向量库]
 ```
 
@@ -21,15 +21,13 @@ flowchart TD
 
 ### 目的
 
-从**单个对话会话**中用 LLM 提炼可长期保留的用户事实，写入共享的 `UserMemory`（按 `userId`，多角色共享），并标记该会话中对应消息为已整理。
+从**单个单聊会话**中用 LLM 提炼可长期保留的用户事实，写入该会话角色的 `UserMemory`（按 `userId + characterId` 私有），并标记该会话中对应消息为已整理。
 
 ### 何时触发
 
 - **滑动窗口（按 session）**：该会话发聊天消息后调度 `extract-${sessionId}`（`MEMORY_EXTRACT_IDLE_MINUTES`）；同会话再次发消息会重置；**不同会话互不影响**
-- **立即触发**：`POST /api/memory/consolidate?username=`；可选 `sessionId=`
-  - 有 `sessionId`：只入队该会话
-  - 无 `sessionId`：对该用户下所有「仍有未整理消息」的会话各入队一次
-- Worker：`pnpm worker:memory-extract`，直调 `runConsolidation`
+- **立即触发（测试）**：`POST /api/memory/consolidate?username=&sessionId=`；本进程异步跑 `runConsolidation`，返回可轮询 `jobId`（不经 Bull）
+- Worker：`pnpm worker:memory-extract`，消费聊天滑动窗口入队的任务
 
 ### 何时进入整理池
 
@@ -52,14 +50,14 @@ flowchart TD
 
 ### 落库
 
-- MySQL **事务内**：新建 `UserMemory`（**共享 `userId`**）+ 标记本 session 消息已整理
+- MySQL **事务内**：新建 `UserMemory`（**`userId + characterId` 私有**）+ 标记本 session 消息已整理
 - 事务**外**：同步 Chroma 向量
 - 新记忆默认 `isMaintained = false`，供后续 [maintain](./maintain.md) 消费
 
 ### 与 chat / maintain 的关系
 
 - extract **只写入**记忆，不读向量库、不做衰减
-- 聊天 RAG 与维护 job 在 extract **之后**使用这些记忆（仍按用户检索共享记忆）
+- 聊天 RAG 与维护 job 在 extract **之后**使用这些记忆（按角色私有检索 / 维护）
 
 ## 功能与代码对应
 

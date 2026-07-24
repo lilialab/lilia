@@ -9,7 +9,7 @@ interface RequireAuthProps {
 }
 
 /**
- * 受保护布局门闸：未登录跳转 /login 并 return null；鉴权加载中显示 PageStatus。
+ * 受保护布局门闸：鉴权加载中显示 PageStatus；未登录 return null（跳转由 apiFetch 401 处理）。
  */
 export function RequireAuth({ children }: RequireAuthProps) {
   const { isLoading, isUnauthenticated } = useRequireAuth();

@@ -44,6 +44,7 @@ export interface ConsolidationJobRawPayload {
 export interface ConsolidationJobSnapshot {
   messageIds?: string[];
   userId?: string;
+  characterId?: string;
   sessionId?: string;
   rawPayload?: ConsolidationJobRawPayload;
 }

@@ -36,12 +36,16 @@ export async function scheduleMemoryExtract(
     await existing.remove();
   }
 
-  await queue.add(MEMORY_EXTRACT_JOB_NAME, { sessionId, userId } satisfies MemoryExtractJobData, {
-    jobId: bullJobId,
-    delay: delayMs,
-    removeOnComplete: { count: 100 },
-    removeOnFail: { count: 50 },
-  });
+  await queue.add(
+    MEMORY_EXTRACT_JOB_NAME,
+    { sessionId, userId } satisfies MemoryExtractJobData,
+    {
+      jobId: bullJobId,
+      delay: delayMs,
+      removeOnComplete: { count: 100 },
+      removeOnFail: { count: 50 },
+    },
+  );
 
   return { bullJobId, delayMs };
 }
