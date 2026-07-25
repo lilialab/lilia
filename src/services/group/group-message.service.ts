@@ -6,6 +6,10 @@ import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
 import { stripLeadingSpeakerLabels } from './group-message.utils';
 
+/* -------------------------------------------------------------------------- */
+/* Constants                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export const PAGE_SIZE = 10;
 export const CONTEXT_MESSAGE_LIMIT = env.CHAT_CONTEXT_MESSAGE_LIMIT;
 
@@ -15,6 +19,10 @@ export const activeMessageFilter = { isDeleted: false };
 const excludeTurnCueFilter = {
   OR: [{ kind: null }, { kind: { not: MESSAGE_KIND_TURN_CUE } }],
 };
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 function mapGroupMessageRole(role: string): UIMessage['role'] {
   if (role === 'user' || role === 'assistant' || role === 'system') return role;
@@ -65,6 +73,10 @@ const groupMessageSelect = {
   speakerCharacterId: true,
   speakerCharacter: { select: { displayName: true, slug: true } },
 } as const;
+
+/* -------------------------------------------------------------------------- */
+/* Read                                                                       */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 分页拉取群聊历史消息，支持 before 游标向上翻页；排除 turn_cue。
@@ -121,34 +133,6 @@ export async function getGroupHistoryPage(
 }
 
 /**
- * 写入群聊用户消息并更新群会话时间（不触发 LLM）。
- * @param kind null/缺省为普通消息；turn_cue 为续聊触发语
- */
-export async function createGroupUserMessage(
-  groupSessionId: string,
-  parts: unknown,
-  kind: string | null = null,
-): Promise<{ id: string }> {
-  const [message] = await prisma.$transaction([
-    prisma.message.create({
-      data: {
-        groupSessionId,
-        role: 'user',
-        kind,
-        speakerCharacterId: null,
-        parts: parts as InputJsonValue,
-      },
-    }),
-    prisma.groupSession.update({
-      where: { id: groupSessionId },
-      data: { updatedAt: new Date() },
-    }),
-  ]);
-
-  return { id: message.id };
-}
-
-/**
  * 获取群聊最近 N 条消息，按时间正序；排除 turn_cue；助手为纯正文 + metadata.slug（不加模型前缀）。
  */
 export async function getGroupContextMessages(
@@ -194,6 +178,38 @@ export async function getGroupContextMessages(
       } satisfies MessageMetadata,
     };
   });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Write                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 写入群聊用户消息并更新群会话时间（不触发 LLM）。
+ * @param kind null/缺省为普通消息；turn_cue 为续聊触发语
+ */
+export async function createGroupUserMessage(
+  groupSessionId: string,
+  parts: unknown,
+  kind: string | null = null,
+): Promise<{ id: string }> {
+  const [message] = await prisma.$transaction([
+    prisma.message.create({
+      data: {
+        groupSessionId,
+        role: 'user',
+        kind,
+        speakerCharacterId: null,
+        parts: parts as InputJsonValue,
+      },
+    }),
+    prisma.groupSession.update({
+      where: { id: groupSessionId },
+      data: { updatedAt: new Date() },
+    }),
+  ]);
+
+  return { id: message.id };
 }
 
 /**

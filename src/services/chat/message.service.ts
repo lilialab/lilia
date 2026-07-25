@@ -6,10 +6,18 @@ import type { MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
 
+/* -------------------------------------------------------------------------- */
+/* Constants                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export const PAGE_SIZE = 10;
 export const CONTEXT_MESSAGE_LIMIT = env.CHAT_CONTEXT_MESSAGE_LIMIT;
 
 const activeMessageFilter = { isDeleted: false };
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** 将数据库消息行映射为前端历史消息格式。 */
 function mapMessageRow(
@@ -40,6 +48,10 @@ function mapMessageRow(
       },
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Read                                                                       */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 获取会话最近 N 条消息，按时间正序返回，供 LLM 上下文使用。
@@ -129,6 +141,10 @@ export async function getHistoryPage(
 
   return { messages: rows.map(mapRow), hasMore };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Write                                                                      */
+/* -------------------------------------------------------------------------- */
 
 /** 软删除会话下全部未删除消息（设置 isDeleted）。 */
 export async function softDeleteSessionMessages(sessionId: string) {

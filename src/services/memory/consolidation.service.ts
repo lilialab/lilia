@@ -15,6 +15,10 @@ import {
 import { updateConsolidationJob } from './job.service';
 import { buildUserMemoryWritePayload, syncUserMemoriesToChroma } from './memory-lifecycle.service';
 
+/* -------------------------------------------------------------------------- */
+/* Types & constants                                                          */
+/* -------------------------------------------------------------------------- */
+
 const MEMORY_EXTRACTION_PROMPT = loadJobPrompt('extract');
 
 const consolidationOutputSchema = z.object({
@@ -35,6 +39,10 @@ interface TranscriptResult {
   characterId: string;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 /** 将单条消息格式化为 LLM 可读的 XML 片段；无有效文本时返回 null。 */
 function formatMessageXml(id: string, seq: number, role: string, parts: unknown): string | null {
   const messageParts = parts as { type: string; text?: string }[];
@@ -48,6 +56,10 @@ function formatMessageXml(id: string, seq: number, role: string, parts: unknown)
   const label = role === 'user' ? '用户' : '阿尔博';
   return `<message id="${id}" seq="${seq}">${label}: ${text}</message>`;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Transcript                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 捞取指定单聊会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
@@ -129,6 +141,10 @@ function failJob(job: ConsolidationJob, errorMessage: string): Promise<void> {
   });
 }
 
+/* -------------------------------------------------------------------------- */
+/* Extraction                                                                 */
+/* -------------------------------------------------------------------------- */
+
 /** 调用模型从 transcript 提取记忆，LLM 上下文写入 Loki，job snapshot 仅保留 messageIds/userId。 */
 async function extractMemoriesFromTranscript(
   job: ConsolidationJob,
@@ -190,6 +206,10 @@ async function extractMemoriesFromTranscript(
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Persistence                                                                */
+/* -------------------------------------------------------------------------- */
+
 /** 将记忆写入 MySQL 与向量库，并标记对应消息为已整理。 */
 async function persistConsolidation(
   job: ConsolidationJob,
@@ -224,6 +244,10 @@ async function persistConsolidation(
 
   await syncUserMemoriesToChroma(chromaRecords);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 记忆整理主流程：按单聊会话捞 transcript，记忆写入该会话角色的 userId+characterId。

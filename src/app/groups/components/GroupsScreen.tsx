@@ -10,6 +10,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 function memberSubtitle(group: GroupDetail): string {
   if (group.members.length === 0) return '暂无成员';
   if (group.members.length <= 3) {
@@ -17,6 +21,10 @@ function memberSubtitle(group: GroupDetail): string {
   }
   return `${group.members.length} 位成员`;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Subcomponents                                                              */
+/* -------------------------------------------------------------------------- */
 
 interface GroupsEmptyProps {
   onCreate: () => void;
@@ -85,6 +93,10 @@ function GroupsList({ groups }: GroupsListProps) {
 }
 
 export function GroupsScreen() {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const { user } = useAuth();
 
@@ -96,9 +108,17 @@ export function GroupsScreen() {
 
   const groups = groupsQuery.data ?? [];
 
+  /* -------------------------------------------------------------------------- */
+  /* Handlers                                                                   */
+  /* -------------------------------------------------------------------------- */
+
   const openCreate = () => {
     router.push('/groups/new', { transitionTypes: ['nav-forward'] });
   };
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>

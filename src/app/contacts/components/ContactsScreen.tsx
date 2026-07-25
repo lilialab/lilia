@@ -10,6 +10,10 @@ import { useQuery } from '@tanstack/react-query';
 import { UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+/* -------------------------------------------------------------------------- */
+/* Subcomponents                                                              */
+/* -------------------------------------------------------------------------- */
+
 function ContactsEmpty() {
   return (
     <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>
@@ -61,6 +65,10 @@ function ContactsList({ contacts }: ContactsListProps) {
 }
 
 export function ContactsScreen() {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const { user } = useAuth();
 
@@ -71,6 +79,10 @@ export function ContactsScreen() {
   });
 
   const contacts = contactsQuery.data ?? [];
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>

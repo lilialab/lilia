@@ -5,6 +5,10 @@ import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.ser
 import { getUserProfileText } from '@/services/memory/user-profile.service';
 import { buildRuntimeContextBlock, formatMemoryFragmentLine } from './prompt-format.utils';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 export interface SystemPromptMeta {
   memoryFragments: string[];
   userProfile: string;
@@ -14,6 +18,10 @@ export interface SystemPromptResult {
   systemPrompt: string;
   meta: SystemPromptMeta;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** 从会话解析 userId 与角色。 */
 export async function resolveSessionContext(sessionId: string): Promise<{
@@ -49,6 +57,10 @@ export interface BuildSystemPromptOptions {
   /** 用户库内 IANA 时区 */
   timeZone: string;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 核心导出函数：一键组装 System Prompt

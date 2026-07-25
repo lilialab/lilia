@@ -25,6 +25,10 @@ import {
 import { getContextMessages, saveAssistantResponse } from './message.service';
 import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 type ChatIncomingMessage = ChatPostBody['messages'][number];
 
 type PreparedChatTurn = {
@@ -35,6 +39,10 @@ type PreparedChatTurn = {
   tools: ReturnType<typeof resolveToolsForCharacter>;
   metadata: MessageMetadata;
 };
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** 调度记忆 extract / maintain；入队失败只记日志，不阻断聊天（如 Redis 不可用）。 */
 async function scheduleMemoryJobsBestEffort(
@@ -68,6 +76,10 @@ function buildAssistantParts(text: string, reasoningText: string | undefined): U
   parts.push({ type: 'text', text });
   return parts;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Turn lifecycle                                                             */
+/* -------------------------------------------------------------------------- */
 
 /** 落库用户消息、组 prompt / tools / 模型上下文，供开流使用。 */
 async function prepareChatTurn(
@@ -161,6 +173,10 @@ async function finishChatTurn(params: {
     );
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流（适配 AI SDK 5.0 Parts 架构）

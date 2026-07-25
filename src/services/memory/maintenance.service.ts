@@ -24,6 +24,10 @@ import { VectorService } from './vector.service';
 
 const vectorService = new VectorService();
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 const MEMORY_MAINTENANCE_PROMPT = loadJobPrompt('maintain');
 
 const maintenanceOutputSchema = z.object({
@@ -59,6 +63,10 @@ interface MaintainOneResult {
   mergedGroup?: MaintenanceMergedGroup;
   maintenanceDeletedIds: string[];
 }
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 捞下一条待维护游标（未删除且 isMaintained=false）。
@@ -172,6 +180,10 @@ function buildCursorTouchMemories(cursor: MemoryCursor): MaintenanceMemoryItem[]
   ];
 }
 
+/* -------------------------------------------------------------------------- */
+/* Cluster rewrite                                                            */
+/* -------------------------------------------------------------------------- */
+
 /**
  * 对输入簇执行删旧建新：deleteIds 固定为游标+近邻，newMemories 由 LLM 或无近邻 touch 提供。
  */
@@ -269,6 +281,10 @@ async function decideMaintenanceRewrite(
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Single memory maintenance                                                  */
+/* -------------------------------------------------------------------------- */
+
 /** 维护单条游标：有近邻则 LLM 整理，无近邻则直接 touch。 */
 async function maintainOneMemory(
   job: ConsolidationJob,
@@ -334,6 +350,10 @@ async function maintainOneMemory(
   return applyClusterRewrite(cursor, neighbors, decision.memories);
 }
 
+/* -------------------------------------------------------------------------- */
+/* Maintenance loop                                                           */
+/* -------------------------------------------------------------------------- */
+
 /** 串行消费维护游标队列，直至无 isMaintained=false 候选。 */
 async function runMaintenanceLoop(
   job: ConsolidationJob,
@@ -391,6 +411,10 @@ async function completeMaintenanceJob(
     result,
   });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** 串行记忆维护：逐条游标整理（LLM 或 touch），范围限定 userId + characterId。 */
 export async function runMaintenance(

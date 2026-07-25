@@ -22,6 +22,10 @@ interface EditGroupMembersScreenProps {
 }
 
 export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScreenProps) {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -71,6 +75,10 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   const isLoadError = groupQuery.isError || contactsQuery.isError;
   const canSubmit = Boolean(groupQuery.data) && !saveMutation.isPending;
 
+  /* -------------------------------------------------------------------------- */
+  /* Handlers                                                                   */
+  /* -------------------------------------------------------------------------- */
+
   const handleToggle = (contact: ContactSummary) => {
     if (contact.slug === DEFAULT_CHARACTER_SLUG) return;
     setExtraSelectedIds((prev) => {
@@ -87,6 +95,10 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
     if (!canSubmit) return;
     saveMutation.mutate();
   };
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>

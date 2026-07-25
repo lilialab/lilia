@@ -1,10 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+/* -------------------------------------------------------------------------- */
+/* Bootstrap                                                                  */
+/* -------------------------------------------------------------------------- */
+
 const envPath = path.resolve(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
   process.loadEnvFile(envPath);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 function readEnv(key: string): string | undefined {
   const value = process.env[key]?.trim();
@@ -81,6 +89,10 @@ function buildOllamaBaseURL(): string {
   if (!host) return 'http://127.0.0.1:11434/api';
   return host.endsWith('/api') ? host : `http://${host}/api`;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Exported env                                                               */
+/* -------------------------------------------------------------------------- */
 
 const DATABASE_HOST = requireStringEnv('DATABASE_HOST');
 const DATABASE_PORT = requireNumberEnv('DATABASE_PORT');

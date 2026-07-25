@@ -18,6 +18,10 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export function CreateGroupScreen() {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -50,6 +54,10 @@ export function CreateGroupScreen() {
   const isBootstrapping = contactsQuery.isLoading;
   const canSubmit = title.trim().length > 0 && !createMutation.isPending;
 
+  /* -------------------------------------------------------------------------- */
+  /* Handlers                                                                   */
+  /* -------------------------------------------------------------------------- */
+
   const handleToggle = (contact: ContactSummary) => {
     if (contact.slug === DEFAULT_CHARACTER_SLUG) return;
     setExtraSelectedIds((prev) => {
@@ -68,6 +76,10 @@ export function CreateGroupScreen() {
       characterIds: [...selectedIds],
     });
   };
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>

@@ -14,6 +14,10 @@ import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 
+/* -------------------------------------------------------------------------- */
+/* Subcomponents                                                              */
+/* -------------------------------------------------------------------------- */
+
 function AvailableCharactersEmpty() {
   return <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>没有可添加的角色</p>;
 }
@@ -70,6 +74,10 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
 }
 
 export function AddContactScreen() {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const { user } = useAuth();
 
@@ -96,6 +104,10 @@ export function AddContactScreen() {
   );
 
   const isBootstrapping = contactsQuery.isLoading || charactersQuery.isLoading;
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>

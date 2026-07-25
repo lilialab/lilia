@@ -5,6 +5,10 @@ import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 export interface MessageHistoryPage<T> {
   messages: T[];
   hasMore: boolean;
@@ -22,6 +26,10 @@ interface UsePagedMessageHistoryOptions<T extends UIMessage> {
   setMessages: SetMessages<T>;
   bumpScroll: () => void;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Hook                                                                       */
+/* -------------------------------------------------------------------------- */
 
 /** 通用消息历史：初始页同步 + before 游标上翻。 */
 export function usePagedMessageHistory<T extends UIMessage>({

@@ -9,6 +9,10 @@ import type {
 } from '@/types/consolidation-job';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 /** 将未知值断言为 Prisma JSON 输入类型。 */
 function toInputJsonValue(value: unknown): InputJsonValue {
   return value as InputJsonValue;
@@ -38,6 +42,10 @@ function toConsolidationJob(row: {
     snapshot: (row.snapshot as ConsolidationJobSnapshot) ?? undefined,
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** 创建 pending 状态的记忆任务。 */
 export async function createConsolidationJob(

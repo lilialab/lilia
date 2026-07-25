@@ -9,6 +9,10 @@ import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import { updateConsolidationJob } from './job.service';
 
+/* -------------------------------------------------------------------------- */
+/* Types & constants                                                          */
+/* -------------------------------------------------------------------------- */
+
 const EMPTY_PROFILE_TEXT = '目前暂无特殊偏好记录。';
 
 const profileFacetsSchema = z.object({
@@ -40,6 +44,10 @@ const FACET_LABELS: Record<keyof ProfileFacets, string> = {
 };
 
 const PROFILE_REFRESH_PROMPT = loadJobPrompt('profile');
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** 将 summary 与 facets 格式化为 prompt 可用的纯文本。 */
 export function formatProfileForPrompt(
@@ -112,6 +120,10 @@ export function buildProfileRefreshPrompt(input: {
     formatStats(input.stats),
   ].join('\n');
 }
+
+/* -------------------------------------------------------------------------- */
+/* Profile refresh                                                            */
+/* -------------------------------------------------------------------------- */
 
 /** 从数据库读取该用户×角色画像并格式化为 prompt 文本。 */
 export async function getUserProfileText(userId: string, characterId: string): Promise<string> {
@@ -224,6 +236,10 @@ export async function refreshUserProfile(
 
   return { sourceVersion: profile.sourceVersion };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** 用户×角色画像刷新主流程，由 API / 管线以 fire-and-forget 或 await 调用。 */
 export async function runProfileRefresh(

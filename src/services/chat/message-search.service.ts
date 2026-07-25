@@ -1,6 +1,10 @@
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 
+/* -------------------------------------------------------------------------- */
+/* Types & constants                                                          */
+/* -------------------------------------------------------------------------- */
+
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 20;
 
@@ -12,6 +16,10 @@ export type SearchedMessage = {
   createdAt: string;
   parts: unknown;
 };
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 function parseOptionalDate(value: string | Date | undefined): Date | undefined {
   if (value === undefined) return undefined;
@@ -28,6 +36,10 @@ function buildCreatedAtFilter(from?: Date, to?: Date): { gte?: Date; lte?: Date 
   if (to) filter.lte = to;
   return filter;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 按角色与时间范围检索当前用户的历史消息。

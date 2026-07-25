@@ -7,6 +7,10 @@ import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.ser
 import { getUserProfileText } from '@/services/memory/user-profile.service';
 import { formatGroupRosterBlock, type GroupRosterMember } from './group-prompt.utils';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 export interface GroupSystemPromptMeta {
   memoryFragments: string[];
   userProfile: string;
@@ -28,6 +32,10 @@ export interface BuildGroupSystemPromptOptions {
   lastUserContent: string;
   timeZone: string;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 组装群聊 system prompt：被 @ 角色的人设 + 群花名册 + 当前角色私有画像/记忆 + 群聊约束。

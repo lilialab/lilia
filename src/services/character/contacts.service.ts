@@ -5,11 +5,19 @@ import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { createSession } from '@/services/session/sessions.service';
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 const characterSelect = {
   id: true,
   slug: true,
   displayName: true,
 } as const;
+
+/* -------------------------------------------------------------------------- */
+/* Character catalog                                                          */
+/* -------------------------------------------------------------------------- */
 
 /** 列出全部 AI 角色目录。 */
 export async function listCharacters() {
@@ -18,6 +26,10 @@ export async function listCharacters() {
     orderBy: { createdAt: 'asc' },
   });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Contacts                                                                   */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 确保用户通讯录含默认角色 arbor（幂等）。
@@ -171,6 +183,10 @@ export async function removeContact(userId: string, characterId: string) {
     }
   });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Contact sessions                                                           */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 获取或创建与已添加角色的单聊会话

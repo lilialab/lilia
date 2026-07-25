@@ -14,9 +14,17 @@ import {
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 function minIntervalMs(): number {
   return env.MEMORY_MAINTAIN_MIN_INTERVAL_HOURS * 60 * 60 * 1000;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Worker bootstrap                                                           */
+/* -------------------------------------------------------------------------- */
 
 async function main() {
   const connection = new IORedis(env.REDIS_URL, {

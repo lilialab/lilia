@@ -2,6 +2,28 @@ import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export type GroupMemberSummary = {
+  id: string;
+  slug: string;
+  displayName: string;
+};
+
+export type GroupDetail = {
+  id: string;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  members: GroupMemberSummary[];
+};
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 const characterSelect = {
   id: true,
   slug: true,
@@ -20,20 +42,6 @@ const groupDetailSelect = {
     },
   },
 } as const;
-
-export type GroupMemberSummary = {
-  id: string;
-  slug: string;
-  displayName: string;
-};
-
-export type GroupDetail = {
-  id: string;
-  title: string;
-  createdAt: Date;
-  updatedAt: Date;
-  members: GroupMemberSummary[];
-};
 
 function mapGroupDetail(row: {
   id: string;
@@ -74,6 +82,10 @@ async function assertGroupMembersValid(userId: string, characterIds: string[]): 
     throw AppError.badRequest('群聊须包含 arbor');
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** 校验群归属；不存在或不属于该用户时抛 404。 */
 export async function assertGroupOwnedByUser(

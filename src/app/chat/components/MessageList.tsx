@@ -31,6 +31,10 @@ export function MessageList({
   onLoadMore,
   userDisplayName = '我',
 }: MessageListProps) {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPinnedRef = useRef(true);
   const pendingScrollHeightRef = useRef<number | null>(null);
@@ -42,6 +46,10 @@ export function MessageList({
     () => buildMessageItems(messages.filter(isDisplayMessage)),
     [messages],
   );
+
+  /* -------------------------------------------------------------------------- */
+  /* Handlers                                                                   */
+  /* -------------------------------------------------------------------------- */
 
   const scrollToBottom = useCallback(() => {
     const el = scrollRef.current;
@@ -77,6 +85,10 @@ export function MessageList({
     tryLoadMore();
   }, [tryLoadMore]);
 
+  /* -------------------------------------------------------------------------- */
+  /* Effects                                                                    */
+  /* -------------------------------------------------------------------------- */
+
   useLayoutEffect(() => {
     scrollToBottom();
     isPinnedRef.current = true;
@@ -109,6 +121,10 @@ export function MessageList({
       pendingScrollHeightRef.current = null;
     }
   }, [isLoadingMore]);
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('relative flex flex-1 min-h-0')}>

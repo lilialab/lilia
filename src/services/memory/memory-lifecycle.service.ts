@@ -5,6 +5,10 @@ import { randomUUID } from 'crypto';
 
 const vectorService = new VectorService();
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 export interface CreateUserMemoryInput {
   id?: string;
   userId: string;
@@ -60,6 +64,18 @@ export interface ApplyMaintenanceMergeInput {
   newMemories: CreateMaintainedMemoryInput[];
 }
 
+export interface ListUserMemoriesInput {
+  userId: string;
+  text?: string;
+  type?: MemoryType;
+  isMaintained?: boolean;
+  limit: number;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 /** 为 MySQL + Chroma 双写准备统一时间戳与行结构。 */
 function prepareUserMemoryWrite(
   inputs: CreateUserMemoryInput[],
@@ -101,6 +117,10 @@ function prepareUserMemoryWrite(
   return { ids, mysqlRows, chromaRecords };
 }
 
+/* -------------------------------------------------------------------------- */
+/* Memory writes                                                              */
+/* -------------------------------------------------------------------------- */
+
 /** 构建 UserMemory MySQL + Chroma 写入载荷（不写库）。 */
 export function buildUserMemoryWritePayload(
   inputs: CreateUserMemoryInput[],
@@ -127,6 +147,10 @@ export async function createUserMemories(
   await syncUserMemoriesToChroma(prepared.chromaRecords);
   return { ids: prepared.ids };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Updates & deletes                                                          */
+/* -------------------------------------------------------------------------- */
 
 /** 软删除记忆并同步移除 Chroma 向量。先 MySQL 后 Chroma；若 Chroma 删失败，RAG 侧靠 MySQL 二次过滤做防御。 */
 export async function softDeleteMemories(ids: string[]): Promise<void> {
@@ -184,6 +208,10 @@ export async function applyMemoryMerge(input: MemoryMergeUpdate): Promise<void> 
   await softDeleteMemories(removedIds);
 }
 
+/* -------------------------------------------------------------------------- */
+/* Maintenance lifecycle                                                      */
+/* -------------------------------------------------------------------------- */
+
 /** 标记单条记忆已完成维护（无合并或作为游标已消费）。 */
 export async function markMemoryMaintained(id: string): Promise<void> {
   await prisma.userMemory.updateMany({
@@ -236,13 +264,9 @@ export async function applyMaintenanceMerge(
   return { ids: prepared.ids };
 }
 
-export interface ListUserMemoriesInput {
-  userId: string;
-  text?: string;
-  type?: MemoryType;
-  isMaintained?: boolean;
-  limit: number;
-}
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** 按条件列出 UserMemory（仅 isDeleted=false），返回表内全部字段。 */
 export async function listUserMemories(input: ListUserMemoriesInput) {

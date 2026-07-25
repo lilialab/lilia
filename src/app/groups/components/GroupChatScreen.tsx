@@ -38,6 +38,10 @@ interface GroupChatScreenProps {
 }
 
 export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -70,6 +74,10 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const selectedMember = pickedMember
     ?? members.find((m) => m.slug === readStoredMentionSlug(groupSessionId))
     ?? members.find((m) => m.slug === DEFAULT_CHARACTER_SLUG);
+
+  /* -------------------------------------------------------------------------- */
+  /* Chat stream & history                                                      */
+  /* -------------------------------------------------------------------------- */
 
   const chatTransport = useMemo(
     () =>
@@ -121,6 +129,10 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const isBootstrapping = groupQuery.isLoading || isInitialLoading;
   const isLoadError = groupQuery.isError || isHistoryError;
 
+  /* -------------------------------------------------------------------------- */
+  /* Handlers                                                                   */
+  /* -------------------------------------------------------------------------- */
+
   const handleConfirmDelete = async () => {
     setConfirmDeleteOpen(false);
     try {
@@ -166,6 +178,10 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     setPickedMember(member);
     writeStoredMentionSlug(groupSessionId, member.slug);
   };
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-dvh flex-col bg-chat text-foreground')}>

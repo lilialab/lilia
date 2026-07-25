@@ -3,6 +3,10 @@ import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
 import { ensureArborContact } from '@/services/character/contacts.service';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 export interface PublicUser {
   id: string;
   username: string;
@@ -12,6 +16,10 @@ export interface PublicUser {
   updatedAt: Date;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 const publicUserSelect = {
   id: true,
   username: true,
@@ -20,6 +28,10 @@ const publicUserSelect = {
   createdAt: true,
   updatedAt: true,
 } as const;
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** 按 ID 查询用户（公开字段）。 */
 export async function getUserById(id: string): Promise<PublicUser | null> {

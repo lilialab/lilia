@@ -28,7 +28,29 @@ import {
 import { buildGroupSystemPrompt } from './group-prompt.service';
 import type { GroupRosterMember } from './group-prompt.utils';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 type GroupSpeaker = { characterId: string; slug: string };
+
+/** 群成员流式回复（上下文来自 DB；调用方已落库 user / turn_cue，并解析好 speaker）。 */
+interface StreamGroupAssistantReplyOptions {
+  groupSessionId: string;
+  userId: string;
+  speaker: GroupSpeaker;
+  /** 关联日志用，用户主动发送时有值 */
+  userMessageId?: string;
+  /**
+   * 仅注入本次 LLM 请求末尾的 user 回合（不落库上下文）。
+   * turn_cue 历史已从 getGroupContextMessages 排除，召唤时必须带上，否则对话以 assistant 结尾易空回复。
+   */
+  ephemeralUserText?: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** 拉取群内 AI 成员并映射为花名册条目（简介来自 meta.shortBio）。 */
 async function listGroupRosterMembers(groupSessionId: string): Promise<GroupRosterMember[]> {
@@ -68,19 +90,9 @@ async function findGroupMemberBySlug(
   return { characterId: member.characterId, slug: member.character.slug };
 }
 
-/** 群成员流式回复（上下文来自 DB；调用方已落库 user / turn_cue，并解析好 speaker）。 */
-interface StreamGroupAssistantReplyOptions {
-  groupSessionId: string;
-  userId: string;
-  speaker: GroupSpeaker;
-  /** 关联日志用，用户主动发送时有值 */
-  userMessageId?: string;
-  /**
-   * 仅注入本次 LLM 请求末尾的 user 回合（不落库上下文）。
-   * turn_cue 历史已从 getGroupContextMessages 排除，召唤时必须带上，否则对话以 assistant 结尾易空回复。
-   */
-  ephemeralUserText?: string;
-}
+/* -------------------------------------------------------------------------- */
+/* Turn lifecycle                                                             */
+/* -------------------------------------------------------------------------- */
 
 export async function streamGroupAssistantReply({
   groupSessionId,
@@ -198,6 +210,10 @@ export async function streamGroupAssistantReply({
     },
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 群聊发送：落库用户消息（含可选 turn_cue）后召唤一位角色。

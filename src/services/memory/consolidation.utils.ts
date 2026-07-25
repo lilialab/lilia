@@ -1,5 +1,9 @@
 import { isMemoryType, type MemoryType } from '@/types/memory';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 export type { MemoryType };
 
 export interface FinishedMemory {
@@ -29,6 +33,10 @@ export interface ConsolidationOutputRaw {
   }[];
 }
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 /** 从未知值解析非空字符串数组，非法输入返回空数组。 */
 function parseStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -41,6 +49,10 @@ function parseConfidence(value: unknown): number | null {
   if (value < 0 || value > 1) return null;
   return value;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Parsing                                                                    */
+/* -------------------------------------------------------------------------- */
 
 /** 校验并解析单条 LLM finished_memory 输出，不合法时返回 null。 */
 export function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
@@ -74,6 +86,10 @@ export function mapConsolidationOutput(raw: ConsolidationOutputRaw): Consolidati
 
   return { finishedMemories };
 }
+
+/* -------------------------------------------------------------------------- */
+/* ID validation & merge                                                      */
+/* -------------------------------------------------------------------------- */
 
 /**
  * 校验模型输出，并按 globalMax 前缀标记 consolidated：

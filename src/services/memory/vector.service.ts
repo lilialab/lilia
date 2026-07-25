@@ -6,6 +6,10 @@ import type { Where } from 'chromadb';
 import { effectiveScore } from './decay.utils';
 import { parseMemoryMetadata } from './metadata.utils';
 
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
 interface AddChunksInput {
   fileId: string;
   chunks: { id: string; chunkIndex: number; text: string }[];
@@ -61,9 +65,17 @@ interface FindMemoryNeighborsOptions {
   excludeId?: string;
 }
 
+/* -------------------------------------------------------------------------- */
+/* VectorService                                                              */
+/* -------------------------------------------------------------------------- */
+
 export class VectorService {
   private docCollectionName = 'doc_knowledge_base';
   private memoryCollectionName = 'user_memory_base';
+
+  /* -------------------------------------------------------------------------- */
+  /* Collection helpers                                                         */
+  /* -------------------------------------------------------------------------- */
 
   /**
    * 内部通用 Collection 获取方法
@@ -87,7 +99,10 @@ export class VectorService {
     return { $and: filters };
   }
 
-  // ==================== 个人记忆库 业务逻辑 ====================
+  /* -------------------------------------------------------------------------- */
+  /* User memory                                                                */
+  /* -------------------------------------------------------------------------- */
+
   /**
    * 存储定期提取的记忆
    */
@@ -288,7 +303,10 @@ export class VectorService {
     });
   }
 
-  // ==================== 文档知识库 业务逻辑 ====================
+  /* -------------------------------------------------------------------------- */
+  /* Document knowledge                                                         */
+  /* -------------------------------------------------------------------------- */
+
   /**
    * 从向量知识库中依据语义检索 Top-K 切片
    */

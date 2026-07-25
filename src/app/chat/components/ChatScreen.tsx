@@ -28,6 +28,10 @@ interface ChatScreenProps {
 }
 
 export function ChatScreen({ characterId }: ChatScreenProps) {
+  /* -------------------------------------------------------------------------- */
+  /* State & data                                                               */
+  /* -------------------------------------------------------------------------- */
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -47,6 +51,10 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
   }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /* Chat stream & history                                                      */
+  /* -------------------------------------------------------------------------- */
 
   const chatTransport = useMemo(
     () =>
@@ -83,6 +91,10 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     isStreaming,
     onIdle: reloadHistory,
   });
+
+  /* -------------------------------------------------------------------------- */
+  /* Handlers                                                                   */
+  /* -------------------------------------------------------------------------- */
 
   const clearDisabled = inputLocked || messages.length === 0 || isInitialLoading;
   const deleteDisabled = inputLocked;
@@ -122,6 +134,10 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       setInput(currentInput);
     }
   };
+
+  /* -------------------------------------------------------------------------- */
+  /* Render                                                                     */
+  /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-dvh flex-col bg-chat text-foreground')}>
