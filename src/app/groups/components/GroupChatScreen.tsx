@@ -13,12 +13,15 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
+import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
+import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import { useChat } from '@ai-sdk/react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport } from 'ai';
 import { MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -64,10 +67,13 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     router.push('/groups', { transitionTypes: ['nav-back'] });
   }, [router]);
 
-  const groupQuery = useQuery({
+  const groupQuery = useGeneratingStatusQuery({
     queryKey: queryKeys.group(groupSessionId),
     queryFn: () => fetchGroup(groupSessionId),
     enabled: Boolean(user) && Boolean(groupSessionId),
+    retry: false,
+    // 失败由 PageStatus 展示，避免全局 QueryCache toast
+    meta: { showErrorToast: false },
   });
 
   const members = groupQuery.data?.members ?? [];
@@ -125,9 +131,22 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   });
 
   const isStreaming = status === 'submitted' || status === 'streaming';
-  const deleteDisabled = isStreaming;
+  const inputLocked = isStreaming || groupQuery.isGenerating;
+  const deleteDisabled = inputLocked;
   const isBootstrapping = groupQuery.isLoading || isInitialLoading;
   const isLoadError = groupQuery.isError || isHistoryError;
+
+  const reloadHistory = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.groupMessageHistory(groupSessionId),
+    });
+  }, [queryClient, groupSessionId]);
+
+  useOnServerGenerationIdle({
+    isGenerating: groupQuery.isGenerating,
+    isStreaming,
+    onIdle: reloadHistory,
+  });
 
   /* -------------------------------------------------------------------------- */
   /* Handlers                                                                   */
@@ -149,7 +168,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || isStreaming || !selectedMember) return;
+    if (!text || inputLocked || !selectedMember) return;
 
     const outbound = buildUserOutboundMessage(text, selectedMember.slug);
     writeStoredMentionSlug(groupSessionId, selectedMember.slug);
@@ -268,16 +287,19 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           onLoadMore={() => void handleLoadMore()}
           userDisplayName={user?.displayName ?? '我'}
         />
-        <ChatInput
-          value={input}
-          onChange={setInput}
-          onSubmit={handleFormSubmit}
-          disabled={isStreaming}
-          isStreaming={isStreaming}
-          mentionDisplayName={selectedMember?.displayName}
-          onMentionClick={selectedMember ? () => setMentionOpen(true) : undefined}
-          focusKey={inputFocusKey}
-        />
+        <div className={cn('relative shrink-0')}>
+          <SyncPendingReplyBanner visible={groupQuery.isGenerating && !isStreaming} />
+          <ChatInput
+            value={input}
+            onChange={setInput}
+            onSubmit={handleFormSubmit}
+            disabled={inputLocked}
+            isStreaming={inputLocked}
+            mentionDisplayName={selectedMember?.displayName}
+            onMentionClick={selectedMember && !inputLocked ? () => setMentionOpen(true) : undefined}
+            focusKey={inputFocusKey}
+          />
+        </div>
       </PageStatus>
     </div>
   );

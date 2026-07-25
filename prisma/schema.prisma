@@ -116,6 +116,10 @@ model GroupSession {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
   title     String   @default("群聊")
+  /**
+   * 非空表示正在生成；超时后可被新请求抢占
+   */
+  generatingStartedAt DateTime? @map("generating_started_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
+import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -18,6 +19,7 @@ export type GroupDetail = {
   createdAt: Date;
   updatedAt: Date;
   members: GroupMemberSummary[];
+  isGenerating: boolean;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -35,6 +37,7 @@ const groupDetailSelect = {
   title: true,
   createdAt: true,
   updatedAt: true,
+  generatingStartedAt: true,
   members: {
     orderBy: { createdAt: 'asc' as const },
     select: {
@@ -48,6 +51,7 @@ function mapGroupDetail(row: {
   title: string;
   createdAt: Date;
   updatedAt: Date;
+  generatingStartedAt: Date | null;
   members: { character: GroupMemberSummary }[];
 }): GroupDetail {
   return {
@@ -56,6 +60,7 @@ function mapGroupDetail(row: {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     members: row.members.map((m) => m.character),
+    isGenerating: isGenerationBusy(row.generatingStartedAt),
   };
 }
 

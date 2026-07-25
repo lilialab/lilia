@@ -52,6 +52,7 @@ erDiagram
     string id PK
     string userId FK
     string title
+    datetime generatingStartedAt "生成占用"
   }
 
   GroupMember {
@@ -89,7 +90,7 @@ erDiagram
 | `UserCharacter` | `user_characters` | 通讯录；含该角色 maintain→profile 冷却时钟 |
 | `AuthSession` | `auth_sessions` | Cookie 登录会话（非聊天） |
 | `ChatSession` | `chat_sessions` | 单聊；每用户每角色至多一条；`generatingStartedAt` 防并发生成 |
-| `GroupSession` | `group_sessions` | 群聊；用户为 owner |
+| `GroupSession` | `group_sessions` | 群聊；用户为 owner；`generatingStartedAt` 防并发生成 |
 | `GroupMember` | `group_members` | 群内 AI 成员（≠ 通讯录） |
 | `Message` | `messages` | 单聊/群聊共用；见下方约束 |
 | `UserMemory` | `user_memories` | 长期记忆（按 `userId + characterId` 私有） |

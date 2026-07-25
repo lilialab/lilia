@@ -1,6 +1,6 @@
 'use client';
 
-import { removeContact } from '@/client-api/contacts';
+import { fetchContactSession, removeContact } from '@/client-api/contacts';
 import type { HistoryMessage } from '@/client-api/sessions';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -8,6 +8,7 @@ import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
+import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -18,7 +19,6 @@ import { DefaultChatTransport } from 'ai';
 import { MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
-import { useCharacterSession } from '../hooks/useCharacterSession';
 import { useMessageHistory } from '../hooks/useMessageHistory';
 import { ChatInput } from './ChatInput';
 import { MessageList } from './MessageList';
@@ -40,13 +40,18 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const {
-    sessionId,
-    displayName,
-    isGenerating,
-    isLoading,
-    isError,
-  } = useCharacterSession(characterId);
+
+  const sessionQuery = useGeneratingStatusQuery({
+    queryKey: queryKeys.characterSession(characterId),
+    queryFn: () => fetchContactSession(characterId),
+    enabled: Boolean(characterId),
+    retry: false,
+    // 失败由 PageStatus 展示，避免全局 QueryCache toast
+    meta: { showErrorToast: false },
+  });
+
+  const sessionId = sessionQuery.data?.sessionId ?? '';
+  const displayName = sessionQuery.data?.displayName ?? '';
 
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
@@ -66,7 +71,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   );
 
   const { messages, status, sendMessage, setMessages } = useChat<HistoryMessage>({
-    id: sessionId ?? `character-${characterId}`,
+    id: sessionId || `character-${characterId}`,
     experimental_throttle: 50,
     transport: chatTransport,
   });
@@ -79,7 +84,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   });
 
   const isStreaming = status === 'submitted' || status === 'streaming';
-  const inputLocked = isStreaming || isGenerating;
+  const inputLocked = isStreaming || sessionQuery.isGenerating;
 
   const reloadHistory = useCallback(() => {
     if (!sessionId) return;
@@ -87,7 +92,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   }, [queryClient, sessionId]);
 
   useOnServerGenerationIdle({
-    isGenerating,
+    isGenerating: sessionQuery.isGenerating,
     isStreaming,
     onIdle: reloadHistory,
   });
@@ -142,7 +147,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   return (
     <div className={cn('flex h-dvh flex-col bg-chat text-foreground')}>
       <ScreenHeader
-        title={displayName ?? '...'}
+        title={displayName || '...'}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
         right={
           <HeaderIconButton aria-label="更多操作" onClick={() => setMenuOpen(true)}>
@@ -190,7 +195,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
         open={confirmDeleteOpen}
         title="删除 AI"
         description={`确定将「${
-          displayName ?? '该 AI'
+          displayName || '该 AI'
         }」从通讯录中移除吗？聊天记录将一并删除且无法恢复。`}
         confirmLabel="删除"
         variant="danger"
@@ -199,8 +204,8 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       />
 
       <PageStatus
-        loading={isLoading}
-        error={isError || !sessionId}
+        loading={sessionQuery.isLoading}
+        error={sessionQuery.isError || !sessionId}
         errorMessage="无法加载会话，请先添加该 AI 好友"
         actionLabel="返回通讯录"
         actionVariant="button"
@@ -216,7 +221,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           userDisplayName={user?.displayName ?? '我'}
         />
         <div className={cn('relative shrink-0')}>
-          <SyncPendingReplyBanner visible={isGenerating && !isStreaming} />
+          <SyncPendingReplyBanner visible={sessionQuery.isGenerating && !isStreaming} />
           <ChatInput
             value={input}
             onChange={setInput}

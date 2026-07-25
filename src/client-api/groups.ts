@@ -13,6 +13,7 @@ export interface GroupDetail {
   createdAt: string;
   updatedAt: string;
   members: GroupMemberSummary[];
+  isGenerating: boolean;
 }
 
 export type GroupHistoryMessage = HistoryMessage<MessageMetadata>;

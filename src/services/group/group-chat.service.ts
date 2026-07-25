@@ -5,6 +5,10 @@ import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
+import {
+  claimGroupGeneration,
+  releaseGroupGeneration,
+} from '@/services/session/generation-lock.service';
 import { getUserById, getUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
@@ -46,6 +50,8 @@ interface StreamGroupAssistantReplyOptions {
    * turn_cue 历史已从 getGroupContextMessages 排除，召唤时必须带上，否则对话以 assistant 结尾易空回复。
    */
   ephemeralUserText?: string;
+  /** claimGroupGeneration 返回值，流结束 / 出错时释放 */
+  generationClaimedAt: Date;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -100,6 +106,7 @@ export async function streamGroupAssistantReply({
   speaker,
   userMessageId,
   ephemeralUserText,
+  generationClaimedAt,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
   const [timeZone, user, members] = await Promise.all([
     getUserTimeZone(userId),
@@ -158,6 +165,8 @@ export async function streamGroupAssistantReply({
     stopWhen: stepCountIs(5),
 
     onFinish: async ({ text, reasoningText, usage }) => {
+      await releaseGroupGeneration(groupSessionId, generationClaimedAt);
+
       try {
         const assistantParts: UIDataTypes[] = [];
 
@@ -198,6 +207,10 @@ export async function streamGroupAssistantReply({
         );
       }
     },
+
+    onError: async () => {
+      await releaseGroupGeneration(groupSessionId, generationClaimedAt);
+    },
   });
 
   return {
@@ -230,45 +243,54 @@ export async function streamGroupChatFlow(
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
 
-  const kind = lastMessage.metadata?.kind ?? null;
-  const slug = lastMessage.metadata?.slug ?? null;
-  const isTurnCue = isTurnCueKind(kind);
-  const { id: userMessageId } = await createGroupUserMessage(
-    groupSessionId,
-    lastMessage.parts,
-    kind,
-  );
-  const text = extractTextFromParts(lastMessage.parts);
+  const claimedAt = await claimGroupGeneration(groupSessionId);
 
-  if (isTurnCue) {
+  try {
+    const kind = lastMessage.metadata?.kind ?? null;
+    const slug = lastMessage.metadata?.slug ?? null;
+    const isTurnCue = isTurnCueKind(kind);
+    const { id: userMessageId } = await createGroupUserMessage(
+      groupSessionId,
+      lastMessage.parts,
+      kind,
+    );
+    const text = extractTextFromParts(lastMessage.parts);
+
+    if (isTurnCue) {
+      if (!slug) {
+        throw AppError.badRequest('续聊触发语须指定 slug');
+      }
+      const speaker = await findGroupMemberBySlug(groupSessionId, slug);
+      if (!speaker) {
+        throw AppError.badRequest('该角色不在群内');
+      }
+      return streamGroupAssistantReply({
+        groupSessionId,
+        userId,
+        speaker,
+        userMessageId,
+        ephemeralUserText: text,
+        generationClaimedAt: claimedAt,
+      });
+    }
+
     if (!slug) {
-      throw AppError.badRequest('续聊触发语须指定 slug');
+      throw AppError.badRequest('须指定要 @ 的群成员');
     }
     const speaker = await findGroupMemberBySlug(groupSessionId, slug);
     if (!speaker) {
       throw AppError.badRequest('该角色不在群内');
     }
+
     return streamGroupAssistantReply({
       groupSessionId,
       userId,
       speaker,
       userMessageId,
-      ephemeralUserText: text,
+      generationClaimedAt: claimedAt,
     });
+  } catch (err) {
+    await releaseGroupGeneration(groupSessionId, claimedAt);
+    throw err;
   }
-
-  if (!slug) {
-    throw AppError.badRequest('须指定要 @ 的群成员');
-  }
-  const speaker = await findGroupMemberBySlug(groupSessionId, slug);
-  if (!speaker) {
-    throw AppError.badRequest('该角色不在群内');
-  }
-
-  return streamGroupAssistantReply({
-    groupSessionId,
-    userId,
-    speaker,
-    userMessageId,
-  });
 }
