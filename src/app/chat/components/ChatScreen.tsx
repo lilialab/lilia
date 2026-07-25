@@ -6,7 +6,9 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
@@ -29,12 +31,18 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { sessionId, displayName, isLoading, isError } = useCharacterSession(characterId);
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const {
+    sessionId,
+    displayName,
+    isGenerating,
+    isLoading,
+    isError,
+  } = useCharacterSession(characterId);
 
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
@@ -62,9 +70,22 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     bumpScroll,
   });
 
-  const isBusy = status === 'submitted' || status === 'streaming';
-  const clearDisabled = isBusy || messages.length === 0 || isInitialLoading;
-  const deleteDisabled = isBusy;
+  const isStreaming = status === 'submitted' || status === 'streaming';
+  const inputLocked = isStreaming || isGenerating;
+
+  const reloadHistory = useCallback(() => {
+    if (!sessionId) return;
+    void queryClient.invalidateQueries({ queryKey: queryKeys.messageHistory(sessionId) });
+  }, [queryClient, sessionId]);
+
+  useOnServerGenerationIdle({
+    isGenerating,
+    isStreaming,
+    onIdle: reloadHistory,
+  });
+
+  const clearDisabled = inputLocked || messages.length === 0 || isInitialLoading;
+  const deleteDisabled = inputLocked;
   const handleConfirmClear = async () => {
     setConfirmClearOpen(false);
     try {
@@ -89,7 +110,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!input.trim() || isBusy || !sessionId) return;
+    if (!input.trim() || inputLocked || !sessionId) return;
 
     const currentInput = input;
     setInput('');
@@ -178,12 +199,13 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           onLoadMore={() => void loadMore()}
           userDisplayName={user?.displayName ?? '我'}
         />
+        <SyncPendingReplyBanner visible={isGenerating && !isStreaming} />
         <ChatInput
           value={input}
           onChange={setInput}
           onSubmit={handleFormSubmit}
-          disabled={isBusy}
-          isStreaming={isBusy}
+          disabled={inputLocked}
+          isStreaming={inputLocked}
         />
       </PageStatus>
     </div>

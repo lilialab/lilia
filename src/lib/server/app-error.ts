@@ -19,6 +19,10 @@ export class AppError extends Error {
     return new AppError(401, message);
   }
 
+  static conflict(message: string) {
+    return new AppError(409, message);
+  }
+
   static internal(message: string) {
     return new AppError(500, message);
   }

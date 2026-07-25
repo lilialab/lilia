@@ -7,13 +7,34 @@ import { loadCharacter } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
 import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
+import {
+  claimChatGeneration,
+  releaseChatGeneration,
+} from '@/services/session/generation-lock.service';
 import { getUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
-import type { UIMessageStreamPayload } from '@/types/message-kind';
+import type { MessageMetadata, UIMessageStreamPayload } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
-import { convertToModelMessages, stepCountIs, streamText, type UIDataTypes } from 'ai';
+import {
+  convertToModelMessages,
+  type LanguageModelUsage,
+  stepCountIs,
+  streamText,
+  type UIDataTypes,
+} from 'ai';
 import { getContextMessages, saveAssistantResponse } from './message.service';
 import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
+
+type ChatIncomingMessage = ChatPostBody['messages'][number];
+
+type PreparedChatTurn = {
+  userMessageId: string;
+  startedAt: number;
+  systemPrompt: string;
+  modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
+  tools: ReturnType<typeof resolveToolsForCharacter>;
+  metadata: MessageMetadata;
+};
 
 /** 调度记忆 extract / maintain；入队失败只记日志，不阻断聊天（如 Redis 不可用）。 */
 async function scheduleMemoryJobsBestEffort(
@@ -39,6 +60,108 @@ async function scheduleMemoryJobsBestEffort(
   }
 }
 
+function buildAssistantParts(text: string, reasoningText: string | undefined): UIDataTypes[] {
+  const parts: UIDataTypes[] = [];
+  if (reasoningText) {
+    parts.push({ type: 'reasoning', reasoning: reasoningText });
+  }
+  parts.push({ type: 'text', text });
+  return parts;
+}
+
+/** 落库用户消息、组 prompt / tools / 模型上下文，供开流使用。 */
+async function prepareChatTurn(
+  sessionId: string,
+  userId: string,
+  lastMessage: ChatIncomingMessage,
+): Promise<PreparedChatTurn> {
+  const userMessage = await prisma.message.create({
+    data: {
+      sessionId,
+      role: lastMessage.role,
+      parts: lastMessage.parts as InputJsonValue,
+    },
+  });
+  const userMessageId = userMessage.id;
+
+  const { characterId, characterSlug, characterDisplayName } = await resolveSessionContext(
+    sessionId,
+  );
+  await scheduleMemoryJobsBestEffort(sessionId, userId, characterId);
+
+  const contextMessages = await getContextMessages(sessionId);
+  const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
+  const timeZone = await getUserTimeZone(userId);
+  const character = loadCharacter(characterSlug);
+  const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
+  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, { timeZone });
+
+  logger.info({
+    event: 'llm.chat.request',
+    sessionId,
+    model: env.OLLAMA_MODEL,
+    userMessageId,
+    userContent: lastUserContent,
+    contextMessageCount: contextMessages.length,
+    memoryFragments: meta.memoryFragments,
+    userProfile: meta.userProfile,
+    skills: character.skills,
+  });
+
+  return {
+    userMessageId,
+    startedAt: Date.now(),
+    systemPrompt,
+    modelMessages: await convertToModelMessages(contextMessages),
+    tools,
+    metadata: {
+      kind: null,
+      slug: characterSlug,
+      speakerDisplayName: characterDisplayName,
+      speakerCharacterId: characterId,
+    },
+  };
+}
+
+/** 流结束：先放锁，再落库助手消息。 */
+async function finishChatTurn(params: {
+  sessionId: string;
+  claimedAt: Date;
+  userMessageId: string;
+  startedAt: number;
+  text: string;
+  reasoningText: string | undefined;
+  usage: LanguageModelUsage | undefined;
+}): Promise<void> {
+  const { sessionId, claimedAt, userMessageId, startedAt, text, reasoningText, usage } = params;
+
+  await releaseChatGeneration(sessionId, claimedAt);
+
+  try {
+    const { messageId: assistantMessageId } = await saveAssistantResponse(
+      sessionId,
+      buildAssistantParts(text, reasoningText),
+    );
+
+    logger.info({
+      event: 'llm.chat.response',
+      sessionId,
+      model: env.OLLAMA_MODEL,
+      userMessageId,
+      assistantMessageId,
+      text,
+      reasoningText,
+      durationMs: Date.now() - startedAt,
+      usage,
+    });
+  } catch (dbErr) {
+    logger.error(
+      { event: 'llm.chat.response', sessionId, userMessageId, err: dbErr },
+      '写入 AI 历史对白失败',
+    );
+  }
+}
+
 /**
  * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流（适配 AI SDK 5.0 Parts 架构）
  * @param sessionId 聊天会话 ID
@@ -56,97 +179,39 @@ export async function streamChatFlow(
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
 
-  const userMessage = await prisma.message.create({
-    data: {
-      sessionId,
-      role: lastMessage.role,
-      parts: lastMessage.parts as InputJsonValue,
-    },
-  });
-  const userMessageId = userMessage.id;
+  const claimedAt = await claimChatGeneration(sessionId);
 
-  const { characterId, characterSlug, characterDisplayName } = await resolveSessionContext(
-    sessionId,
-  );
-  await scheduleMemoryJobsBestEffort(sessionId, userId, characterId);
+  try {
+    const prepared = await prepareChatTurn(sessionId, userId, lastMessage);
 
-  const contextMessages = await getContextMessages(sessionId);
+    // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
+    const streamResult = streamText({
+      model: ollamaProvider(env.OLLAMA_MODEL),
+      system: prepared.systemPrompt,
+      messages: prepared.modelMessages,
+      tools: prepared.tools,
+      stopWhen: stepCountIs(5),
 
-  const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
-  const timeZone = await getUserTimeZone(userId);
-  const character = loadCharacter(characterSlug);
-  const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
-
-  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, { timeZone });
-
-  logger.info({
-    event: 'llm.chat.request',
-    sessionId,
-    model: env.OLLAMA_MODEL,
-    userMessageId,
-    userContent: lastUserContent,
-    contextMessageCount: contextMessages.length,
-    memoryFragments: meta.memoryFragments,
-    userProfile: meta.userProfile,
-    skills: character.skills,
-  });
-
-  const startedAt = Date.now();
-
-  // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
-  const streamResult = streamText({
-    model: ollamaProvider(env.OLLAMA_MODEL),
-    system: systemPrompt,
-    messages: await convertToModelMessages(contextMessages),
-    tools,
-    stopWhen: stepCountIs(5),
-
-    onFinish: async ({ text, reasoningText, usage }) => {
-      try {
-        const assistantParts: UIDataTypes[] = [];
-
-        if (reasoningText) {
-          assistantParts.push({
-            type: 'reasoning',
-            reasoning: reasoningText,
-          });
-        }
-
-        assistantParts.push({
-          type: 'text',
-          text: text,
-        });
-
-        const { messageId: assistantMessageId } = await saveAssistantResponse(
+      onFinish: async ({ text, reasoningText, usage }) => {
+        await finishChatTurn({
           sessionId,
-          assistantParts,
-        );
-
-        logger.info({
-          event: 'llm.chat.response',
-          sessionId,
-          model: env.OLLAMA_MODEL,
-          userMessageId,
-          assistantMessageId,
+          claimedAt,
+          userMessageId: prepared.userMessageId,
+          startedAt: prepared.startedAt,
           text,
           reasoningText,
-          durationMs: Date.now() - startedAt,
           usage,
         });
-      } catch (dbErr) {
-        logger.error(
-          { event: 'llm.chat.response', sessionId, userMessageId, err: dbErr },
-          '写入 AI 历史对白失败',
-        );
-      }
-    },
-  });
+      },
 
-  const metadata = {
-    kind: null,
-    slug: characterSlug,
-    speakerDisplayName: characterDisplayName,
-    speakerCharacterId: characterId,
-  };
-  return { streamResult, metadata };
+      onError: async () => {
+        await releaseChatGeneration(sessionId, claimedAt);
+      },
+    });
+
+    return { streamResult, metadata: prepared.metadata };
+  } catch (err) {
+    await releaseChatGeneration(sessionId, claimedAt);
+    throw err;
+  }
 }

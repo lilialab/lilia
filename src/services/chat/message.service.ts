@@ -1,6 +1,7 @@
 // 基于 Prisma 的 MySQL 存储服务
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import { clearChatGeneration } from '@/services/session/generation-lock.service';
 import type { MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
@@ -131,10 +132,12 @@ export async function getHistoryPage(
 
 /** 软删除会话下全部未删除消息（设置 isDeleted）。 */
 export async function softDeleteSessionMessages(sessionId: string) {
-  return prisma.message.updateMany({
+  const result = await prisma.message.updateMany({
     where: { sessionId, ...activeMessageFilter },
     data: { isDeleted: true },
   });
+  await clearChatGeneration(sessionId);
+  return result;
 }
 
 /**

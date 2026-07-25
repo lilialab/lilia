@@ -11,16 +11,16 @@ datasource db {
  * 登录用户；画像与长期记忆均按 userId+characterId 私有
  */
 model User {
-  id            String    @id @default(uuid())
-  username      String    @unique
-  passwordHash  String    @map("password_hash")
-  displayName   String    @map("display_name")
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String   @map("display_name")
   /**
    * IANA 时区，聊天 prompt 本地时间以库为准
    */
-  timeZone      String    @default("Asia/Shanghai") @map("time_zone")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  timeZone     String   @default("Asia/Shanghai") @map("time_zone")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   authSessions   AuthSession[]
   sessions       ChatSession[]
@@ -90,15 +90,19 @@ model AuthSession {
  * 单聊：每用户每角色至多一条会话
  */
 model ChatSession {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  characterId String    @map("character_id")
-  title       String    @default("新对话")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  messages    Message[]
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  characterId         String    @map("character_id")
+  title               String    @default("新对话")
+  /**
+   * 非空表示正在生成；超时后可被新请求抢占
+   */
+  generatingStartedAt DateTime? @map("generating_started_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character           Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  messages            Message[]
 
   @@unique([userId, characterId])
   @@index([userId])
@@ -177,18 +181,18 @@ model Message {
  * 长期用户记忆条目（preference / event / fact）；按 userId + characterId 私有，供 RAG / maintain
  */
 model UserMemory {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  characterId  String   @map("character_id")
-  text         String   @db.Text
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  characterId  String    @map("character_id")
+  text         String    @db.Text
   type         String // preference | event | fact
-  confidence   Float    @default(0.7)
-  isDeleted    Boolean  @default(false) @map("is_deleted")
-  isMaintained Boolean  @default(false) @map("is_maintained")
-  lastActiveAt DateTime @default(now()) @map("last_active_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  confidence   Float     @default(0.7)
+  isDeleted    Boolean   @default(false) @map("is_deleted")
+  isMaintained Boolean   @default(false) @map("is_maintained")
+  lastActiveAt DateTime  @default(now()) @map("last_active_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@index([userId, characterId, isDeleted])
@@ -201,14 +205,14 @@ model UserMemory {
  * 用户×角色画像摘要（maintain→profile 产物）；按 userId + characterId 私有
  */
 model UserProfile {
-  userId        String   @map("user_id")
-  characterId   String   @map("character_id")
-  summary       String?  @db.Text
+  userId        String    @map("user_id")
+  characterId   String    @map("character_id")
+  summary       String?   @db.Text
   facets        Json?
-  sourceVersion Int      @default(0) @map("source_version")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceVersion Int       @default(0) @map("source_version")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@id([userId, characterId])

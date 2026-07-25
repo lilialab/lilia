@@ -116,8 +116,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     bumpScroll,
   });
 
-  const isBusy = status === 'submitted' || status === 'streaming';
-  const deleteDisabled = isBusy;
+  const isStreaming = status === 'submitted' || status === 'streaming';
+  const deleteDisabled = isStreaming;
   const isBootstrapping = groupQuery.isLoading || isInitialLoading;
   const isLoadError = groupQuery.isError || isHistoryError;
 
@@ -137,7 +137,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || isBusy || !selectedMember) return;
+    if (!text || isStreaming || !selectedMember) return;
 
     const outbound = buildUserOutboundMessage(text, selectedMember.slug);
     writeStoredMentionSlug(groupSessionId, selectedMember.slug);
@@ -256,8 +256,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           value={input}
           onChange={setInput}
           onSubmit={handleFormSubmit}
-          disabled={isBusy}
-          isStreaming={isBusy}
+          disabled={isStreaming}
+          isStreaming={isStreaming}
           mentionDisplayName={selectedMember?.displayName}
           onMentionClick={selectedMember ? () => setMentionOpen(true) : undefined}
           focusKey={inputFocusKey}

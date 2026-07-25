@@ -9,6 +9,8 @@ export interface ContactSession {
   sessionId: string;
   characterId: string;
   displayName: string;
+  /** 服务端仍在生成助手回复（含断线后台续跑） */
+  isGenerating: boolean;
 }
 
 /** 拉取我的 AI 通讯录。 */

@@ -2,6 +2,7 @@ import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
+import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { createSession } from '@/services/session/sessions.service';
 
 const characterSelect = {
@@ -190,7 +191,7 @@ export async function getOrCreateContactSession(userId: string, characterId: str
     where: {
       userId_characterId: { userId, characterId },
     },
-    select: { id: true },
+    select: { id: true, generatingStartedAt: true },
   });
 
   if (existing) {
@@ -198,6 +199,7 @@ export async function getOrCreateContactSession(userId: string, characterId: str
       sessionId: existing.id,
       characterId: character.id,
       displayName: character.displayName,
+      isGenerating: isGenerationBusy(existing.generatingStartedAt),
     };
   }
 
@@ -206,5 +208,6 @@ export async function getOrCreateContactSession(userId: string, characterId: str
     sessionId: session.id,
     characterId: character.id,
     displayName: character.displayName,
+    isGenerating: false,
   };
 }
