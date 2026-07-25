@@ -8,6 +8,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'pai-arbor',
   description: '本地 RAG 聊天应用',
+  appleWebApp: {
+    capable: true,
+  },
 };
 
 export const viewport: Viewport = {

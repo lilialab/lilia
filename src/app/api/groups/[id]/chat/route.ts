@@ -19,6 +19,8 @@ export const POST = withApiHandler(
       userId,
       messages,
     );
+    // 客户端断连后仍消费完流，保证 streamText onFinish 落库
+    streamResult.consumeStream();
     return streamResult.toUIMessageStreamResponse(withMessageMetadata(metadata));
   },
 );

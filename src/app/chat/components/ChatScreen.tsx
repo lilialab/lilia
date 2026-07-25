@@ -62,9 +62,9 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     bumpScroll,
   });
 
-  const isStreaming = status === 'submitted' || status === 'streaming';
-  const clearDisabled = isStreaming || messages.length === 0 || isInitialLoading;
-  const deleteDisabled = isStreaming;
+  const isBusy = status === 'submitted' || status === 'streaming';
+  const clearDisabled = isBusy || messages.length === 0 || isInitialLoading;
+  const deleteDisabled = isBusy;
   const handleConfirmClear = async () => {
     setConfirmClearOpen(false);
     try {
@@ -89,7 +89,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!input.trim() || isStreaming || !sessionId) return;
+    if (!input.trim() || isBusy || !sessionId) return;
 
     const currentInput = input;
     setInput('');
@@ -182,8 +182,8 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           value={input}
           onChange={setInput}
           onSubmit={handleFormSubmit}
-          disabled={isStreaming}
-          isStreaming={isStreaming}
+          disabled={isBusy}
+          isStreaming={isBusy}
         />
       </PageStatus>
     </div>

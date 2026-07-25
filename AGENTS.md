@@ -45,7 +45,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 命令与环境
 
 - Shell（WSL / NixOS）：一律 `nix develop --command …`（例：`nix develop --command pnpm lint`）
-- 改完至少：`pnpm lint`（eslint + `tsc --noEmit`）、`pnpm test:run`；动格式再 `pnpm format`
+- 改完：`pnpm format`、`pnpm lint`（eslint + `tsc --noEmit`）、`pnpm test:run`
 - 本地记忆联调：`pnpm dev:all`（Next + extract/maintain Worker；需 Redis）
 - 单测需完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等）；无 fallback
 - Prisma schema 变更：`pnpm exec prisma generate`；必要时 `pnpm exec prisma db push`
