@@ -8,7 +8,7 @@ export const DEFAULT_CHARACTER_SLUG = 'arbor';
 
 export function MemberPickerEmpty() {
   return (
-    <p className={cn('px-4 py-4 text-sm text-zinc-400')}>
+    <p className={cn('px-4 py-4 text-sm text-muted-foreground')}>
       通讯录加载异常，请返回后重试
     </p>
   );
@@ -22,7 +22,7 @@ export type MemberPickerListProps = {
 
 export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPickerListProps) {
   return (
-    <section className={cn('bg-white')}>
+    <section className={cn('bg-background')}>
       {contacts.map((contact) => {
         const isArbor = contact.slug === DEFAULT_CHARACTER_SLUG;
         const checked = selectedIds.has(contact.id);
@@ -30,8 +30,8 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
           <label
             key={contact.id}
             className={cn(
-              'flex items-center gap-3 border-b border-zinc-100 px-4 py-3',
-              isArbor ? 'cursor-default' : 'cursor-pointer hover:bg-zinc-50',
+              'flex items-center gap-3 border-b border-border/50 px-4 py-3',
+              isArbor ? 'cursor-default' : 'cursor-pointer hover:bg-surface',
             )}
           >
             <input
@@ -39,12 +39,14 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
               checked={checked}
               disabled={isArbor}
               onChange={() => onToggle(contact)}
-              className={cn('h-4 w-4 rounded border-zinc-300')}
+              className={cn('h-4 w-4 rounded border-border')}
             />
-            <span className={cn('text-sm text-zinc-900')}>
+            <span className={cn('text-sm text-foreground')}>
               {contact.displayName}
               {isArbor && (
-                <span className={cn('ml-2 text-xs font-normal text-zinc-400')}>默认成员</span>
+                <span className={cn('ml-2 text-xs font-normal text-muted-foreground')}>
+                  默认成员
+                </span>
               )}
             </span>
           </label>

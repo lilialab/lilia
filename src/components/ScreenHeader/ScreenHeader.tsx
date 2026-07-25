@@ -16,7 +16,7 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
   return (
     <header
       className={cn(
-        'flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-3 py-3',
+        'flex shrink-0 items-center justify-between border-b border-border bg-background px-3 py-3',
       )}
     >
       <div className={sideSlotClass}>
@@ -26,8 +26,8 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
             onClick={onBack}
             aria-label="返回"
             className={cn(
-              'flex min-h-10 min-w-10 items-center justify-center rounded-md text-zinc-600',
-              'hover:bg-zinc-50',
+              'flex min-h-10 min-w-10 items-center justify-center rounded-md text-foreground/70',
+              'hover:bg-surface',
             )}
           >
             <ChevronLeft className={cn('h-5 w-5')} aria-hidden />
@@ -36,7 +36,7 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
       </div>
       <h1
         className={cn(
-          'min-w-0 flex-1 truncate px-2 text-center text-base font-medium text-zinc-900',
+          'min-w-0 flex-1 truncate px-2 text-center text-base font-medium text-foreground',
         )}
       >
         {title}
@@ -67,8 +67,8 @@ export function HeaderIconButton({
       disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
-        'flex min-h-10 min-w-10 items-center justify-center rounded-md text-zinc-500 transition-colors',
-        'hover:bg-zinc-100 hover:text-zinc-700 disabled:pointer-events-none disabled:opacity-40',
+        'flex min-h-10 min-w-10 items-center justify-center rounded-md text-muted-foreground transition-colors',
+        'hover:bg-chat hover:text-foreground/80 disabled:pointer-events-none disabled:opacity-40',
       )}
     >
       {children}

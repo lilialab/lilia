@@ -168,7 +168,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   };
 
   return (
-    <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
+    <div className={cn('flex h-dvh flex-col bg-chat text-foreground')}>
       <ScreenHeader
         title={groupQuery.data?.title ?? '...'}
         onBack={goBackToGroups}

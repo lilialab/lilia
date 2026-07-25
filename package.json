@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "ioredis": "5.11.1",
+    "ldrs": "^1.1.9",
     "lucide-react": "^1.21.0",
     "next": "16.2.6",
     "ollama-ai-provider-v2": "^3.5.1",

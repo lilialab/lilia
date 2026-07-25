@@ -16,7 +16,9 @@ const markdownComponents: Components = {
   h2: ({ children }) => <h2 className={cn('mb-2 text-lg font-semibold')}>{children}</h2>,
   h3: ({ children }) => <h3 className={cn('mb-2 text-base font-semibold')}>{children}</h3>,
   blockquote: ({ children }) => (
-    <blockquote className={cn('mb-2 border-l-2 border-zinc-400 pl-3 italic text-zinc-600')}>
+    <blockquote
+      className={cn('mb-2 border-l-2 border-muted-foreground pl-3 italic text-muted-foreground')}
+    >
       {children}
     </blockquote>
   ),
@@ -25,7 +27,7 @@ const markdownComponents: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={cn('text-blue-600 underline break-all')}
+      className={cn('text-primary underline break-all')}
     >
       {children}
     </a>
@@ -35,10 +37,10 @@ const markdownComponents: Components = {
     if (isBlock) {
       return <code className={cn(className, 'font-mono text-sm')}>{children}</code>;
     }
-    return <code className={cn('rounded bg-zinc-300/60 px-1 font-mono text-sm')}>{children}</code>;
+    return <code className={cn('rounded bg-border/60 px-1 font-mono text-sm')}>{children}</code>;
   },
   pre: ({ children }) => (
-    <pre className={cn('my-2 overflow-x-auto rounded bg-zinc-800 p-3 text-sm text-zinc-100')}>
+    <pre className={cn('my-2 overflow-x-auto rounded bg-foreground p-3 text-sm text-background')}>
       {children}
     </pre>
   ),
@@ -48,12 +50,12 @@ const markdownComponents: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className={cn('border border-zinc-300 bg-zinc-300/50 px-2 py-1 text-left font-semibold')}>
+    <th className={cn('border border-border bg-border/50 px-2 py-1 text-left font-semibold')}>
       {children}
     </th>
   ),
-  td: ({ children }) => <td className={cn('border border-zinc-300 px-2 py-1')}>{children}</td>,
-  hr: () => <hr className={cn('my-3 border-zinc-300')} />,
+  td: ({ children }) => <td className={cn('border border-border px-2 py-1')}>{children}</td>,
+  hr: () => <hr className={cn('my-3 border-border')} />,
 };
 
 export function MarkdownContent({ content }: MarkdownContentProps) {

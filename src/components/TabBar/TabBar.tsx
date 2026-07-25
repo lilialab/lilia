@@ -17,7 +17,7 @@ export function TabBar() {
   return (
     <nav
       className={cn(
-        'flex shrink-0 border-t border-zinc-200 bg-white',
+        'flex shrink-0 border-t border-border bg-background',
         'pb-[env(safe-area-inset-bottom)]',
       )}
       aria-label="主导航"
@@ -31,7 +31,7 @@ export function TabBar() {
             transitionTypes={['tab']}
             className={cn(
               'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs',
-              active ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600',
+              active ? 'text-primary' : 'text-muted-foreground hover:text-foreground/70',
             )}
           >
             <Icon className={cn('h-6 w-6')} strokeWidth={active ? 2.25 : 1.75} aria-hidden />

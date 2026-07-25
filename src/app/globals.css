@@ -1,16 +1,62 @@
 @import 'tailwindcss';
 
+/* -------------------------------------------------------------------------- */
+/* Tokens                                                                     */
+/* -------------------------------------------------------------------------- */
+
 :root {
+  /* Zinc 800 为主色锚点，全文灰阶对齐 */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #27272a;
+  --surface: #fafafa;
+  --chat: #f4f4f5;
+  --border: #e4e4e7;
+  --muted-foreground: #71717a;
+  --primary: #27272a;
+  --primary-hover: #3f3f46;
+  --primary-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-hover: #b91c1c;
+  --destructive-foreground: #ffffff;
+  /* 弹窗遮罩：跟主色同色相 */
+  --overlay: color-mix(in srgb, var(--primary) 40%, transparent);
   --duration-exit: 150ms;
   --duration-enter: 210ms;
   --duration-move: 400ms;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090b;
+    --foreground: #f4f4f5;
+    --surface: #18181b;
+    --chat: #27272a;
+    --border: #3f3f46;
+    --muted-foreground: #a1a1aa;
+    --primary: #d4d4d8;
+    --primary-hover: #e4e4e7;
+    --primary-foreground: #27272a;
+    --destructive: #f87171;
+    --destructive-hover: #fca5a5;
+    --destructive-foreground: #450a0a;
+    --overlay: rgb(0 0 0 / 0.55);
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-chat: var(--chat);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-overlay: var(--overlay);
   --font-sans:
     'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --font-mono:
@@ -28,6 +74,30 @@
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Base                                                                       */
+/* -------------------------------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    'PingFang SC',
+    'Microsoft YaHei',
+    system-ui,
+    sans-serif;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Motion：共用 keyframes                                                     */
+/* -------------------------------------------------------------------------- */
+
 @keyframes fade {
   from {
     filter: blur(3px);
@@ -39,6 +109,17 @@
   }
 }
 
+@keyframes fade-out {
+  from {
+    filter: blur(0);
+    opacity: 1;
+  }
+  to {
+    filter: blur(3px);
+    opacity: 0;
+  }
+}
+
 @keyframes slide {
   from {
     translate: var(--slide-offset);
@@ -47,6 +128,10 @@
     translate: 0;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* View Transitions：页面前进 / 后退 / Tab                                    */
+/* -------------------------------------------------------------------------- */
 
 ::view-transition-old(.nav-forward) {
   --slide-offset: -60px;
@@ -76,22 +161,29 @@
     var(--duration-move) ease-in-out both slide;
 }
 
-@keyframes fade-opacity {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 ::view-transition-old(.fade-out) {
-  animation: var(--duration-exit) ease-in both fade-opacity reverse;
+  animation: var(--duration-exit) ease-in both fade-out;
 }
 
 ::view-transition-new(.fade-in) {
-  animation: var(--duration-enter) ease-out var(--duration-exit) both fade-opacity;
+  animation: var(--duration-enter) ease-out var(--duration-exit) both fade;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Modal：淡入淡出 + blur（关闭须不同 animation-name）                          */
+/* -------------------------------------------------------------------------- */
+
+.modal-fade[data-state='open'] {
+  animation: fade var(--duration-enter) ease-out;
+}
+
+.modal-fade[data-state='closed'] {
+  animation: fade-out var(--duration-exit) ease-in;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Accessibility                                                              */
+/* -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
@@ -100,27 +192,8 @@
     animation-duration: 0s !important;
     animation-delay: 0s !important;
   }
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .modal-fade[data-state] {
+    animation: none !important;
   }
-}
-
-html,
-body {
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family:
-    'PingFang SC',
-    'Microsoft YaHei',
-    system-ui,
-    sans-serif;
 }

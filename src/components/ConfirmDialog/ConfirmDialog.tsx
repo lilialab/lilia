@@ -31,29 +31,30 @@ export function ConfirmDialog({
       onClose={onCancel}
       panelClassName={cn(
         'fixed left-1/2 top-1/2 w-full max-w-sm -translate-x-1/2 -translate-y-1/2',
-        'rounded-lg bg-white p-5 shadow-xl focus:outline-none',
+        'rounded-lg border border-border bg-background p-5 text-foreground shadow-xl focus:outline-none',
       )}
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-description"
     >
       <Dialog.Title
         id="confirm-dialog-title"
-        className={cn('text-base font-semibold text-zinc-900')}
+        className={cn('text-base font-semibold text-foreground')}
       >
         {title}
       </Dialog.Title>
       <Dialog.Description
         id="confirm-dialog-description"
-        className={cn('mt-2 text-sm text-zinc-600')}
+        className={cn('mt-2 text-sm leading-relaxed text-muted-foreground')}
       >
         {description}
       </Dialog.Description>
-      <div className={cn('mt-5 flex justify-end gap-2')}>
+      <div className={cn('mt-6 flex justify-end gap-2')}>
         <button
           type="button"
           onClick={onCancel}
           className={cn(
-            'min-h-10 rounded-md px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors',
+            'min-h-10 rounded-md px-4 text-sm font-medium text-muted-foreground',
+            'transition-colors hover:bg-surface hover:text-foreground',
           )}
         >
           {cancelLabel}
@@ -64,8 +65,8 @@ export function ConfirmDialog({
           className={cn(
             'min-h-10 rounded-md px-4 text-sm font-medium transition-colors',
             variant === 'danger'
-              ? 'bg-red-600 hover:bg-red-700 text-white'
-              : 'bg-blue-600 hover:bg-blue-700 text-white',
+              ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover'
+              : 'bg-primary text-primary-foreground hover:bg-primary-hover',
           )}
         >
           {confirmLabel}

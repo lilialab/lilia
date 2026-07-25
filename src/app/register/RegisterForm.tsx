@@ -45,7 +45,7 @@ export function RegisterForm() {
       footer={
         <>
           已有账号？{' '}
-          <Link href="/login" className={cn('text-zinc-900 underline')}>
+          <Link href="/login" className={cn('text-primary underline')}>
             去登录
           </Link>
         </>
@@ -86,8 +86,8 @@ export function RegisterForm() {
           type="submit"
           disabled={isSubmitting}
           className={cn(
-            'mt-2 rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white',
-            'hover:bg-zinc-800 disabled:opacity-40',
+            'mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground',
+            'hover:bg-primary-hover disabled:opacity-40',
           )}
         >
           {isSubmitting ? '注册中...' : '注册并登录'}

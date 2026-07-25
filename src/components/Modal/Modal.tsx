@@ -10,6 +10,7 @@ interface ModalProps {
   children: ReactNode;
   className?: string;
   panelClassName?: string;
+  overlayClassName?: string;
   'aria-label'?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
@@ -23,6 +24,7 @@ export function Modal({
   children,
   className = 'z-50',
   panelClassName,
+  overlayClassName,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
@@ -36,12 +38,14 @@ export function Modal({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className={cn('fixed inset-0 bg-black/40', className)} />
+        <Dialog.Overlay
+          className={cn('modal-fade fixed inset-0 bg-overlay', className, overlayClassName)}
+        />
         <Dialog.Content
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
-          className={cn(className, panelClassName)}
+          className={cn('modal-fade', className, panelClassName)}
           onCloseAutoFocus={onCloseAutoFocus}
         >
           {children}

@@ -15,14 +15,16 @@ export function MessageBubble({ message, userDisplayName = '我' }: MessageBubbl
   return (
     <div className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start')}>
       {speakerName && (
-        <span className={cn('max-w-[85%] truncate px-1 text-xs text-zinc-500')}>
+        <span className={cn('max-w-[85%] truncate px-1 text-xs text-muted-foreground')}>
           {speakerName}
         </span>
       )}
       <div
         className={cn(
           'max-w-[85%] min-w-0 rounded-lg px-4 py-2 text-base',
-          isUser ? 'bg-blue-600 text-white' : 'overflow-hidden bg-zinc-200 text-zinc-900',
+          isUser
+            ? 'bg-primary text-primary-foreground'
+            : 'overflow-hidden border border-border/80 bg-background text-foreground shadow-sm',
         )}
       >
         {message.parts?.map((part, idx) => (

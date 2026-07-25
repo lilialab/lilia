@@ -118,7 +118,7 @@ export function MessageList({
         className={cn('flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4')}
       >
         {isLoadingMore && (
-          <div className={cn('py-2 text-center text-sm text-zinc-400')}>加载中...</div>
+          <div className={cn('py-2 text-center text-sm text-muted-foreground')}>加载中...</div>
         )}
         {messageItems.map((item) => {
           if (item.type === 'divider') {

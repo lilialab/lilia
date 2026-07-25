@@ -15,7 +15,7 @@ import { useMemo } from 'react';
 import { toast } from 'sonner';
 
 function AvailableCharactersEmpty() {
-  return <p className={cn('px-4 py-6 text-sm text-zinc-400')}>没有可添加的角色</p>;
+  return <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>没有可添加的角色</p>;
 }
 
 interface AvailableCharactersListProps {
@@ -42,22 +42,22 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
         <li
           key={character.id}
           className={cn(
-            'flex items-center justify-between gap-3 border-t border-zinc-100 px-4 py-3',
+            'flex items-center justify-between gap-3 border-t border-border/50 px-4 py-3',
           )}
         >
           <div className={cn('min-w-0')}>
-            <p className={cn('truncate text-sm font-medium text-zinc-900')}>
+            <p className={cn('truncate text-sm font-medium text-foreground')}>
               {character.displayName}
             </p>
-            <p className={cn('truncate text-xs text-zinc-500')}>{character.slug}</p>
+            <p className={cn('truncate text-xs text-muted-foreground')}>{character.slug}</p>
           </div>
           <button
             type="button"
             disabled={addMutation.isPending}
             onClick={() => addMutation.mutate(character.id)}
             className={cn(
-              'inline-flex shrink-0 items-center gap-1 rounded-md border border-zinc-200',
-              'px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-40',
+              'inline-flex shrink-0 items-center gap-1 rounded-md border border-border',
+              'px-2.5 py-1.5 text-xs text-foreground/80 hover:bg-surface disabled:opacity-40',
             )}
           >
             <UserPlus className={cn('h-3.5 w-3.5')} aria-hidden />
@@ -98,7 +98,7 @@ export function AddContactScreen() {
   const isBootstrapping = contactsQuery.isLoading || charactersQuery.isLoading;
 
   return (
-    <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
+    <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>
       <ScreenHeader
         title="添加 AI"
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
@@ -109,7 +109,7 @@ export function AddContactScreen() {
         error={contactsQuery.isError || charactersQuery.isError}
         errorMessage="无法加载角色列表"
       >
-        <div className={cn('flex-1 overflow-y-auto bg-white')}>
+        <div className={cn('flex-1 overflow-y-auto bg-background')}>
           {availableCharacters.length === 0
             ? <AvailableCharactersEmpty />
             : <AvailableCharactersList characters={availableCharacters} />}

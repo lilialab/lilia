@@ -49,7 +49,7 @@ export function ScrollToBottomButton({ scrollRef, onScrollToBottom }: ScrollToBo
       type="button"
       onClick={handleClick}
       className={cn(
-        'absolute bottom-3 right-3 z-10 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white border border-zinc-200 shadow-md text-zinc-700 hover:bg-zinc-50',
+        'absolute bottom-3 right-3 z-10 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-background border border-border shadow-md text-foreground/80 hover:bg-surface',
       )}
       aria-label="滚动到底部"
     >

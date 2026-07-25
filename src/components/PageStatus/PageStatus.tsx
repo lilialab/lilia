@@ -24,7 +24,7 @@ export function PageStatus({
 }: PageStatusProps) {
   if (loading) {
     return (
-      <div className={cn('flex flex-1 items-center justify-center text-sm text-zinc-400')}>
+      <div className={cn('flex flex-1 items-center justify-center text-sm text-muted-foreground')}>
         加载中...
       </div>
     );
@@ -33,15 +33,15 @@ export function PageStatus({
   if (error) {
     return (
       <div className={cn('flex flex-1 flex-col items-center justify-center gap-3 px-6')}>
-        {errorMessage && <p className={cn('text-sm text-zinc-400')}>{errorMessage}</p>}
+        {errorMessage && <p className={cn('text-sm text-muted-foreground')}>{errorMessage}</p>}
         {actionLabel && onAction && (
           <button
             type="button"
             onClick={onAction}
             className={cn(
               actionVariant === 'button'
-                && 'rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50',
-              actionVariant === 'link' && 'text-sm text-blue-600 hover:underline',
+                && 'rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground/80 hover:bg-surface',
+              actionVariant === 'link' && 'text-sm text-primary hover:underline',
             )}
           >
             {actionLabel}

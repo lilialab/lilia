@@ -70,7 +70,7 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
+    <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>
       <ScreenHeader
         title="新建群聊"
         onBack={() => router.push('/groups', { transitionTypes: ['nav-back'] })}
@@ -78,8 +78,8 @@ export function CreateGroupScreen() {
 
       <PageStatus loading={isBootstrapping}>
         <form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
-          <div className={cn('shrink-0 border-b border-zinc-200 bg-white px-4 py-3')}>
-            <label className={cn('block text-xs font-medium text-zinc-500')}>
+          <div className={cn('shrink-0 border-b border-border bg-background px-4 py-3')}>
+            <label className={cn('block text-xs font-medium text-muted-foreground')}>
               群名称
               <input
                 type="text"
@@ -87,8 +87,8 @@ export function CreateGroupScreen() {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="输入群名称"
                 className={cn(
-                  'mt-1.5 w-full rounded-md border border-zinc-300 px-3 py-2 text-base',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
+                  'mt-1.5 w-full rounded-md border border-border px-3 py-2 text-base text-foreground',
+                  'outline-none focus:border-muted-foreground',
                 )}
                 autoFocus
               />
@@ -96,7 +96,7 @@ export function CreateGroupScreen() {
           </div>
 
           <div className={cn('min-h-0 flex-1 overflow-y-auto')}>
-            <h2 className={cn('px-4 py-2 text-xs font-medium text-zinc-500')}>选择成员</h2>
+            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>选择成员</h2>
             {contacts.length === 0 ? <MemberPickerEmpty /> : (
               <MemberPickerList
                 contacts={contacts}
@@ -108,7 +108,7 @@ export function CreateGroupScreen() {
 
           <div
             className={cn(
-              'shrink-0 border-t border-zinc-200 bg-white p-3',
+              'shrink-0 border-t border-border bg-background p-3',
               'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
             )}
           >
@@ -116,8 +116,8 @@ export function CreateGroupScreen() {
               type="submit"
               disabled={!canSubmit}
               className={cn(
-                'w-full rounded-md bg-blue-600 py-2.5 text-sm font-medium text-white',
-                'hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40',
+                'w-full rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground',
+                'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
               )}
             >
               {createMutation.isPending ? '创建中...' : '创建并进入'}

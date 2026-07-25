@@ -42,20 +42,22 @@ export function ActionSheet({
       aria-label={title ? undefined : '操作菜单'}
     >
       <div className={cn('mx-auto w-full max-w-lg px-3 pb-3 pt-2')}>
-        <div className={cn('overflow-hidden rounded-xl bg-white shadow-lg')}>
+        <div
+          className={cn('overflow-hidden rounded-xl border border-border bg-background shadow-lg')}
+        >
           {title
             ? (
               <Dialog.Title
                 id="action-sheet-title"
                 className={cn(
-                  'border-b border-zinc-100 px-4 py-3 text-center text-xs font-medium text-zinc-400',
+                  'border-b border-border/50 px-4 py-3 text-center text-xs font-medium text-muted-foreground',
                 )}
               >
                 {title}
               </Dialog.Title>
             )
             : <Dialog.Title className={cn('sr-only')}>操作菜单</Dialog.Title>}
-          <ul className={cn('divide-y divide-zinc-100')}>
+          <ul className={cn('divide-y divide-border/50')}>
             {items.map((item) => (
               <li key={item.key}>
                 <button
@@ -67,8 +69,8 @@ export function ActionSheet({
                   }}
                   className={cn(
                     'flex min-h-12 w-full items-center justify-center px-4 text-base transition-colors',
-                    'hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-40',
-                    item.variant === 'danger' ? 'text-red-600' : 'text-zinc-900',
+                    'hover:bg-surface disabled:pointer-events-none disabled:opacity-40',
+                    item.variant === 'danger' ? 'text-destructive' : 'text-foreground',
                   )}
                 >
                   {item.label}
@@ -81,8 +83,9 @@ export function ActionSheet({
           type="button"
           onClick={onClose}
           className={cn(
-            'mt-2 flex min-h-12 w-full items-center justify-center rounded-xl bg-white',
-            'text-base font-medium text-zinc-900 shadow-lg transition-colors hover:bg-zinc-50',
+            'mt-2 flex min-h-12 w-full items-center justify-center rounded-xl',
+            'border border-border bg-background text-base font-medium text-foreground shadow-lg',
+            'transition-colors hover:bg-surface',
           )}
         >
           {cancelLabel}

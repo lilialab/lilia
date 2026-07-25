@@ -36,7 +36,7 @@ export function LoginForm() {
       footer={
         <>
           还没有账号？{' '}
-          <Link href="/register" className={cn('text-zinc-900 underline')}>
+          <Link href="/register" className={cn('text-primary underline')}>
             去注册
           </Link>
         </>
@@ -62,8 +62,8 @@ export function LoginForm() {
           type="submit"
           disabled={isSubmitting}
           className={cn(
-            'mt-2 rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white',
-            'hover:bg-zinc-800 disabled:opacity-40',
+            'mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground',
+            'hover:bg-primary-hover disabled:opacity-40',
           )}
         >
           {isSubmitting ? '登录中...' : '登录'}

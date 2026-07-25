@@ -89,7 +89,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   };
 
   return (
-    <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
+    <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>
       <ScreenHeader title="管理成员" onBack={goBackToChat} />
 
       <PageStatus
@@ -101,7 +101,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
       >
         <form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
           <div className={cn('min-h-0 flex-1 overflow-y-auto')}>
-            <h2 className={cn('px-4 py-2 text-xs font-medium text-zinc-500')}>选择成员</h2>
+            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>选择成员</h2>
             {contacts.length === 0 ? <MemberPickerEmpty /> : (
               <MemberPickerList
                 contacts={contacts}
@@ -113,7 +113,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
 
           <div
             className={cn(
-              'shrink-0 border-t border-zinc-200 bg-white p-3',
+              'shrink-0 border-t border-border bg-background p-3',
               'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
             )}
           >
@@ -121,8 +121,8 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
               type="submit"
               disabled={!canSubmit}
               className={cn(
-                'w-full rounded-md bg-blue-600 py-2.5 text-sm font-medium text-white',
-                'hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40',
+                'w-full rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground',
+                'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
               )}
             >
               {saveMutation.isPending ? '保存中...' : '保存'}

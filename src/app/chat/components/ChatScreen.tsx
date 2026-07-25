@@ -124,7 +124,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   };
 
   return (
-    <div className={cn('flex h-dvh flex-col bg-zinc-50 text-zinc-900')}>
+    <div className={cn('flex h-dvh flex-col bg-chat text-foreground')}>
       <ScreenHeader
         title={displayName ?? '...'}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
@@ -199,14 +199,16 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           onLoadMore={() => void loadMore()}
           userDisplayName={user?.displayName ?? '我'}
         />
-        <SyncPendingReplyBanner visible={isGenerating && !isStreaming} />
-        <ChatInput
-          value={input}
-          onChange={setInput}
-          onSubmit={handleFormSubmit}
-          disabled={inputLocked}
-          isStreaming={inputLocked}
-        />
+        <div className={cn('relative shrink-0')}>
+          <SyncPendingReplyBanner visible={isGenerating && !isStreaming} />
+          <ChatInput
+            value={input}
+            onChange={setInput}
+            onSubmit={handleFormSubmit}
+            disabled={inputLocked}
+            isStreaming={inputLocked}
+          />
+        </div>
       </PageStatus>
     </div>
   );

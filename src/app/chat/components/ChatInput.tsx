@@ -52,7 +52,7 @@ export function ChatInput({
     <form
       onSubmit={onSubmit}
       className={cn(
-        'border-t border-zinc-200 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]',
+        'border-t border-border bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]',
       )}
     >
       <div className={cn('flex items-end gap-2')}>
@@ -63,9 +63,9 @@ export function ChatInput({
             disabled={disabled}
             onClick={onMentionClick}
             className={cn(
-              'min-h-11 max-w-28 shrink-0 truncate rounded-md border border-zinc-300 bg-white px-2',
-              'text-sm font-medium text-zinc-700 transition-colors',
-              'hover:bg-zinc-50 disabled:bg-zinc-100 disabled:text-zinc-400',
+              'min-h-11 max-w-28 shrink-0 truncate rounded-md border border-border bg-background px-2',
+              'text-sm font-medium text-foreground/80 transition-colors',
+              'hover:bg-surface disabled:bg-chat disabled:text-muted-foreground',
             )}
           >
             @{mentionDisplayName}
@@ -80,16 +80,16 @@ export function ChatInput({
           disabled={disabled}
           className={cn(
             'min-h-11 max-h-36 flex-1 resize-none overflow-y-auto px-3 py-2',
-            'border border-zinc-300 rounded-md text-base leading-normal',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100',
+            'border border-border rounded-md text-base leading-normal text-foreground',
+            'outline-none focus:border-muted-foreground disabled:bg-chat',
           )}
         />
         <button
           type="submit"
           disabled={disabled || !value.trim()}
           className={cn(
-            'min-h-11 shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400',
-            'text-white rounded-md text-base font-medium transition-colors',
+            'min-h-11 shrink-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover',
+            'disabled:bg-muted-foreground rounded-md text-base font-medium transition-colors',
           )}
         >
           发送

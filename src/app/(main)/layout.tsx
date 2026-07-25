@@ -8,7 +8,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <RequireAuth>
-      <div className={cn('flex h-full flex-col bg-zinc-50')}>{children}</div>
+      <div className={cn('flex h-full flex-col bg-surface')}>{children}</div>
     </RequireAuth>
   );
 }
