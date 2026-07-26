@@ -123,8 +123,8 @@ pnpm dev
 |------|------|------|
 | `REDIS_URL` | Redis 地址（BullMQ）；依赖 compose 中的 Redis 服务 | 是 |
 | `MEMORY_EXTRACT_IDLE_MINUTES` | 用户发消息后闲置多久触发 extract（分钟）；发消息会重置 | 是 |
-| `MEMORY_MAINTAIN_IDLE_HOURS` | 用户发消息后闲置多久触发 maintain→profile（小时）；发消息会重置 | 是 |
-| `MEMORY_MAINTAIN_MIN_INTERVAL_HOURS` | 距上次维护不足该小时数则到期后再推迟 | 是 |
+| `MEMORY_MAINTAIN_IDLE_HOURS` | 用户发消息后闲置多久才考虑触发 maintain（小时）；发消息会重置 | 是 |
+| `MEMORY_MAINTAIN_MIN_INTERVAL_HOURS` | 距上次 maintain 管线完成至少该小时数后才执行 | 是 |
 
 ## 开发说明
 

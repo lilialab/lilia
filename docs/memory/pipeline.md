@@ -27,9 +27,8 @@ flowchart TB
     ManualExtract["POST memory/consolidate"] --> RunExtract["本进程 runConsolidation"]
     WorkerExtract --> WriteMemory["写入 UserMemory；群聊全员扇出 + Chroma"]
     RunExtract --> WriteMemory
-    ScheduleMaintain --> WorkerMaintain["Worker：闲置到期后管线"]
-    WorkerMaintain -->|"距上次维护不足 min interval"| Reschedule[再 delay 到满冷却]
-    WorkerMaintain -->|"可跑"| RunMaintain["runMaintenance（该角色）"]
+    ScheduleMaintain --> WorkerMaintain["Worker：间隔到期"]
+    WorkerMaintain --> RunMaintain["runMaintenance（该角色）"]
     RunMaintain --> RunProfile["runProfileRefresh（该角色）"]
     ManualMaintain["POST memory/maintain?characterId="] --> RunMaintain
     ManualProfile["POST memory/profile?characterId="] --> RunProfile
@@ -51,9 +50,8 @@ flowchart TB
 | RAG 命中后刷新活跃时间 | `touchMemories` |
 | extract 入队（单聊按 session 滑动窗口） | `scheduleMemoryExtract` |
 | extract 入队（群聊按 groupSession；**不**入 maintain） | `scheduleGroupMemoryExtract` |
-| maintain→profile 入队（按 user×character 滑动窗口；默认闲置 6h；仅单聊路径） | `scheduleMaintainPipeline` |
-| 串行 maintain→profile；两者成功后写 `UserCharacter.lastMemoryPipelineAt` | `runMaintainPipelineForUserCharacter` |
-| 冷却计时（距上次管线成功不足 min interval 则再推迟） | `getLastMemoryPipelineAt` |
+| maintain→profile 入队（按 user×character 滑动窗口；delay = max(闲置, min_interval - 距上次)，全部在 schedule 阶段计算） | `scheduleMaintainPipeline` |
+| 串行 maintain→profile；都成功后写 `UserCharacter.lastMemoryPipelineAt` | `runMaintainPipelineForUserCharacter` |
 | 对话记忆整理 job | `runConsolidation`（详见 [extract](./extract.md)） |
 | 记忆维护 job | `runMaintenance`（详见 [maintain](./maintain.md)） |
 | 画像 rollup job | `runProfileRefresh`（详见 [profile](./profile.md)） |

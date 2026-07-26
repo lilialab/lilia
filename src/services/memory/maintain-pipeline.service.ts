@@ -17,7 +17,7 @@ export async function getLastMemoryPipelineAt(
 }
 
 /** 管线（maintain + profile）都成功后写入该用户×角色的完成时刻。 */
-export async function updateLastMemoryPipelineAt(
+async function updateLastMemoryPipelineAt(
   userId: string,
   characterId: string,
   at: Date,
@@ -29,8 +29,8 @@ export async function updateLastMemoryPipelineAt(
 }
 
 /**
- * 单用户×角色串行：先该角色记忆维护，成功后再该角色画像；两者都成功才更新 UserCharacter.lastMemoryPipelineAt。
- * maintain 或 profile 抛错则不更新时钟。
+ * 单用户×角色串行：先维护记忆再刷新画像。
+ * maintain 或 profile 抛错则中断，不更新时钟。
  */
 export async function runMaintainPipelineForUserCharacter(
   userId: string,

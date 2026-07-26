@@ -35,7 +35,7 @@ flowchart TD
 - `isDeleted = false`
 - `isMaintained = false`
 
-游标按 `createdAt` 升序串行处理。管线冷却时钟见 [`UserCharacter.lastMemoryPipelineAt`](./pipeline.md)（该角色 maintain→该角色 profile 都成功后才更新，与游标选取无关）。
+游标按 `createdAt` 升序串行处理。
 
 ### 近邻召回与过滤
 
