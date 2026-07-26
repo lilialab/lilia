@@ -18,19 +18,20 @@ const connection = new IORedis(env.REDIS_URL, {
 const worker = new Worker<MemoryExtractJobData>(
   MEMORY_EXTRACT_QUEUE,
   async (bullJob) => {
-    const { sessionId, userId } = bullJob.data;
+    const { sessionId, groupSessionId, userId } = bullJob.data;
     const consolidationJob = await prepareConsolidationJob(randomUUID(), 'extract');
     logger.info(
       {
         event: 'memory.extract.worker.start',
         bullJobId: bullJob.id,
         sessionId,
+        groupSessionId,
         userId,
         jobId: consolidationJob.id,
       },
       '[Worker] 开始记忆整理',
     );
-    await runConsolidation(consolidationJob, { sessionId, userId });
+    await runConsolidation(consolidationJob, { sessionId, groupSessionId, userId });
   },
   {
     connection: asBullMqConnection(connection),
@@ -44,6 +45,7 @@ worker.on('completed', (bullJob) => {
       event: 'memory.extract.worker.completed',
       bullJobId: bullJob.id,
       sessionId: bullJob.data.sessionId,
+      groupSessionId: bullJob.data.groupSessionId,
       userId: bullJob.data.userId,
     },
     '[Worker] 记忆整理队列任务完成',
@@ -56,6 +58,7 @@ worker.on('failed', (bullJob, err) => {
       event: 'memory.extract.worker.failed',
       bullJobId: bullJob?.id,
       sessionId: bullJob?.data.sessionId,
+      groupSessionId: bullJob?.data.groupSessionId,
       userId: bullJob?.data.userId,
       err,
     },

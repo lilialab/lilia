@@ -8,7 +8,10 @@ import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import {
   type ConsolidationParseResult,
+  consolidationSpeakerLabel,
+  fanOutMemoriesToCharacters,
   type FinishedMemory,
+  isIncludedInGroupExtract,
   mapConsolidationOutput,
   validateAndMergeIds,
 } from './consolidation.utils';
@@ -35,16 +38,20 @@ const consolidationOutputSchema = z.object({
 interface TranscriptResult {
   transcript: string;
   messageIds: string[];
-  userId: string;
-  characterId: string;
 }
+
+export type RunConsolidationParams = {
+  userId: string;
+  sessionId?: string;
+  groupSessionId?: string;
+};
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
 /** 将单条消息格式化为 LLM 可读的 XML 片段；无有效文本时返回 null。 */
-function formatMessageXml(id: string, seq: number, role: string, parts: unknown): string | null {
+function formatMessageXml(id: string, seq: number, label: string, parts: unknown): string | null {
   const messageParts = parts as { type: string; text?: string }[];
   const text = messageParts
     .flatMap((part) => (part.type === 'text' && part.text ? [part.text] : []))
@@ -53,49 +60,7 @@ function formatMessageXml(id: string, seq: number, role: string, parts: unknown)
 
   if (!text) return null;
 
-  const label = role === 'user' ? '用户' : '阿尔博';
   return `<message id="${id}" seq="${seq}">${label}: ${text}</message>`;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Transcript                                                                 */
-/* -------------------------------------------------------------------------- */
-
-/**
- * 捞取指定单聊会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
- */
-async function buildTranscript(sessionId: string): Promise<TranscriptResult | null> {
-  const messages = await prisma.message.findMany({
-    where: {
-      isConsolidated: false,
-      sessionId,
-    },
-    orderBy: { createdAt: 'asc' },
-    select: {
-      id: true,
-      role: true,
-      parts: true,
-      session: { select: { userId: true, characterId: true } },
-    },
-  });
-
-  if (messages.length === 0) return null;
-
-  const session = messages[0]?.session;
-  if (!session) return null;
-  const messageIds = messages.map((message) => message.id);
-
-  const lines = messages.flatMap((message, seq) => {
-    const line = formatMessageXml(message.id, seq, message.role, message.parts);
-    return line === null ? [] : [line];
-  });
-
-  return {
-    transcript: lines.join('\n'),
-    messageIds,
-    userId: session.userId,
-    characterId: session.characterId,
-  };
 }
 
 /** 将内部记忆结构转换为 job 结果中的精简格式。 */
@@ -142,6 +107,98 @@ function failJob(job: ConsolidationJob, errorMessage: string): Promise<void> {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Transcript                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 捞取指定单聊会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
+ */
+async function buildSessionTranscript(sessionId: string): Promise<TranscriptResult | null> {
+  const messages = await prisma.message.findMany({
+    where: {
+      isConsolidated: false,
+      sessionId,
+    },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      role: true,
+      parts: true,
+    },
+  });
+
+  if (messages.length === 0) return null;
+
+  const messageIds = messages.map((message) => message.id);
+  const lines = messages.flatMap((message, seq) => {
+    const label = consolidationSpeakerLabel(message.role);
+    const line = formatMessageXml(message.id, seq, label, message.parts);
+    return line === null ? [] : [line];
+  });
+
+  return {
+    transcript: lines.join('\n'),
+    messageIds,
+  };
+}
+
+/**
+ * 捞取群聊未整理消息（排除 turn_cue），助理标签用 slug。
+ */
+async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptResult | null> {
+  const messages = await prisma.message.findMany({
+    where: {
+      isConsolidated: false,
+      groupSessionId,
+    },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      role: true,
+      kind: true,
+      parts: true,
+      speakerCharacter: { select: { slug: true } },
+    },
+  });
+
+  const included = messages.filter((message) => isIncludedInGroupExtract(message.kind));
+  if (included.length === 0) return null;
+
+  const messageIds = included.map((message) => message.id);
+  const lines = included.flatMap((message, seq) => {
+    const label = consolidationSpeakerLabel(message.role, {
+      assistantSlug: message.speakerCharacter?.slug,
+    });
+    const line = formatMessageXml(message.id, seq, label, message.parts);
+    return line === null ? [] : [line];
+  });
+
+  return {
+    transcript: lines.join('\n'),
+    messageIds,
+  };
+}
+
+/** 读取群当前成员 characterId 列表（job 执行时快照）。 */
+async function loadGroupMemberCharacterIds(groupSessionId: string): Promise<string[]> {
+  const members = await prisma.groupMember.findMany({
+    where: { groupSessionId },
+    select: { characterId: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  return members.map((member) => member.characterId);
+}
+
+/** 单聊会话的 characterId。 */
+async function loadSessionCharacterId(sessionId: string): Promise<string | null> {
+  const session = await prisma.chatSession.findUnique({
+    where: { id: sessionId },
+    select: { characterId: true },
+  });
+  return session?.characterId ?? null;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Extraction                                                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -151,17 +208,22 @@ async function extractMemoriesFromTranscript(
   transcript: string,
   messageIds: string[],
   userId: string,
+  scope: { sessionId?: string; groupSessionId?: string },
 ): Promise<{ parsed: ConsolidationParseResult } | { error: string }> {
   await updateConsolidationJob(job.id, {
     progress: `正在调用模型提取记忆（${messageIds.length} 条消息）...`,
     snapshot: {
       messageIds,
       userId,
-      sessionId: job.snapshot?.sessionId,
+      sessionId: scope.sessionId,
+      groupSessionId: scope.groupSessionId,
     },
   });
 
-  const userPrompt = `<conversation>\n${transcript}\n</conversation>`;
+  const groupHint = scope.groupSessionId
+    ? '【说明】以下为群聊。消息标签为「用户」或助理 slug；只提炼用户侧长期事实，文案规范与单聊相同。\n'
+    : '';
+  const userPrompt = `${groupHint}<conversation>\n${transcript}\n</conversation>`;
 
   logger.info({
     event: 'llm.consolidation.request',
@@ -171,6 +233,8 @@ async function extractMemoriesFromTranscript(
     messageCount: messageIds.length,
     transcript,
     promptId: 'memory-extraction',
+    sessionId: scope.sessionId,
+    groupSessionId: scope.groupSessionId,
   });
 
   try {
@@ -210,21 +274,15 @@ async function extractMemoriesFromTranscript(
 /* Persistence                                                                */
 /* -------------------------------------------------------------------------- */
 
-/** 将记忆写入 MySQL 与向量库，并标记对应消息为已整理。 */
+/** 将记忆写入 MySQL 与向量库（可扇出多角色），并标记对应消息为已整理。 */
 async function persistConsolidation(
   job: ConsolidationJob,
   finishedMemories: FinishedMemory[],
   consolidatedIds: string[],
   userId: string,
-  characterId: string,
+  characterIds: string[],
 ): Promise<void> {
-  const inputs = finishedMemories.map((memory) => ({
-    userId,
-    characterId,
-    text: memory.text,
-    type: memory.type,
-    confidence: memory.confidence,
-  }));
+  const inputs = fanOutMemoriesToCharacters(finishedMemories, userId, characterIds);
   const { mysqlRows, chromaRecords } = buildUserMemoryWritePayload(inputs, {
     isMaintained: false,
   });
@@ -250,41 +308,62 @@ async function persistConsolidation(
 /* -------------------------------------------------------------------------- */
 
 /**
- * 记忆整理主流程：按单聊会话捞 transcript，记忆写入该会话角色的 userId+characterId。
+ * 记忆整理主流程：单聊按 session 写入该角色；群聊一次提取后全员扇出到各成员私有记忆。
  */
 export async function runConsolidation(
   job: ConsolidationJob,
-  params: { sessionId: string; userId: string },
+  params: RunConsolidationParams,
 ): Promise<void> {
-  const { sessionId, userId } = params;
+  const { userId, sessionId, groupSessionId } = params;
+
+  const scope = typeof groupSessionId === 'string' && sessionId === undefined
+    ? { kind: 'group' as const, groupSessionId }
+    : typeof sessionId === 'string' && groupSessionId === undefined
+    ? { kind: 'session' as const, sessionId }
+    : null;
+
+  if (!scope) {
+    await failJob(job, '须且仅能指定 sessionId 或 groupSessionId 之一');
+    return;
+  }
+
+  const isGroup = scope.kind === 'group';
+  const scopeSnapshot = isGroup
+    ? { userId, groupSessionId: scope.groupSessionId }
+    : { userId, sessionId: scope.sessionId };
 
   await updateConsolidationJob(job.id, {
     status: 'running',
-    progress: '正在读取未整理的会话消息...',
-    snapshot: { userId, sessionId },
+    progress: isGroup ? '正在读取未整理的群聊消息...' : '正在读取未整理的会话消息...',
+    snapshot: scopeSnapshot,
   });
 
   try {
-    const transcriptResult = await buildTranscript(sessionId);
+    const transcriptResult = isGroup
+      ? await buildGroupTranscript(scope.groupSessionId)
+      : await buildSessionTranscript(scope.sessionId);
 
     if (!transcriptResult) {
       await completeJob(job, '没有可整理的未整理消息。', emptyResult());
       return;
     }
 
-    const { transcript, messageIds, characterId } = transcriptResult;
+    const { transcript, messageIds } = transcriptResult;
 
     if (!transcript) {
       await completeJob(
         job,
         `${messageIds.length} 条消息无有效文本，未做任何标记。`,
         emptyResult(),
-        { messageIds, userId, sessionId },
+        { messageIds, ...scopeSnapshot },
       );
       return;
     }
 
-    const extracted = await extractMemoriesFromTranscript(job, transcript, messageIds, userId);
+    const extracted = await extractMemoriesFromTranscript(job, transcript, messageIds, userId, {
+      sessionId: isGroup ? undefined : scope.sessionId,
+      groupSessionId: isGroup ? scope.groupSessionId : undefined,
+    });
     if ('error' in extracted) {
       await failJob(job, extracted.error);
       return;
@@ -332,8 +411,21 @@ export async function runConsolidation(
       return;
     }
 
-    await persistConsolidation(job, finishedMemories, consolidatedIds, userId, characterId);
+    const characterIds = isGroup
+      ? await loadGroupMemberCharacterIds(scope.groupSessionId)
+      : [await loadSessionCharacterId(scope.sessionId)].flatMap((id) => (id ? [id] : []));
 
+    if (characterIds.length === 0) {
+      await failJob(
+        job,
+        isGroup ? '群内无成员，无法写入记忆' : '会话角色不存在，无法写入记忆',
+      );
+      return;
+    }
+
+    await persistConsolidation(job, finishedMemories, consolidatedIds, userId, characterIds);
+
+    const rowCount = finishedMemories.length * characterIds.length;
     const result = {
       memoriesExtracted: finishedMemories.length,
       memories: toJobMemories(finishedMemories),
@@ -344,22 +436,36 @@ export async function runConsolidation(
     logger.info({
       event: 'llm.consolidation.complete',
       jobId: job.id,
-      sessionId,
-      characterId,
+      sessionId: isGroup ? undefined : scope.sessionId,
+      groupSessionId: isGroup ? scope.groupSessionId : undefined,
+      characterIds,
       memoriesExtracted: result.memoriesExtracted,
+      memoryRowsWritten: rowCount,
       consolidatedMessageCount: result.consolidatedMessageCount,
       unfinishedMessageCount: result.unfinishedMessageCount,
       memories: result.memories,
     });
 
+    const fanOutNote = isGroup
+      ? `，扇出写入 ${characterIds.length} 个角色共 ${rowCount} 条`
+      : '';
+
     await completeJob(
       job,
-      `完成！提取 ${finishedMemories.length} 条记忆，标记 ${consolidatedIds.length} 条消息已整理，${deferredIds.length} 条消息留待下次。`,
+      `完成！提取 ${finishedMemories.length} 条记忆${fanOutNote}，标记 ${consolidatedIds.length} 条消息已整理，${deferredIds.length} 条消息留待下次。`,
       result,
     );
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '未知错误';
-    logger.error({ err, sessionId, userId }, '[MemoryConsolidation] 记忆整理失败');
+    logger.error(
+      {
+        err,
+        sessionId: isGroup ? undefined : scope.sessionId,
+        groupSessionId: isGroup ? scope.groupSessionId : undefined,
+        userId,
+      },
+      '[MemoryConsolidation] 记忆整理失败',
+    );
     await failJob(job, errorMessage);
   }
 }

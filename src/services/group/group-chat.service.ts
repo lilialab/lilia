@@ -5,6 +5,8 @@ import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
+import { scheduleGroupMemoryExtract } from '@/services/memory/extract-queue.service';
+import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
   claimGroupGeneration,
   releaseGroupGeneration,
@@ -37,6 +39,34 @@ import type { GroupRosterMember } from './group-prompt.utils';
 /* -------------------------------------------------------------------------- */
 
 type GroupSpeaker = { characterId: string; slug: string };
+type GroupMemberRef = { characterId: string; character: { slug: string } };
+
+/** 调度群聊 extract 与 maintain pipeline；入队失败只记日志，不阻断聊天。 */
+async function scheduleGroupMemoryJobsBestEffort(
+  groupSessionId: string,
+  userId: string,
+  members: GroupMemberRef[],
+): Promise<void> {
+  try {
+    await scheduleGroupMemoryExtract(groupSessionId, userId);
+  } catch (err) {
+    logger.error(
+      { err, groupSessionId, userId, event: 'memory.extract.schedule_failed' },
+      '[memory] 群 extract 入队失败，已跳过（聊天继续）',
+    );
+  }
+
+  for (const { characterId } of members) {
+    try {
+      await scheduleMaintainPipeline(userId, characterId);
+    } catch (err) {
+      logger.error(
+        { err, userId, characterId, event: 'memory.maintain.schedule_failed' },
+        '[memory] 群 maintain 入队失败，已跳过',
+      );
+    }
+  }
+}
 
 /** 群成员流式回复（上下文来自 DB；调用方已落库 user / turn_cue，并解析好 speaker）。 */
 interface StreamGroupAssistantReplyOptions {
@@ -52,48 +82,24 @@ interface StreamGroupAssistantReplyOptions {
   ephemeralUserText?: string;
   /** claimGroupGeneration 返回值，流结束 / 出错时释放 */
   generationClaimedAt: Date;
+  /** 群成员列表（提供则跳过花名册 DB 查询） */
+  members: GroupMemberRef[];
 }
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-/** 拉取群内 AI 成员并映射为花名册条目（简介来自 meta.shortBio）。 */
-async function listGroupRosterMembers(groupSessionId: string): Promise<GroupRosterMember[]> {
-  const rows = await prisma.groupMember.findMany({
-    where: { groupSessionId },
-    select: { character: { select: { slug: true } } },
-    orderBy: { createdAt: 'asc' },
-  });
-
-  return rows.map((row) => {
-    const character = loadCharacter(row.character.slug);
+/** 将群成员列表映射为花名册条目（简介来自 meta.shortBio）。 */
+function listGroupRosterMembers(members: GroupMemberRef[]): GroupRosterMember[] {
+  return members.map((m) => {
+    const character = loadCharacter(m.character.slug);
     return {
       slug: character.id,
       displayName: character.displayName,
       shortBio: character.shortBio,
     };
   });
-}
-
-/** 解析 slug 是否为该群成员；命中则返回角色 id 与 slug。 */
-async function findGroupMemberBySlug(
-  groupSessionId: string,
-  slug: string,
-): Promise<GroupSpeaker | null> {
-  const member = await prisma.groupMember.findFirst({
-    where: {
-      groupSessionId,
-      character: { slug },
-    },
-    select: {
-      characterId: true,
-      character: { select: { slug: true } },
-    },
-  });
-
-  if (!member) return null;
-  return { characterId: member.characterId, slug: member.character.slug };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -107,12 +113,13 @@ export async function streamGroupAssistantReply({
   userMessageId,
   ephemeralUserText,
   generationClaimedAt,
+  members,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
-  const [timeZone, user, members] = await Promise.all([
+  const [timeZone, user] = await Promise.all([
     getUserTimeZone(userId),
     getUserById(userId),
-    listGroupRosterMembers(groupSessionId),
   ]);
+  const roster = listGroupRosterMembers(members);
   const character = loadCharacter(speaker.slug);
   const tools = resolveToolsForCharacter(character.skills, {
     userId,
@@ -134,7 +141,7 @@ export async function streamGroupAssistantReply({
     userDisplayName: user?.displayName ?? '用户',
     characterId: speaker.characterId,
     characterSlug: speaker.slug,
-    members,
+    members: roster,
     lastUserContent: ragQueryText,
     timeZone,
   });
@@ -254,40 +261,48 @@ export async function streamGroupChatFlow(
       lastMessage.parts,
       kind,
     );
+    const members = await prisma.groupMember.findMany({
+      where: { groupSessionId },
+      select: { characterId: true, character: { select: { slug: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+    await scheduleGroupMemoryJobsBestEffort(groupSessionId, userId, members);
     const text = extractTextFromParts(lastMessage.parts);
 
     if (isTurnCue) {
       if (!slug) {
         throw AppError.badRequest('续聊触发语须指定 slug');
       }
-      const speaker = await findGroupMemberBySlug(groupSessionId, slug);
-      if (!speaker) {
+      const member = members.find((m) => m.character.slug === slug);
+      if (!member) {
         throw AppError.badRequest('该角色不在群内');
       }
       return streamGroupAssistantReply({
         groupSessionId,
         userId,
-        speaker,
+        speaker: { characterId: member.characterId, slug: member.character.slug },
         userMessageId,
         ephemeralUserText: text,
         generationClaimedAt: claimedAt,
+        members,
       });
     }
 
     if (!slug) {
       throw AppError.badRequest('须指定要 @ 的群成员');
     }
-    const speaker = await findGroupMemberBySlug(groupSessionId, slug);
-    if (!speaker) {
+    const member = members.find((m) => m.character.slug === slug);
+    if (!member) {
       throw AppError.badRequest('该角色不在群内');
     }
 
     return streamGroupAssistantReply({
       groupSessionId,
       userId,
-      speaker,
+      speaker: { characterId: member.characterId, slug: member.character.slug },
       userMessageId,
       generationClaimedAt: claimedAt,
+      members,
     });
   } catch (err) {
     await releaseGroupGeneration(groupSessionId, claimedAt);
