@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 export const DEFAULT_CHARACTER_ID = 'arbor';
 
-export type JobPromptId = 'extract' | 'maintain' | 'profile';
+export type JobPromptId = 'maintain' | 'profile';
 
 export interface CharacterPrompt {
   id: string;
@@ -61,20 +61,32 @@ export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPro
 }
 
 const JOB_PROMPT_LOADERS: Record<JobPromptId, () => string> = {
-  extract: () => {
-    const core = readPromptFile('jobs', 'extract-core.md');
-    const guardrails = readPromptFile('jobs', 'extract-local-guardrails.md');
-    return `${core}\n\n${guardrails}`;
-  },
   maintain: () => readPromptFile('jobs', 'maintain.md'),
   profile: () => readPromptFile('jobs', 'profile.md'),
 };
 
-/** 加载流水线 job 的 system prompt。 */
+/** 加载流水线 job 的 system prompt（不含 extract）。 */
 export function loadJobPrompt(job: JobPromptId): string {
   const loader = JOB_PROMPT_LOADERS[job];
   if (!loader) {
     throw new Error(`未知 job prompt: ${String(job)}`);
   }
   return loader();
+}
+
+/** 加载默认 extract prompt（core + guardrails）。 */
+function loadDefaultExtractPrompt(): string {
+  const core = readPromptFile('jobs', 'extract-core.md');
+  const guardrails = readPromptFile('jobs', 'extract-local-guardrails.md');
+  return `${core}\n\n${guardrails}`;
+}
+
+/** 按角色加载 extract prompt。默认规则始终包含；角色目录下 extract.md 存在时追加角色专属的提取重点。 */
+export function loadExtractPrompt(characterId: string): string {
+  const base = loadDefaultExtractPrompt();
+  const charPath = path.join(PROMPTS_ROOT, 'characters', characterId, 'extract.md');
+  if (!existsSync(charPath)) return base;
+
+  const charFocus = readPromptFile('characters', characterId, 'extract.md');
+  return `${base}\n\n${charFocus}`;
 }

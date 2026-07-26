@@ -2,14 +2,13 @@ import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
-import { loadJobPrompt } from '@/prompts/load';
+import { loadExtractPrompt } from '@/prompts/load';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import {
   type ConsolidationParseResult,
   consolidationSpeakerLabel,
-  fanOutMemoriesToCharacters,
   type FinishedMemory,
   isIncludedInGroupExtract,
   mapConsolidationOutput,
@@ -21,8 +20,6 @@ import { buildUserMemoryWritePayload, syncUserMemoriesToChroma } from './memory-
 /* -------------------------------------------------------------------------- */
 /* Types & constants                                                          */
 /* -------------------------------------------------------------------------- */
-
-const MEMORY_EXTRACTION_PROMPT = loadJobPrompt('extract');
 
 const consolidationOutputSchema = z.object({
   finished_memories: z.array(
@@ -209,7 +206,9 @@ async function extractMemoriesFromTranscript(
   messageIds: string[],
   userId: string,
   scope: { sessionId?: string; groupSessionId?: string },
+  characterId: string,
 ): Promise<{ parsed: ConsolidationParseResult } | { error: string }> {
+  const systemPrompt = loadExtractPrompt(characterId);
   await updateConsolidationJob(job.id, {
     progress: `正在调用模型提取记忆（${messageIds.length} 条消息）...`,
     snapshot: {
@@ -228,6 +227,7 @@ async function extractMemoriesFromTranscript(
   logger.info({
     event: 'llm.consolidation.request',
     jobId: job.id,
+    characterId,
     model: env.OLLAMA_MODEL,
     messageIds,
     messageCount: messageIds.length,
@@ -241,7 +241,7 @@ async function extractMemoriesFromTranscript(
     const { output, text } = await generateText({
       model: getStructuredOllamaModel(env.OLLAMA_MODEL),
       output: Output.object({ schema: consolidationOutputSchema }),
-      system: MEMORY_EXTRACTION_PROMPT,
+      system: systemPrompt,
       prompt: userPrompt,
       maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });
@@ -253,6 +253,7 @@ async function extractMemoriesFromTranscript(
     logger.info({
       event: 'llm.consolidation.response',
       jobId: job.id,
+      characterId,
       model: env.OLLAMA_MODEL,
       messageIds,
       response: text,
@@ -274,15 +275,31 @@ async function extractMemoriesFromTranscript(
 /* Persistence                                                                */
 /* -------------------------------------------------------------------------- */
 
-/** 将记忆写入 MySQL 与向量库（可扇出多角色），并标记对应消息为已整理。 */
+/** 将各角色的记忆写入 MySQL 与向量库，并标记对应消息为已整理。 */
 async function persistConsolidation(
   job: ConsolidationJob,
-  finishedMemories: FinishedMemory[],
+  perCharMemories: Map<string, FinishedMemory[]>,
   consolidatedIds: string[],
   userId: string,
-  characterIds: string[],
 ): Promise<void> {
-  const inputs = fanOutMemoriesToCharacters(finishedMemories, userId, characterIds);
+  const inputs: {
+    userId: string;
+    characterId: string;
+    text: string;
+    type: FinishedMemory['type'];
+    confidence: number;
+  }[] = [];
+  for (const [characterId, memories] of perCharMemories) {
+    for (const memory of memories) {
+      inputs.push({
+        userId,
+        characterId,
+        text: memory.text,
+        type: memory.type,
+        confidence: memory.confidence,
+      });
+    }
+  }
   const { mysqlRows, chromaRecords } = buildUserMemoryWritePayload(inputs, {
     isMaintained: false,
   });
@@ -304,11 +321,74 @@ async function persistConsolidation(
 }
 
 /* -------------------------------------------------------------------------- */
+/* Per-character extraction helpers                                           */
+/* -------------------------------------------------------------------------- */
+
+interface PerCharacterResult {
+  finishedMemories: FinishedMemory[];
+  consolidatedIds: string[];
+  deferredIds: string[];
+  droppedInvalidIdTexts: string[];
+}
+
+/** 对当前角色执行一次提取，失败返回 null。 */
+async function extractForCharacter(
+  job: ConsolidationJob,
+  transcript: string,
+  messageIds: string[],
+  userId: string,
+  scope: { sessionId?: string; groupSessionId?: string },
+  characterId: string,
+): Promise<PerCharacterResult | null> {
+  const extracted = await extractMemoriesFromTranscript(
+    job,
+    transcript,
+    messageIds,
+    userId,
+    scope,
+    characterId,
+  );
+  if ('error' in extracted) {
+    logger.warn(
+      {
+        event: 'llm.consolidation.character.failed',
+        jobId: job.id,
+        characterId,
+        error: extracted.error,
+      },
+      `[MemoryConsolidation] 角色 ${characterId} 提取失败`,
+    );
+    return null;
+  }
+
+  const { finishedMemories, consolidatedIds, deferredIds, droppedInvalidIdTexts } =
+    validateAndMergeIds(extracted.parsed, messageIds);
+
+  droppedInvalidIdTexts.forEach((memoryText) => {
+    logger.warn(
+      { memoryText, characterId },
+      '[MemoryConsolidation] 丢弃含非法 source_message_ids 的记忆',
+    );
+  });
+
+  return { finishedMemories, consolidatedIds, deferredIds, droppedInvalidIdTexts };
+}
+
+/** 从多角色结果中取最长的 consolidated 前缀。 */
+function mergeConsolidatedIds(allResults: PerCharacterResult[]): string[] {
+  return allResults.reduce<string[]>(
+    (longest, result) =>
+      result.consolidatedIds.length > longest.length ? result.consolidatedIds : longest,
+    [],
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Public API                                                                 */
 /* -------------------------------------------------------------------------- */
 
 /**
- * 记忆整理主流程：单聊按 session 写入该角色；群聊一次提取后全员扇出到各成员私有记忆。
+ * 记忆整理主流程：单聊按 session 提取；群聊对每个成员角色分别用各自 extract prompt 提取后各自写入。
  */
 export async function runConsolidation(
   job: ConsolidationJob,
@@ -360,57 +440,6 @@ export async function runConsolidation(
       return;
     }
 
-    const extracted = await extractMemoriesFromTranscript(job, transcript, messageIds, userId, {
-      sessionId: isGroup ? undefined : scope.sessionId,
-      groupSessionId: isGroup ? scope.groupSessionId : undefined,
-    });
-    if ('error' in extracted) {
-      await failJob(job, extracted.error);
-      return;
-    }
-
-    const { finishedMemories, consolidatedIds, deferredIds, droppedInvalidIdTexts } =
-      validateAndMergeIds(extracted.parsed, messageIds);
-
-    droppedInvalidIdTexts.forEach((memoryText) => {
-      logger.warn({ memoryText }, '[MemoryConsolidation] 丢弃含非法 source_message_ids 的记忆');
-    });
-
-    if (consolidatedIds.length > 0) {
-      logger.info(
-        {
-          event: 'llm.consolidation.mark',
-          globalMax: consolidatedIds.length - 1,
-          consolidatedCount: consolidatedIds.length,
-          deferredCount: deferredIds.length,
-        },
-        '[MemoryConsolidation] globalMax 前缀标记',
-      );
-    }
-
-    if (finishedMemories.length === 0) {
-      await completeJob(
-        job,
-        `未提取到已完结记忆，${deferredIds.length} 条消息留待下次。`,
-        emptyResult(deferredIds.length),
-      );
-      return;
-    }
-
-    if (consolidatedIds.length === 0) {
-      await completeJob(
-        job,
-        `提取到 ${finishedMemories.length} 条记忆但无有效消息可标记，${deferredIds.length} 条留待下次。`,
-        {
-          memoriesExtracted: finishedMemories.length,
-          memories: toJobMemories(finishedMemories),
-          consolidatedMessageCount: 0,
-          unfinishedMessageCount: deferredIds.length,
-        },
-      );
-      return;
-    }
-
     const characterIds = isGroup
       ? await loadGroupMemberCharacterIds(scope.groupSessionId)
       : [await loadSessionCharacterId(scope.sessionId)].flatMap((id) => (id ? [id] : []));
@@ -423,14 +452,96 @@ export async function runConsolidation(
       return;
     }
 
-    await persistConsolidation(job, finishedMemories, consolidatedIds, userId, characterIds);
+    const extractScope = {
+      sessionId: isGroup ? undefined : scope.sessionId,
+      groupSessionId: isGroup ? scope.groupSessionId : undefined,
+    };
 
-    const rowCount = finishedMemories.length * characterIds.length;
+    const perCharMemories = new Map<string, FinishedMemory[]>();
+    const results: PerCharacterResult[] = [];
+
+    for (const characterId of characterIds) {
+      const charLabel = isGroup ? `角色 ${characterId}` : '';
+      await updateConsolidationJob(job.id, {
+        progress: `正在${charLabel}提取记忆（${messageIds.length} 条消息）...`,
+      });
+
+      const result = await extractForCharacter(
+        job,
+        transcript,
+        messageIds,
+        userId,
+        extractScope,
+        characterId,
+      );
+      if (result) {
+        results.push(result);
+        if (result.finishedMemories.length > 0) {
+          perCharMemories.set(characterId, result.finishedMemories);
+        }
+      }
+    }
+
+    if (results.length === 0) {
+      await failJob(job, '所有角色提取均失败');
+      return;
+    }
+
+    const mergedConsolidatedIds = mergeConsolidatedIds(results);
+    const mergedDeferredIds = messageIds.slice(mergedConsolidatedIds.length);
+
+    if (mergedConsolidatedIds.length > 0) {
+      logger.info(
+        {
+          event: 'llm.consolidation.mark',
+          globalMax: mergedConsolidatedIds.length - 1,
+          consolidatedCount: mergedConsolidatedIds.length,
+          deferredCount: mergedDeferredIds.length,
+        },
+        '[MemoryConsolidation] globalMax 前缀标记',
+      );
+    }
+
+    const totalMemories = Array.from(perCharMemories.values()).reduce(
+      (sum, memories) => sum + memories.length,
+      0,
+    );
+
+    if (totalMemories === 0) {
+      await completeJob(
+        job,
+        `未提取到已完结记忆，${mergedDeferredIds.length} 条消息留待下次。`,
+        emptyResult(mergedDeferredIds.length),
+      );
+      return;
+    }
+
+    if (mergedConsolidatedIds.length === 0) {
+      await completeJob(
+        job,
+        `提取到 ${totalMemories} 条记忆但无有效消息可标记，${mergedDeferredIds.length} 条留待下次。`,
+        {
+          memoriesExtracted: totalMemories,
+          memories: Array.from(perCharMemories.values()).flatMap(toJobMemories),
+          consolidatedMessageCount: 0,
+          unfinishedMessageCount: mergedDeferredIds.length,
+        },
+      );
+      return;
+    }
+
+    await persistConsolidation(job, perCharMemories, mergedConsolidatedIds, userId);
+
+    const rowCount = Array.from(perCharMemories.values()).reduce(
+      (sum, memories) => sum + memories.length,
+      0,
+    );
+
     const result = {
-      memoriesExtracted: finishedMemories.length,
-      memories: toJobMemories(finishedMemories),
-      consolidatedMessageCount: consolidatedIds.length,
-      unfinishedMessageCount: deferredIds.length,
+      memoriesExtracted: totalMemories,
+      memories: Array.from(perCharMemories.values()).flatMap(toJobMemories),
+      consolidatedMessageCount: mergedConsolidatedIds.length,
+      unfinishedMessageCount: mergedDeferredIds.length,
     };
 
     logger.info({
@@ -446,13 +557,13 @@ export async function runConsolidation(
       memories: result.memories,
     });
 
-    const fanOutNote = isGroup
-      ? `，扇出写入 ${characterIds.length} 个角色共 ${rowCount} 条`
+    const perCharNote = isGroup
+      ? `，${characterIds.length} 个角色各自提取，共写入 ${rowCount} 条`
       : '';
 
     await completeJob(
       job,
-      `完成！提取 ${finishedMemories.length} 条记忆${fanOutNote}，标记 ${consolidatedIds.length} 条消息已整理，${deferredIds.length} 条消息留待下次。`,
+      `完成！提取 ${totalMemories} 条记忆${perCharNote}，标记 ${mergedConsolidatedIds.length} 条消息已整理，${mergedDeferredIds.length} 条消息留待下次。`,
       result,
     );
   } catch (err) {

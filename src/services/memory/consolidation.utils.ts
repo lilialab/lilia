@@ -55,29 +55,6 @@ export function consolidationSpeakerLabel(
   return options?.singleChatAssistantName ?? '阿尔博';
 }
 
-/** 将记忆按角色列表展开为写入输入（全员扇出）。 */
-export function fanOutMemoriesToCharacters(
-  memories: { text: string; type: MemoryType; confidence: number }[],
-  userId: string,
-  characterIds: string[],
-): {
-  userId: string;
-  characterId: string;
-  text: string;
-  type: MemoryType;
-  confidence: number;
-}[] {
-  return characterIds.flatMap((characterId) =>
-    memories.map((memory) => ({
-      userId,
-      characterId,
-      text: memory.text,
-      type: memory.type,
-      confidence: memory.confidence,
-    }))
-  );
-}
-
 /** 从未知值解析非空字符串数组，非法输入返回空数组。 */
 function parseStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

@@ -1,6 +1,7 @@
 import {
   DEFAULT_CHARACTER_ID,
   loadCharacter,
+  loadExtractPrompt,
   loadJobPrompt,
   loadPlatformSafety,
 } from '@/prompts/load';
@@ -38,12 +39,19 @@ describe('prompts/load', () => {
     expect(dave.shortBio).toBeTruthy();
   });
 
-  it('loadJobPrompt(extract) 含核心规则与弱模型约束', () => {
-    const prompt = loadJobPrompt('extract');
+  it('loadExtractPrompt(arbor) 含核心规则与弱模型约束', () => {
+    const prompt = loadExtractPrompt('arbor');
     expect(prompt.length).toBeGreaterThan(100);
     expect(prompt).toContain('finished_memories');
     expect(prompt).toContain('弱模型额外约束');
     expect(prompt).toContain('阿尔博');
+  });
+
+  it('loadExtractPrompt 未知角色 fallback 到全局默认', () => {
+    const prompt = loadExtractPrompt('nonexistent');
+    expect(prompt.length).toBeGreaterThan(100);
+    expect(prompt).toContain('finished_memories');
+    expect(prompt).not.toContain('专属提取重点');
   });
 
   it('loadJobPrompt(maintain|profile) 与平台 safety 非空', () => {

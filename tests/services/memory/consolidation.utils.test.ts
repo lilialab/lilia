@@ -1,6 +1,5 @@
 import {
   consolidationSpeakerLabel,
-  fanOutMemoriesToCharacters,
   isIncludedInGroupExtract,
   mapConsolidationOutput,
   parseFinishedMemoryItem,
@@ -33,42 +32,6 @@ describe('consolidationSpeakerLabel', () => {
 
   it('falls back to 阿尔博 for single chat', () => {
     expect(consolidationSpeakerLabel('assistant')).toBe('阿尔博');
-  });
-});
-
-describe('fanOutMemoriesToCharacters', () => {
-  it('writes each memory to every character', () => {
-    const rows = fanOutMemoriesToCharacters(
-      [{ text: '用户喜欢咖啡', type: 'preference', confidence: 0.9 }],
-      'u1',
-      ['c1', 'c2'],
-    );
-    expect(rows).toEqual([
-      {
-        userId: 'u1',
-        characterId: 'c1',
-        text: '用户喜欢咖啡',
-        type: 'preference',
-        confidence: 0.9,
-      },
-      {
-        userId: 'u1',
-        characterId: 'c2',
-        text: '用户喜欢咖啡',
-        type: 'preference',
-        confidence: 0.9,
-      },
-    ]);
-  });
-
-  it('returns empty when no characters', () => {
-    expect(
-      fanOutMemoriesToCharacters(
-        [{ text: '用户喜欢咖啡', type: 'preference', confidence: 0.9 }],
-        'u1',
-        [],
-      ),
-    ).toEqual([]);
   });
 });
 
