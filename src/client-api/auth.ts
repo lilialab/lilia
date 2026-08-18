@@ -6,7 +6,6 @@ export interface AuthUser {
   id: string;
   username: string;
   displayName: string;
-  timeZone: string;
   createdAt: string;
   updatedAt: string;
 }

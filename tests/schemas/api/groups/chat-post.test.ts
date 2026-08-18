@@ -25,6 +25,7 @@ function userMessage(overrides: {
         metadata,
       },
     ],
+    timeZone: 'Asia/Shanghai',
   };
 }
 
@@ -52,6 +53,7 @@ describe('groupChatPostBodySchema', () => {
           metadata: { kind: null, slug: 'bob' },
         },
       ],
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(true);
   });
@@ -116,6 +118,7 @@ describe('groupChatPostBodySchema', () => {
             metadata: { kind: 'other' },
           },
         ],
+        timeZone: 'Asia/Shanghai',
       }).success,
     ).toBe(false);
   });
@@ -135,7 +138,21 @@ describe('groupChatPostBodySchema', () => {
           },
         },
       ],
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(true);
+  });
+
+  it('缺省 timeZone 解析失败', () => {
+    const { messages } = userMessage({ text: 'hi', slug: 'bob' });
+    expect(groupChatPostBodySchema.safeParse({ messages }).success).toBe(false);
+  });
+
+  it('拒绝非法 timeZone', () => {
+    const result = groupChatPostBodySchema.safeParse({
+      ...userMessage({ text: 'hi', slug: 'bob' }),
+      timeZone: 'Not/A/Timezone',
+    });
+    expect(result.success).toBe(false);
   });
 });

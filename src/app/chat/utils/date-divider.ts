@@ -1,6 +1,5 @@
 import type { HistoryMessage } from '@/client-api/sessions';
-import { format, isSameYear, isToday, isYesterday } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { format, isToday, isYesterday } from 'date-fns';
 
 export function getMessageDate(message: HistoryMessage): Date {
   if (message.createdAt) {
@@ -9,22 +8,27 @@ export function getMessageDate(message: HistoryMessage): Date {
   return new Date();
 }
 
+/** 按设备本地日历日分组。 */
 export function formatDayKey(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
 
-export function formatDateDivider(date: Date, now = new Date()): string {
+export interface FormatDateDividerOptions {
+  today: string;
+  yesterday: string;
+}
+
+/** 日分隔文案；今天/昨天跟设备时区，其余用 yyyy-MM-dd。 */
+export function formatDateDivider(date: Date, options: FormatDateDividerOptions): string {
+  const { today, yesterday } = options;
+
   if (isToday(date)) {
-    return '今天';
+    return today;
   }
 
   if (isYesterday(date)) {
-    return '昨天';
+    return yesterday;
   }
 
-  if (isSameYear(date, now)) {
-    return format(date, 'M月d日', { locale: zhCN });
-  }
-
-  return format(date, 'yyyy年M月d日', { locale: zhCN });
+  return formatDayKey(date);
 }

@@ -1,3 +1,4 @@
+import { timeZoneSchema } from '@/schemas/shared/time-zone';
 import { z } from 'zod';
 
 const chatMessagePartSchema = z.looseObject({
@@ -15,6 +16,7 @@ const chatMessageSchema = z.object({
 export const chatPostBodySchema = z.object({
   sessionId: z.string().trim().min(1),
   messages: z.array(chatMessageSchema).min(1),
+  timeZone: timeZoneSchema,
 });
 
 export type ChatPostBody = z.infer<typeof chatPostBodySchema>;

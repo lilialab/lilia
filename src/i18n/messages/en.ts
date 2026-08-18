@@ -56,6 +56,10 @@ export const en = {
     backToContacts: 'Back to contacts',
     generatingAria: 'Generating reply',
   },
+  chatDate: {
+    today: 'Today',
+    yesterday: 'Yesterday',
+  },
   chatInput: {
     placeholder: 'Message...',
     placeholderStreaming: 'Generating...',
@@ -104,8 +108,6 @@ export const en = {
   settings: {
     title: 'Settings',
     language: 'Language',
-    languageEn: 'English',
-    languageZh: '中文',
   },
 } as const;
 

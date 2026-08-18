@@ -11,7 +11,6 @@ export interface PublicUser {
   id: string;
   username: string;
   displayName: string;
-  timeZone: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +23,6 @@ const publicUserSelect = {
   id: true,
   username: true,
   displayName: true,
-  timeZone: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -48,20 +46,6 @@ export async function requireUserById(id: string): Promise<PublicUser> {
     throw AppError.unauthorized('用户不存在');
   }
   return user;
-}
-
-/** 读取用户 IANA 时区；用户不存在时 404。 */
-export async function getUserTimeZone(userId: string): Promise<string> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { timeZone: true },
-  });
-
-  if (!user) {
-    throw AppError.notFound('用户不存在');
-  }
-
-  return user.timeZone;
 }
 
 /** 按账号解析用户 ID；不存在时 404。 */
@@ -115,7 +99,6 @@ export async function registerUser(input: {
   username: string;
   displayName: string;
   password: string;
-  timeZone: string;
 }): Promise<PublicUser> {
   const existing = await prisma.user.findUnique({
     where: { username: input.username },
@@ -133,7 +116,6 @@ export async function registerUser(input: {
       username: input.username,
       displayName: input.displayName,
       passwordHash,
-      timeZone: input.timeZone,
     },
     select: publicUserSelect,
   });

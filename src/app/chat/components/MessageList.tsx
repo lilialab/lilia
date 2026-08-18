@@ -37,6 +37,7 @@ export function MessageList({
   /* -------------------------------------------------------------------------- */
 
   const tCommon = useTranslations('common');
+  const tDate = useTranslations('chatDate');
   const resolvedUserDisplayName = userDisplayName ?? tCommon('userFallback');
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPinnedRef = useRef(true);
@@ -46,8 +47,12 @@ export function MessageList({
   const lastMessage = messages.at(-1);
   const awaitingAssistant = isAwaitingAssistantResponse(status, messages);
   const messageItems = useMemo(
-    () => buildMessageItems(messages.filter(isDisplayMessage)),
-    [messages],
+    () =>
+      buildMessageItems(messages.filter(isDisplayMessage), {
+        today: tDate('today'),
+        yesterday: tDate('yesterday'),
+      }),
+    [messages, tDate],
   );
 
   /* -------------------------------------------------------------------------- */

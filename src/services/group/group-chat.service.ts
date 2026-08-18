@@ -11,7 +11,7 @@ import {
   claimGroupGeneration,
   releaseGroupGeneration,
 } from '@/services/session/generation-lock.service';
-import { getUserById, getUserTimeZone } from '@/services/user/users.service';
+import { getUserById } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
@@ -84,6 +84,7 @@ interface StreamGroupAssistantReplyOptions {
   generationClaimedAt: Date;
   /** 群成员列表（提供则跳过花名册 DB 查询） */
   members: GroupMemberRef[];
+  timeZone: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -114,11 +115,9 @@ export async function streamGroupAssistantReply({
   ephemeralUserText,
   generationClaimedAt,
   members,
+  timeZone,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
-  const [timeZone, user] = await Promise.all([
-    getUserTimeZone(userId),
-    getUserById(userId),
-  ]);
+  const user = await getUserById(userId);
   const roster = listGroupRosterMembers(members);
   const character = loadCharacter(speaker.slug);
   const tools = resolveToolsForCharacter(character.skills, {
@@ -238,11 +237,13 @@ export async function streamGroupAssistantReply({
 /**
  * 群聊发送：落库用户消息（含可选 turn_cue）后召唤一位角色。
  * @param messages 前端 UI 消息（只取最后一条 user；kind/slug 在 metadata；模型上下文以 DB 为准）
+ * @param timeZone 设备 IANA 时区
  */
 export async function streamGroupChatFlow(
   groupSessionId: string,
   userId: string,
   messages: GroupChatPostBody['messages'],
+  timeZone: string,
 ): Promise<UIMessageStreamPayload> {
   const lastMessage = messages.at(-1);
 
@@ -285,6 +286,7 @@ export async function streamGroupChatFlow(
         ephemeralUserText: text,
         generationClaimedAt: claimedAt,
         members,
+        timeZone,
       });
     }
 
@@ -303,6 +305,7 @@ export async function streamGroupChatFlow(
       userMessageId,
       generationClaimedAt: claimedAt,
       members,
+      timeZone,
     });
   } catch (err) {
     await releaseGroupGeneration(groupSessionId, claimedAt);

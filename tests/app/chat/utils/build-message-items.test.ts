@@ -12,15 +12,20 @@ function makeMessage(id: string, createdAt: string): HistoryMessage {
 }
 
 describe('buildMessageItems', () => {
+  const divider = { today: '今天', yesterday: '昨天' };
+
   it('returns empty array for no messages', () => {
-    expect(buildMessageItems([])).toEqual([]);
+    expect(buildMessageItems([], divider)).toEqual([]);
   });
 
   it('inserts one divider for two messages on the same day', () => {
-    const items = buildMessageItems([
-      makeMessage('a', '2024-06-01T10:00:00.000Z'),
-      makeMessage('b', '2024-06-01T15:00:00.000Z'),
-    ]);
+    const items = buildMessageItems(
+      [
+        makeMessage('a', '2024-06-01T10:00:00.000Z'),
+        makeMessage('b', '2024-06-01T15:00:00.000Z'),
+      ],
+      divider,
+    );
 
     expect(items).toHaveLength(3);
     expect(items[0]).toMatchObject({ type: 'divider', key: 'divider-2024-06-01' });
@@ -29,10 +34,13 @@ describe('buildMessageItems', () => {
   });
 
   it('inserts dividers when messages span two days', () => {
-    const items = buildMessageItems([
-      makeMessage('a', '2024-06-01T10:00:00.000Z'),
-      makeMessage('b', '2024-06-02T10:00:00.000Z'),
-    ]);
+    const items = buildMessageItems(
+      [
+        makeMessage('a', '2024-06-01T10:00:00.000Z'),
+        makeMessage('b', '2024-06-02T10:00:00.000Z'),
+      ],
+      divider,
+    );
 
     expect(items).toHaveLength(4);
     expect(items[0]).toMatchObject({ type: 'divider', key: 'divider-2024-06-01' });
@@ -42,11 +50,11 @@ describe('buildMessageItems', () => {
   });
 
   it('uses yyyy-MM-dd divider label for historical dates', () => {
-    const items = buildMessageItems([makeMessage('a', '2024-06-01T10:00:00.000Z')]);
+    const items = buildMessageItems([makeMessage('a', '2024-06-01T10:00:00.000Z')], divider);
 
     expect(items[0]).toMatchObject({
       type: 'divider',
-      label: '2024年6月1日',
+      label: '2024-06-01',
     });
   });
 });

@@ -13,11 +13,12 @@ export const POST = withApiHandler(
     const { id: groupSessionId } = await parseRouteParams(groupParamsSchema, context.params);
     await assertGroupOwnedByUser(groupSessionId, userId);
 
-    const { messages } = await parseJsonBody(groupChatPostBodySchema, req);
+    const { messages, timeZone } = await parseJsonBody(groupChatPostBodySchema, req);
     const { streamResult, metadata } = await streamGroupChatFlow(
       groupSessionId,
       userId,
       messages,
+      timeZone,
     );
     // 客户端断连后仍消费完流，保证 streamText onFinish 落库
     streamResult.consumeStream();

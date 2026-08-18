@@ -6,11 +6,8 @@ import { registerUser } from '@/services/user/users.service';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
-  const { username, displayName, password, timeZone } = await parseJsonBody(
-    registerBodySchema,
-    req,
-  );
-  const user = await registerUser({ username, displayName, password, timeZone });
+  const { username, displayName, password } = await parseJsonBody(registerBodySchema, req);
+  const user = await registerUser({ username, displayName, password });
 
   const token = await createAuthSession(user.id);
   const response = NextResponse.json({

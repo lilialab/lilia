@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, isLocale, parseLocale } from '@/i18n/config';
+import { DEFAULT_LOCALE, isLocale, localeToHtmlLang, parseLocale } from '@/i18n/config';
 import { describe, expect, it } from 'vitest';
 
 describe('isLocale', () => {
@@ -26,5 +26,12 @@ describe('parseLocale', () => {
     expect(parseLocale('')).toBe(DEFAULT_LOCALE);
     expect(parseLocale('ja')).toBe(DEFAULT_LOCALE);
     expect(DEFAULT_LOCALE).toBe('en');
+  });
+});
+
+describe('localeToHtmlLang', () => {
+  it('映射到 html lang', () => {
+    expect(localeToHtmlLang('en')).toBe('en');
+    expect(localeToHtmlLang('zh')).toBe('zh-CN');
   });
 });

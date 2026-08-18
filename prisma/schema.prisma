@@ -15,10 +15,6 @@ model User {
   username     String   @unique
   passwordHash String   @map("password_hash")
   displayName  String   @map("display_name")
-  /**
-   * IANA 时区，聊天 prompt 本地时间以库为准
-   */
-  timeZone     String   @default("Asia/Shanghai") @map("time_zone")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

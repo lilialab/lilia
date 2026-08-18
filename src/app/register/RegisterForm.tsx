@@ -4,7 +4,6 @@ import { register } from '@/client-api/auth';
 import { AuthField, AuthShell } from '@/components/auth';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
-import { getBrowserTimeZone } from '@/utils/timezone';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -28,7 +27,6 @@ export function RegisterForm() {
         displayName: displayName.trim(),
         password,
         confirmPassword,
-        timeZone: getBrowserTimeZone(),
       });
       router.push('/contacts');
       router.refresh();

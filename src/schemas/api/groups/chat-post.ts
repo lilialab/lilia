@@ -1,3 +1,4 @@
+import { timeZoneSchema } from '@/schemas/shared/time-zone';
 import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
 import { z } from 'zod';
 
@@ -22,6 +23,7 @@ const groupChatMessageSchema = z.object({
 
 export const groupChatPostBodySchema = z.object({
   messages: z.array(groupChatMessageSchema).min(1),
+  timeZone: timeZoneSchema,
 });
 
 export type GroupChatPostBody = z.infer<typeof groupChatPostBodySchema>;

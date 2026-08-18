@@ -54,7 +54,7 @@ async function fetchUserProfile(userId: string, characterId: string): Promise<st
 }
 
 export interface BuildSystemPromptOptions {
-  /** 用户库内 IANA 时区 */
+  /** 设备 IANA 时区 */
   timeZone: string;
 }
 

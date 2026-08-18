@@ -23,6 +23,7 @@ describe('chatPostBodySchema', () => {
           parts: [{ type: 'text', text: 'hello', state: 'done' }],
         },
       ],
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -30,5 +31,26 @@ describe('chatPostBodySchema', () => {
       expect(result.data.messages).toHaveLength(1);
       expect(result.data.messages[0].parts[0].text).toBe('hello');
     }
+  });
+
+  it('缺省 timeZone 解析失败', () => {
+    const result = chatPostBodySchema.safeParse({
+      sessionId: 's1',
+      messages: [
+        { id: 'msg-1', role: 'user', parts: [{ type: 'text', text: 'hello' }] },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('拒绝非法 timeZone', () => {
+    const result = chatPostBodySchema.safeParse({
+      sessionId: 's1',
+      messages: [
+        { id: 'msg-1', role: 'user', parts: [{ type: 'text', text: 'hello' }] },
+      ],
+      timeZone: 'Not/A/Timezone',
+    });
+    expect(result.success).toBe(false);
   });
 });

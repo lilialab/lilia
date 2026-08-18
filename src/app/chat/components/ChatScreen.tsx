@@ -14,6 +14,7 @@ import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { getBrowserTimeZone } from '@/utils/timezone';
 import { useChat } from '@ai-sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport } from 'ai';
@@ -69,6 +70,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       new DefaultChatTransport<HistoryMessage>({
         api: '/api/chat',
         credentials: 'include',
+        body: () => ({ timeZone: getBrowserTimeZone() }),
       }),
     [],
   );

@@ -56,6 +56,10 @@ export const zh = {
     backToContacts: '返回通讯录',
     generatingAria: '正在生成回复',
   },
+  chatDate: {
+    today: '今天',
+    yesterday: '昨天',
+  },
   chatInput: {
     placeholder: '输入消息...',
     placeholderStreaming: '正在生成中...',
@@ -103,7 +107,5 @@ export const zh = {
   settings: {
     title: '设置',
     language: '语言',
-    languageEn: 'English',
-    languageZh: '中文',
   },
 } satisfies Messages;

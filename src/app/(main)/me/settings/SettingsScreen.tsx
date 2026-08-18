@@ -2,25 +2,10 @@
 
 import { useI18n, useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { type Locale, locales } from '@/i18n/config';
+import { localeLabels, locales } from '@/i18n/config';
 import { cn } from '@/lib/client/cn';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-/* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function languageLabel(
-  locale: Locale,
-  t: (key: 'languageEn' | 'languageZh') => string,
-): string {
-  return locale === 'zh' ? t('languageZh') : t('languageEn');
-}
-
-/* -------------------------------------------------------------------------- */
-/* Screen                                                                     */
-/* -------------------------------------------------------------------------- */
 
 export function SettingsScreen() {
   const router = useRouter();
@@ -52,7 +37,7 @@ export function SettingsScreen() {
                       selected ? 'text-primary' : 'text-foreground',
                     )}
                   >
-                    <span>{languageLabel(option, t)}</span>
+                    <span>{localeLabels[option]}</span>
                     {selected && <Check className={cn('h-4 w-4 shrink-0')} aria-hidden />}
                   </button>
                 </li>

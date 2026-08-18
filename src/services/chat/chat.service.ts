@@ -11,7 +11,6 @@ import {
   claimChatGeneration,
   releaseChatGeneration,
 } from '@/services/session/generation-lock.service';
-import { getUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import type { MessageMetadata, UIMessageStreamPayload } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
@@ -86,6 +85,7 @@ async function prepareChatTurn(
   sessionId: string,
   userId: string,
   lastMessage: ChatIncomingMessage,
+  timeZone: string,
 ): Promise<PreparedChatTurn> {
   const userMessage = await prisma.message.create({
     data: {
@@ -103,7 +103,6 @@ async function prepareChatTurn(
 
   const contextMessages = await getContextMessages(sessionId);
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
-  const timeZone = await getUserTimeZone(userId);
   const character = loadCharacter(characterSlug);
   const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
   const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, { timeZone });
@@ -181,13 +180,15 @@ async function finishChatTurn(params: {
 /**
  * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流（适配 AI SDK 5.0 Parts 架构）
  * @param sessionId 聊天会话 ID
- * @param userId 所属用户（用于滑动窗口调度 extract / maintain，以及库内时区）
+ * @param userId 所属用户（用于滑动窗口调度 extract / maintain）
  * @param messages 前端传过来的消息（用于校验与 UI 流式协议；模型上下文以 DB 为准）
+ * @param timeZone 设备 IANA 时区
  */
 export async function streamChatFlow(
   sessionId: string,
   userId: string,
   messages: ChatPostBody['messages'],
+  timeZone: string,
 ): Promise<UIMessageStreamPayload> {
   const lastMessage = messages.at(-1);
 
@@ -198,7 +199,7 @@ export async function streamChatFlow(
   const claimedAt = await claimChatGeneration(sessionId);
 
   try {
-    const prepared = await prepareChatTurn(sessionId, userId, lastMessage);
+    const prepared = await prepareChatTurn(sessionId, userId, lastMessage, timeZone);
 
     // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
     const streamResult = streamText({

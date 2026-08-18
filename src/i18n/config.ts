@@ -4,6 +4,17 @@ export type Locale = (typeof locales)[number];
 
 export const DEFAULT_LOCALE: Locale = 'en';
 
+/** 语言选择器用的自称（不随界面语言翻译）。 */
+export const localeLabels: Record<Locale, string> = {
+  en: 'English',
+  zh: '中文',
+};
+
+const localeHtmlLang: Record<Locale, string> = {
+  en: 'en',
+  zh: 'zh-CN',
+};
+
 /** 浏览器语言偏好 Cookie（非 HttpOnly，客户端可写）。 */
 export const LOCALE_COOKIE_NAME = 'pai_arbor_locale';
 
@@ -22,5 +33,5 @@ export function parseLocale(value: string | undefined | null): Locale {
 }
 
 export function localeToHtmlLang(locale: Locale): string {
-  return locale === 'zh' ? 'zh-CN' : 'en';
+  return localeHtmlLang[locale];
 }

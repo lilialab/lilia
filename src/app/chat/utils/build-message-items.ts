@@ -1,12 +1,20 @@
 import type { HistoryMessage } from '@/client-api/sessions';
-import { formatDateDivider, formatDayKey, getMessageDate } from './date-divider';
+import {
+  formatDateDivider,
+  type FormatDateDividerOptions,
+  formatDayKey,
+  getMessageDate,
+} from './date-divider';
 
 export type MessageListItem = { type: 'divider'; key: string; label: string } | {
   type: 'message';
   message: HistoryMessage;
 };
 
-export function buildMessageItems(messages: HistoryMessage[]): MessageListItem[] {
+export function buildMessageItems(
+  messages: HistoryMessage[],
+  divider: FormatDateDividerOptions,
+): MessageListItem[] {
   return messages.reduce<{ items: MessageListItem[]; lastDayKey: string | null }>(
     (acc, message) => {
       const date = getMessageDate(message);
@@ -16,7 +24,7 @@ export function buildMessageItems(messages: HistoryMessage[]): MessageListItem[]
         acc.items.push({
           type: 'divider',
           key: `divider-${dayKey}`,
-          label: formatDateDivider(date),
+          label: formatDateDivider(date, divider),
         });
         acc.lastDayKey = dayKey;
       }
