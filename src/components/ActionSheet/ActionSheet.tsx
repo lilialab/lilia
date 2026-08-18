@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/client/cn';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -25,10 +26,15 @@ export function ActionSheet({
   open,
   title,
   items,
-  cancelLabel = '取消',
+  cancelLabel,
   onClose,
   onCloseAutoFocus,
 }: ActionSheetProps) {
+  const tCommon = useTranslations('common');
+  const tSheet = useTranslations('actionSheet');
+  const resolvedCancelLabel = cancelLabel ?? tCommon('cancel');
+  const menuAriaLabel = tSheet('menuAriaLabel');
+
   return (
     <Modal
       open={open}
@@ -39,7 +45,7 @@ export function ActionSheet({
         'pb-[env(safe-area-inset-bottom)]',
       )}
       aria-labelledby={title ? 'action-sheet-title' : undefined}
-      aria-label={title ? undefined : '操作菜单'}
+      aria-label={title ? undefined : menuAriaLabel}
     >
       <div className={cn('mx-auto w-full max-w-lg px-3 pb-3 pt-2')}>
         <div
@@ -56,7 +62,7 @@ export function ActionSheet({
                 {title}
               </Dialog.Title>
             )
-            : <Dialog.Title className={cn('sr-only')}>操作菜单</Dialog.Title>}
+            : <Dialog.Title className={cn('sr-only')}>{menuAriaLabel}</Dialog.Title>}
           <ul className={cn('divide-y divide-border/50')}>
             {items.map((item) => (
               <li key={item.key}>
@@ -88,7 +94,7 @@ export function ActionSheet({
             'transition-colors hover:bg-surface',
           )}
         >
-          {cancelLabel}
+          {resolvedCancelLabel}
         </button>
       </div>
     </Modal>

@@ -4,6 +4,7 @@ import { fetchContactSession, removeContact } from '@/client-api/contacts';
 import type { HistoryMessage } from '@/client-api/sessions';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
@@ -35,6 +36,8 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const t = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -150,7 +153,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
         title={displayName || '...'}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
         right={
-          <HeaderIconButton aria-label="更多操作" onClick={() => setMenuOpen(true)}>
+          <HeaderIconButton aria-label={t('moreActions')} onClick={() => setMenuOpen(true)}>
             <MoreHorizontal className={cn('h-5 w-5')} aria-hidden />
           </HeaderIconButton>
         }
@@ -162,7 +165,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
         items={[
           {
             key: 'clear',
-            label: '清空聊天记录',
+            label: t('clearHistory'),
             disabled: clearDisabled,
             onSelect: () => {
               // 等 ActionSheet 关闭后再开 Confirm，避免两个 Dialog 抢焦点
@@ -171,7 +174,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           },
           {
             key: 'delete',
-            label: '删除 AI',
+            label: t('deleteAi'),
             variant: 'danger',
             disabled: deleteDisabled,
             onSelect: () => {
@@ -183,9 +186,9 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
       <ConfirmDialog
         open={confirmClearOpen}
-        title="清空聊天记录"
-        description="此操作将清除当前会话的所有消息，且无法恢复。确定继续吗？"
-        confirmLabel="清空"
+        title={t('clearHistory')}
+        description={t('clearHistoryDescription')}
+        confirmLabel={t('clearConfirm')}
         variant="danger"
         onConfirm={() => void handleConfirmClear()}
         onCancel={() => setConfirmClearOpen(false)}
@@ -193,11 +196,9 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        title="删除 AI"
-        description={`确定将「${
-          displayName || '该 AI'
-        }」从通讯录中移除吗？聊天记录将一并删除且无法恢复。`}
-        confirmLabel="删除"
+        title={t('deleteAi')}
+        description={t('deleteAiDescription', { name: displayName || t('thisAi') })}
+        confirmLabel={t('deleteConfirm')}
         variant="danger"
         onConfirm={() => void handleConfirmDelete()}
         onCancel={() => setConfirmDeleteOpen(false)}
@@ -206,8 +207,8 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       <PageStatus
         loading={sessionQuery.isLoading}
         error={sessionQuery.isError || !sessionId}
-        errorMessage="无法加载会话，请先添加该 AI 好友"
-        actionLabel="返回通讯录"
+        errorMessage={t('loadError')}
+        actionLabel={t('backToContacts')}
         actionVariant="button"
         onAction={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
       >
@@ -218,7 +219,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void loadMore()}
-          userDisplayName={user?.displayName ?? '我'}
+          userDisplayName={user?.displayName ?? tCommon('userFallback')}
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={sessionQuery.isGenerating && !isStreaming} />

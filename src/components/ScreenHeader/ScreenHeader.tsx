@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { ChevronLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -6,13 +9,23 @@ const sideSlotClass = cn('flex min-h-10 min-w-10 shrink-0 items-center');
 
 interface ScreenHeaderProps {
   title: string;
-  /** 有则显示返回按钮（图标，aria-label 固定为「返回」） */
+  /** 有则显示返回按钮 */
   onBack?: () => void;
+  /** 返回按钮 aria-label；默认随语言（common.back） */
+  backAriaLabel?: string;
   right?: ReactNode;
 }
 
 /** 通用顶栏：可选返回 / 标题 / 右侧 slot。 */
-export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
+export function ScreenHeader({
+  title,
+  onBack,
+  backAriaLabel,
+  right,
+}: ScreenHeaderProps) {
+  const t = useTranslations('common');
+  const resolvedBackAriaLabel = backAriaLabel ?? t('back');
+
   return (
     <header
       className={cn(
@@ -24,7 +37,7 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
           <button
             type="button"
             onClick={onBack}
-            aria-label="返回"
+            aria-label={resolvedBackAriaLabel}
             className={cn(
               'flex min-h-10 min-w-10 items-center justify-center rounded-md text-foreground/70',
               'hover:bg-surface',

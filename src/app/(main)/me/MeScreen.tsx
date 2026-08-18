@@ -1,16 +1,19 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
+import { MeMenuLink } from './MeMenuLink';
 
 export function MeScreen() {
   const { user, logout, isLoggingOut } = useAuth();
+  const t = useTranslations('me');
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
-      <ScreenHeader title="我" />
+      <ScreenHeader title={t('title')} />
 
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 bg-background px-4 py-4')}>
@@ -20,6 +23,10 @@ export function MeScreen() {
           {user?.username && (
             <p className={cn('mt-1 text-sm text-muted-foreground')}>@{user.username}</p>
           )}
+        </section>
+
+        <section className={cn('mt-3 bg-background')}>
+          <MeMenuLink href="/me/settings" label={t('settings')} icon={Settings} />
         </section>
 
         <section className={cn('mt-3 bg-background')}>
@@ -33,7 +40,7 @@ export function MeScreen() {
             )}
           >
             <LogOut className={cn('h-4 w-4')} aria-hidden />
-            {isLoggingOut ? '退出中...' : '退出登录'}
+            {isLoggingOut ? t('loggingOut') : t('logout')}
           </button>
         </section>
       </div>

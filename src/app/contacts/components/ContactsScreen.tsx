@@ -1,6 +1,7 @@
 'use client';
 
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,11 +16,8 @@ import { useRouter } from 'next/navigation';
 /* -------------------------------------------------------------------------- */
 
 function ContactsEmpty() {
-  return (
-    <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>
-      还没有 AI 好友，点右上角添加
-    </p>
-  );
+  const t = useTranslations('contacts');
+  return <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>{t('empty')}</p>;
 }
 
 interface ContactsListProps {
@@ -71,6 +69,7 @@ export function ContactsScreen() {
 
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations('contacts');
 
   const contactsQuery = useQuery({
     queryKey: queryKeys.contacts,
@@ -87,10 +86,10 @@ export function ContactsScreen() {
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
       <ScreenHeader
-        title="通讯录"
+        title={t('title')}
         right={
           <HeaderIconButton
-            aria-label="添加 AI"
+            aria-label={t('addAriaLabel')}
             onClick={() => router.push('/chat/add', { transitionTypes: ['nav-forward'] })}
           >
             <UserPlus className={cn('h-5 w-5')} aria-hidden />
@@ -101,11 +100,13 @@ export function ContactsScreen() {
       <PageStatus
         loading={contactsQuery.isLoading}
         error={contactsQuery.isError}
-        errorMessage="无法加载通讯录"
+        errorMessage={t('loadError')}
       >
         <div className={cn('flex-1 overflow-y-auto')}>
           <section className={cn('bg-background')}>
-            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>我的 AI</h2>
+            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>
+              {t('sectionMyAi')}
+            </h2>
             {contacts.length === 0 ? <ContactsEmpty /> : <ContactsList contacts={contacts} />}
           </section>
         </div>

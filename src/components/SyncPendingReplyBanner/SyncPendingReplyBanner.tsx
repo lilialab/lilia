@@ -1,10 +1,9 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { Helix } from 'ldrs/react';
 import 'ldrs/react/Helix.css';
-
-export const SYNC_PENDING_REPLY_MESSAGE = '正在同步未完成的回复...';
 
 interface SyncPendingReplyBannerProps {
   /** 为 false 时不渲染（调用方可短路，也可传 visible） */
@@ -17,6 +16,8 @@ interface SyncPendingReplyBannerProps {
  * 相对定位父级（通常包住输入框）时，悬浮在其上方。
  */
 export function SyncPendingReplyBanner({ visible, className }: SyncPendingReplyBannerProps) {
+  const t = useTranslations('syncPendingReply');
+
   if (!visible) return null;
 
   return (
@@ -35,7 +36,7 @@ export function SyncPendingReplyBanner({ visible, className }: SyncPendingReplyB
         )}
       >
         <Helix size="16" speed="2.5" color="var(--primary-foreground)" />
-        <span>{SYNC_PENDING_REPLY_MESSAGE}</span>
+        <span>{t('message')}</span>
       </div>
     </div>
   );

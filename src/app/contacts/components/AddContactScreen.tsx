@@ -2,6 +2,7 @@
 
 import { type CharacterSummary, fetchCharacters } from '@/client-api/characters';
 import { addContact, fetchContacts } from '@/client-api/contacts';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,7 +20,8 @@ import { toast } from 'sonner';
 /* -------------------------------------------------------------------------- */
 
 function AvailableCharactersEmpty() {
-  return <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>没有可添加的角色</p>;
+  const t = useTranslations('addContact');
+  return <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>{t('empty')}</p>;
 }
 
 interface AvailableCharactersListProps {
@@ -28,12 +30,13 @@ interface AvailableCharactersListProps {
 
 function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
   const queryClient = useQueryClient();
+  const t = useTranslations('addContact');
 
   const addMutation = useMutation({
     mutationFn: addContact,
     onSuccess: async (contact) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.contacts, exact: true });
-      toast.success(`已添加 ${contact.displayName}`);
+      toast.success(t('addedToast', { name: contact.displayName }));
     },
     onError: (err) => {
       showErrorToast(formatClientError(err), 'contact-add');
@@ -65,7 +68,7 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
             )}
           >
             <UserPlus className={cn('h-3.5 w-3.5')} aria-hidden />
-            添加
+            {t('add')}
           </button>
         </li>
       ))}
@@ -80,6 +83,7 @@ export function AddContactScreen() {
 
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations('addContact');
 
   const contactsQuery = useQuery({
     queryKey: queryKeys.contacts,
@@ -112,14 +116,14 @@ export function AddContactScreen() {
   return (
     <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>
       <ScreenHeader
-        title="添加 AI"
+        title={t('title')}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
       />
 
       <PageStatus
         loading={isBootstrapping}
         error={contactsQuery.isError || charactersQuery.isError}
-        errorMessage="无法加载角色列表"
+        errorMessage={t('loadError')}
       >
         <div className={cn('flex-1 overflow-y-auto bg-background')}>
           {availableCharacters.length === 0

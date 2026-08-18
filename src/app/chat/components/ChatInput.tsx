@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { useLayoutEffect, useRef } from 'react';
 
@@ -29,6 +30,7 @@ export function ChatInput({
   onMentionClick,
   focusKey,
 }: ChatInputProps) {
+  const t = useTranslations('chatInput');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const showMention = Boolean(onMentionClick) && Boolean(mentionDisplayName);
 
@@ -59,7 +61,7 @@ export function ChatInput({
         {showMention && (
           <button
             type="button"
-            aria-label={`当前 @ ${mentionDisplayName}，点击更换`}
+            aria-label={t('mentionAria', { name: mentionDisplayName ?? '' })}
             disabled={disabled}
             onClick={onMentionClick}
             className={cn(
@@ -76,7 +78,7 @@ export function ChatInput({
           rows={1}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={isStreaming ? '正在生成中...' : '输入消息...'}
+          placeholder={isStreaming ? t('placeholderStreaming') : t('placeholder')}
           disabled={disabled}
           className={cn(
             'min-h-11 max-h-36 flex-1 resize-none overflow-y-auto px-3 py-2',
@@ -92,7 +94,7 @@ export function ChatInput({
             'disabled:bg-muted-foreground rounded-md text-base font-medium transition-colors',
           )}
         >
-          发送
+          {t('send')}
         </button>
       </div>
     </form>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import type { ReactNode } from 'react';
 
@@ -22,10 +25,12 @@ export function PageStatus({
   actionVariant = 'link',
   children,
 }: PageStatusProps) {
+  const t = useTranslations('common');
+
   if (loading) {
     return (
       <div className={cn('flex flex-1 items-center justify-center text-sm text-muted-foreground')}>
-        加载中...
+        {t('loading')}
       </div>
     );
   }

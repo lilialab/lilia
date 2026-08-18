@@ -1,5 +1,6 @@
 import type { HistoryMessage } from '@/client-api/sessions';
 import { Divider } from '@/components/Divider';
+import { useTranslations } from '@/components/I18nProvider';
 import { ScrollToBottomButton } from '@/components/ScrollToBottomButton';
 import { cn } from '@/lib/client/cn';
 import { isDisplayMessage } from '@/types/message-kind';
@@ -18,7 +19,7 @@ interface MessageListProps {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
-  /** 用户消息显示名，默认「我」 */
+  /** 用户消息显示名；缺省时用 common.userFallback */
   userDisplayName?: string;
 }
 
@@ -29,12 +30,14 @@ export function MessageList({
   hasMore = false,
   isLoadingMore = false,
   onLoadMore,
-  userDisplayName = '我',
+  userDisplayName,
 }: MessageListProps) {
   /* -------------------------------------------------------------------------- */
   /* State & data                                                               */
   /* -------------------------------------------------------------------------- */
 
+  const tCommon = useTranslations('common');
+  const resolvedUserDisplayName = userDisplayName ?? tCommon('userFallback');
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPinnedRef = useRef(true);
   const pendingScrollHeightRef = useRef<number | null>(null);
@@ -134,7 +137,9 @@ export function MessageList({
         className={cn('flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4')}
       >
         {isLoadingMore && (
-          <div className={cn('py-2 text-center text-sm text-muted-foreground')}>加载中...</div>
+          <div className={cn('py-2 text-center text-sm text-muted-foreground')}>
+            {tCommon('loading')}
+          </div>
         )}
         {messageItems.map((item) => {
           if (item.type === 'divider') {
@@ -152,7 +157,11 @@ export function MessageList({
           }
 
           return (
-            <MessageBubble key={message.id} message={message} userDisplayName={userDisplayName} />
+            <MessageBubble
+              key={message.id}
+              message={message}
+              userDisplayName={resolvedUserDisplayName}
+            />
           );
         })}
       </div>

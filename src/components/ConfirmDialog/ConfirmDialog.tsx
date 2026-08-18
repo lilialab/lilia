@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/client/cn';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -19,12 +20,16 @@ export function ConfirmDialog({
   open,
   title,
   description,
-  confirmLabel = '确认',
-  cancelLabel = '取消',
+  confirmLabel,
+  cancelLabel,
   variant = 'default',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useTranslations('common');
+  const resolvedConfirmLabel = confirmLabel ?? t('confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('cancel');
+
   return (
     <Modal
       open={open}
@@ -57,7 +62,7 @@ export function ConfirmDialog({
             'transition-colors hover:bg-surface hover:text-foreground',
           )}
         >
-          {cancelLabel}
+          {resolvedCancelLabel}
         </button>
         <button
           type="button"
@@ -69,7 +74,7 @@ export function ConfirmDialog({
               : 'bg-primary text-primary-foreground hover:bg-primary-hover',
           )}
         >
-          {confirmLabel}
+          {resolvedConfirmLabel}
         </button>
       </div>
     </Modal>

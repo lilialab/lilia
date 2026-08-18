@@ -1,17 +1,15 @@
 'use client';
 
 import type { ContactSummary } from '@/client-api/contacts';
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 
 /** 与 DEFAULT_CHARACTER_ID / seed slug 对齐；勿从 prompts/load 导入（含 fs）。 */
 export const DEFAULT_CHARACTER_SLUG = 'arbor';
 
 export function MemberPickerEmpty() {
-  return (
-    <p className={cn('px-4 py-4 text-sm text-muted-foreground')}>
-      通讯录加载异常，请返回后重试
-    </p>
-  );
+  const t = useTranslations('groupMembers');
+  return <p className={cn('px-4 py-4 text-sm text-muted-foreground')}>{t('pickerEmpty')}</p>;
 }
 
 export type MemberPickerListProps = {
@@ -21,6 +19,8 @@ export type MemberPickerListProps = {
 };
 
 export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPickerListProps) {
+  const t = useTranslations('groupMembers');
+
   return (
     <section className={cn('bg-background')}>
       {contacts.map((contact) => {
@@ -45,7 +45,7 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
               {contact.displayName}
               {isArbor && (
                 <span className={cn('ml-2 text-xs font-normal text-muted-foreground')}>
-                  默认成员
+                  {t('defaultMember')}
                 </span>
               )}
             </span>

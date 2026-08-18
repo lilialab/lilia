@@ -11,6 +11,7 @@ import {
 } from '@/client-api/groups';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
@@ -48,6 +49,9 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const t = useTranslations('groupChat');
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -112,7 +116,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
       if (result === 'sent') {
         turnCueHopCountRef.current += 1;
       } else if (result === 'capped') {
-        toast.message('续聊轮次已达上限', { id: 'group-turn-cue-cap' });
+        toast.message(t('turnCueCap'), { id: 'group-turn-cue-cap' });
       }
     },
   });
@@ -208,7 +212,10 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         title={groupQuery.data?.title ?? '...'}
         onBack={goBackToGroups}
         right={
-          <HeaderIconButton aria-label="更多操作" onClick={() => setMenuOpen(true)}>
+          <HeaderIconButton
+            aria-label={tChat('moreActions')}
+            onClick={() => setMenuOpen(true)}
+          >
             <MoreHorizontal className={cn('h-5 w-5')} aria-hidden />
           </HeaderIconButton>
         }
@@ -220,7 +227,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         items={[
           {
             key: 'members',
-            label: '管理成员',
+            label: t('manageMembers'),
             disabled: deleteDisabled,
             onSelect: () => {
               router.push(`/groups/${groupSessionId}/members`, {
@@ -230,7 +237,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           },
           {
             key: 'delete',
-            label: '删除群聊',
+            label: t('deleteGroup'),
             variant: 'danger',
             disabled: deleteDisabled,
             onSelect: () => {
@@ -242,7 +249,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
       <ActionSheet
         open={mentionOpen}
-        title="选择成员"
+        title={t('selectMember')}
         onClose={() => setMentionOpen(false)}
         onCloseAutoFocus={(e) => {
           e.preventDefault();
@@ -251,7 +258,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         items={members.map((m) => ({
           key: m.id,
           label: selectedMember?.slug === m.slug
-            ? `${m.displayName}（当前）`
+            ? t('currentMember', { name: m.displayName })
             : m.displayName,
           onSelect: () => {
             handleSelectMention(m);
@@ -261,11 +268,11 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        title="删除群聊"
-        description={`确定删除「${
-          groupQuery.data?.title ?? '该群'
-        }」吗？群消息将一并删除且无法恢复。`}
-        confirmLabel="删除"
+        title={t('deleteGroup')}
+        description={t('deleteDescription', {
+          name: groupQuery.data?.title ?? t('thisGroup'),
+        })}
+        confirmLabel={tChat('deleteConfirm')}
         variant="danger"
         onConfirm={() => void handleConfirmDelete()}
         onCancel={() => setConfirmDeleteOpen(false)}
@@ -274,8 +281,8 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
       <PageStatus
         loading={isBootstrapping}
         error={isLoadError}
-        errorMessage="无法加载群聊"
-        actionLabel="返回群列表"
+        errorMessage={t('loadError')}
+        actionLabel={t('backToList')}
         onAction={goBackToGroups}
       >
         <MessageList
@@ -285,7 +292,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void handleLoadMore()}
-          userDisplayName={user?.displayName ?? '我'}
+          userDisplayName={user?.displayName ?? tCommon('userFallback')}
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={groupQuery.isGenerating && !isStreaming} />

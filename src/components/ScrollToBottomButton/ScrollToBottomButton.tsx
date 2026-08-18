@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { isAtBottom } from '@/utils/scroll';
 import { ChevronDown } from 'lucide-react';
@@ -11,6 +12,7 @@ interface ScrollToBottomButtonProps {
 }
 
 export function ScrollToBottomButton({ scrollRef, onScrollToBottom }: ScrollToBottomButtonProps) {
+  const t = useTranslations('scrollToBottom');
   const [showButton, setShowButton] = useState(false);
 
   const updateButtonVisibility = useCallback(() => {
@@ -51,7 +53,7 @@ export function ScrollToBottomButton({ scrollRef, onScrollToBottom }: ScrollToBo
       className={cn(
         'absolute bottom-3 right-3 z-10 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-background border border-border shadow-md text-foreground/80 hover:bg-surface',
       )}
-      aria-label="滚动到底部"
+      aria-label={t('ariaLabel')}
     >
       <ChevronDown className={cn('h-5 w-5')} aria-hidden />
     </button>

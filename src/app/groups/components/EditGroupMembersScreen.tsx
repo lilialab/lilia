@@ -7,6 +7,7 @@ import {
 } from '@/app/groups/components/MemberPicker';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { fetchGroup, replaceGroupMembers } from '@/client-api/groups';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,6 +30,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const t = useTranslations('groupMembers');
   /** null = 尚未本地改动，勾选跟随群详情；非 null = 用户已编辑 */
   const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string> | null>(null);
 
@@ -102,18 +104,20 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
 
   return (
     <div className={cn('flex h-dvh flex-col bg-surface text-foreground')}>
-      <ScreenHeader title="管理成员" onBack={goBackToChat} />
+      <ScreenHeader title={t('title')} onBack={goBackToChat} />
 
       <PageStatus
         loading={isBootstrapping}
         error={isLoadError}
-        errorMessage="无法加载群成员"
-        actionLabel="返回群聊"
+        errorMessage={t('loadError')}
+        actionLabel={t('backToChat')}
         onAction={goBackToChat}
       >
         <form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
           <div className={cn('min-h-0 flex-1 overflow-y-auto')}>
-            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>选择成员</h2>
+            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>
+              {t('selectMembers')}
+            </h2>
             {contacts.length === 0 ? <MemberPickerEmpty /> : (
               <MemberPickerList
                 contacts={contacts}
@@ -137,7 +141,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
                 'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
               )}
             >
-              {saveMutation.isPending ? '保存中...' : '保存'}
+              {saveMutation.isPending ? t('saving') : t('save')}
             </button>
           </div>
         </form>

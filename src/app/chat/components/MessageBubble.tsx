@@ -4,11 +4,10 @@ import { MessagePartRenderer } from './MessagePartRenderer';
 
 interface MessageBubbleProps {
   message: HistoryMessage;
-  /** 用户气泡显示名，默认「我」 */
   userDisplayName?: string;
 }
 
-export function MessageBubble({ message, userDisplayName = '我' }: MessageBubbleProps) {
+export function MessageBubble({ message, userDisplayName }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const speakerName = isUser ? userDisplayName : message.metadata?.speakerDisplayName;
 

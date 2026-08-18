@@ -1,6 +1,7 @@
 'use client';
 
 import { fetchGroups, type GroupDetail } from '@/client-api/groups';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,12 +15,18 @@ import { useRouter } from 'next/navigation';
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-function memberSubtitle(group: GroupDetail): string {
-  if (group.members.length === 0) return '暂无成员';
+function memberSubtitle(
+  group: GroupDetail,
+  t: (
+    key: 'noMembers' | 'memberCount' | 'memberNameSeparator',
+    params?: { count: number },
+  ) => string,
+): string {
+  if (group.members.length === 0) return t('noMembers');
   if (group.members.length <= 3) {
-    return group.members.map((m) => m.displayName).join('、');
+    return group.members.map((m) => m.displayName).join(t('memberNameSeparator'));
   }
-  return `${group.members.length} 位成员`;
+  return t('memberCount', { count: group.members.length });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -31,9 +38,11 @@ interface GroupsEmptyProps {
 }
 
 function GroupsEmpty({ onCreate }: GroupsEmptyProps) {
+  const t = useTranslations('groups');
+
   return (
     <div className={cn('flex flex-1 flex-col items-center justify-center gap-4 px-6')}>
-      <p className={cn('text-sm text-muted-foreground')}>还没有群聊</p>
+      <p className={cn('text-sm text-muted-foreground')}>{t('empty')}</p>
       <button
         type="button"
         onClick={onCreate}
@@ -42,7 +51,7 @@ function GroupsEmpty({ onCreate }: GroupsEmptyProps) {
           'hover:bg-primary-hover',
         )}
       >
-        新建群聊
+        {t('create')}
       </button>
     </div>
   );
@@ -54,6 +63,7 @@ interface GroupsListProps {
 
 function GroupsList({ groups }: GroupsListProps) {
   const router = useRouter();
+  const t = useTranslations('groups');
 
   return (
     <div className={cn('flex-1 overflow-y-auto')}>
@@ -82,7 +92,7 @@ function GroupsList({ groups }: GroupsListProps) {
                 {group.title}
               </div>
               <div className={cn('truncate text-xs text-muted-foreground')}>
-                {memberSubtitle(group)}
+                {memberSubtitle(group, t)}
               </div>
             </div>
           </button>
@@ -99,6 +109,7 @@ export function GroupsScreen() {
 
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations('groups');
 
   const groupsQuery = useQuery({
     queryKey: queryKeys.groups,
@@ -123,9 +134,9 @@ export function GroupsScreen() {
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
       <ScreenHeader
-        title="群聊"
+        title={t('title')}
         right={
-          <HeaderIconButton aria-label="新建群聊" onClick={openCreate}>
+          <HeaderIconButton aria-label={t('create')} onClick={openCreate}>
             <Plus className={cn('h-5 w-5')} aria-hidden />
           </HeaderIconButton>
         }
@@ -134,7 +145,7 @@ export function GroupsScreen() {
       <PageStatus
         loading={groupsQuery.isLoading}
         error={groupsQuery.isError}
-        errorMessage="无法加载群聊"
+        errorMessage={t('loadError')}
       >
         {groups.length === 0
           ? <GroupsEmpty onCreate={openCreate} />

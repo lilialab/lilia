@@ -1,18 +1,20 @@
 'use client';
 
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { MessagesSquare, User, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const TABS = [
-  { href: '/contacts', label: '通讯录', icon: Users },
-  { href: '/groups', label: '群聊', icon: MessagesSquare },
-  { href: '/me', label: '我', icon: User },
+  { href: '/contacts', labelKey: 'contacts', icon: Users },
+  { href: '/groups', labelKey: 'groups', icon: MessagesSquare },
+  { href: '/me', labelKey: 'me', icon: User },
 ] as const;
 
 export function TabBar() {
   const pathname = usePathname();
+  const t = useTranslations('tabBar');
 
   return (
     <nav
@@ -20,9 +22,9 @@ export function TabBar() {
         'flex shrink-0 border-t border-border bg-background',
         'pb-[env(safe-area-inset-bottom)]',
       )}
-      aria-label="主导航"
+      aria-label={t('navAriaLabel')}
     >
-      {TABS.map(({ href, label, icon: Icon }) => {
+      {TABS.map(({ href, labelKey, icon: Icon }) => {
         const active = pathname === href;
         return (
           <Link
@@ -35,7 +37,7 @@ export function TabBar() {
             )}
           >
             <Icon className={cn('h-6 w-6')} strokeWidth={active ? 2.25 : 1.75} aria-hidden />
-            <span>{label}</span>
+            <span>{t(labelKey)}</span>
           </Link>
         );
       })}
