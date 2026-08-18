@@ -1,4 +1,5 @@
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { translateApiError } from '@/i18n/translate-api-error';
+import { showErrorToast } from '@/lib/client/toast';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 export function createAppQueryClient(): QueryClient {
@@ -7,16 +8,16 @@ export function createAppQueryClient(): QueryClient {
       onError: (error, query) => {
         if (query.meta?.showErrorToast === false) return;
 
-        console.error('[ReactQuery] query 失败:', formatClientError(error), {
+        console.error('[ReactQuery] query 失败:', translateApiError(error), {
           queryKey: query.queryKey,
         });
 
-        showErrorToast(formatClientError(error), `query:${JSON.stringify(query.queryKey)}`);
+        showErrorToast(translateApiError(error), `query:${JSON.stringify(query.queryKey)}`);
       },
     }),
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
-        console.error('[ReactQuery] mutation 失败:', formatClientError(error), {
+        console.error('[ReactQuery] mutation 失败:', translateApiError(error), {
           mutationKey: mutation.options.mutationKey,
         });
 
@@ -25,7 +26,7 @@ export function createAppQueryClient(): QueryClient {
           ? `mutation:${JSON.stringify(mutationKey)}`
           : 'mutation:unknown';
 
-        showErrorToast(formatClientError(error), id);
+        showErrorToast(translateApiError(error), id);
       },
     }),
     defaultOptions: {

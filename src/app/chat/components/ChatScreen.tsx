@@ -11,9 +11,10 @@ import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
+import { translateApiError } from '@/i18n/translate-api-error';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { showErrorToast } from '@/lib/client/toast';
 import { getBrowserTimeZone } from '@/utils/timezone';
 import { useChat } from '@ai-sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -113,7 +114,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     try {
       await clearHistory();
     } catch (err) {
-      showErrorToast(formatClientError(err), 'chat-clear');
+      showErrorToast(translateApiError(err), 'chat-clear');
     }
   };
 
@@ -126,7 +127,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       await queryClient.invalidateQueries({ queryKey: queryKeys.contacts });
       router.push('/contacts', { transitionTypes: ['nav-back'] });
     } catch (err) {
-      showErrorToast(formatClientError(err), 'chat-delete-contact');
+      showErrorToast(translateApiError(err), 'chat-delete-contact');
     }
   };
 
@@ -140,7 +141,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     try {
       await sendMessage({ text: currentInput }, { body: { sessionId } });
     } catch (err) {
-      showErrorToast(formatClientError(err), 'chat-send');
+      showErrorToast(translateApiError(err), 'chat-send');
       setInput(currentInput);
     }
   };

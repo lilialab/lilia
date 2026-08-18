@@ -1,15 +1,21 @@
+import { passwordSchema } from '@/schemas/shared/password';
 import { usernameSchema } from '@/schemas/shared/username';
+import { API_ERROR_CODE } from '@/types/api-error';
 import { z } from 'zod';
 
 export const registerBodySchema = z
   .object({
     username: usernameSchema,
-    displayName: z.string().trim().min(1).max(64),
-    password: z.string().min(8, '密码至少 8 位'),
-    confirmPassword: z.string().min(8),
+    displayName: z
+      .string({ error: API_ERROR_CODE.DISPLAY_NAME_REQUIRED })
+      .trim()
+      .min(1, API_ERROR_CODE.DISPLAY_NAME_REQUIRED)
+      .max(64, API_ERROR_CODE.DISPLAY_NAME_TOO_LONG),
+    password: passwordSchema,
+    confirmPassword: passwordSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: '两次输入的密码不一致',
+    message: API_ERROR_CODE.PASSWORD_MISMATCH,
     path: ['confirmPassword'],
   });
 

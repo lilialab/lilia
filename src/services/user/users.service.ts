@@ -2,6 +2,7 @@ import { AppError } from '@/lib/server/app-error';
 import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
 import { ensureArborContact } from '@/services/character/contacts.service';
+import { API_ERROR_CODE } from '@/types/api-error';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -84,7 +85,7 @@ export async function authenticateUser(
 ): Promise<Pick<PublicUser, 'id' | 'username' | 'displayName'>> {
   const user = await findUserByUsername(username);
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    throw AppError.unauthorized('账号或密码错误');
+    throw AppError.unauthorized('账号或密码错误', API_ERROR_CODE.INVALID_CREDENTIALS);
   }
 
   return {
@@ -106,7 +107,7 @@ export async function registerUser(input: {
   });
 
   if (existing) {
-    throw AppError.badRequest('账号已被占用');
+    throw AppError.badRequest('账号已被占用', API_ERROR_CODE.USERNAME_TAKEN);
   }
 
   const passwordHash = await hashPassword(input.password);

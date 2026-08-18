@@ -18,9 +18,10 @@ import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
+import { translateApiError } from '@/i18n/translate-api-error';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { showErrorToast, showMessageToast } from '@/lib/client/toast';
 import { getBrowserTimeZone } from '@/utils/timezone';
 import { useChat } from '@ai-sdk/react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -28,7 +29,6 @@ import { DefaultChatTransport } from 'ai';
 import { MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import {
   buildUserOutboundMessage,
   MAX_TURN_CUE_HOPS,
@@ -118,7 +118,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
       if (result === 'sent') {
         turnCueHopCountRef.current += 1;
       } else if (result === 'capped') {
-        toast.message(t('turnCueCap'), { id: 'group-turn-cue-cap' });
+        showMessageToast(t('turnCueCap'), 'group-turn-cue-cap');
       }
     },
   });
@@ -167,7 +167,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
       await queryClient.invalidateQueries({ queryKey: queryKeys.groups });
       router.replace('/groups', { transitionTypes: ['nav-back'] });
     } catch (err) {
-      showErrorToast(formatClientError(err), 'group-delete');
+      showErrorToast(translateApiError(err), 'group-delete');
     }
   };
 
@@ -186,7 +186,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         metadata: outbound.metadata,
       });
     } catch (err) {
-      showErrorToast(formatClientError(err), 'group-send');
+      showErrorToast(translateApiError(err), 'group-send');
       setInput(text);
     }
   };
@@ -195,7 +195,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     try {
       await loadMore();
     } catch (err) {
-      showErrorToast(formatClientError(err), 'group-history-more');
+      showErrorToast(translateApiError(err), 'group-history-more');
     }
   };
 

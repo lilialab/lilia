@@ -3,8 +3,9 @@
 import { login } from '@/client-api/auth';
 import { AuthField, AuthShell } from '@/components/auth';
 import { useTranslations } from '@/components/I18nProvider';
+import { translateApiError } from '@/i18n/translate-api-error';
 import { cn } from '@/lib/client/cn';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { showErrorToast } from '@/lib/client/toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -27,7 +28,7 @@ export function LoginForm() {
       router.push('/contacts');
       router.refresh();
     } catch (err) {
-      showErrorToast(formatClientError(err), 'auth-login');
+      showErrorToast(translateApiError(err), 'auth-login');
     } finally {
       setIsSubmitting(false);
     }

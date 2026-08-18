@@ -4,6 +4,7 @@ import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { createSession } from '@/services/session/sessions.service';
+import { API_ERROR_CODE } from '@/types/api-error';
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -80,7 +81,7 @@ export async function assertIsContact(userId: string, characterId: string): Prom
   });
 
   if (!contact) {
-    throw AppError.badRequest('请先添加该 AI 好友');
+    throw AppError.badRequest('请先添加该 AI 好友', API_ERROR_CODE.CONTACT_REQUIRED);
   }
 }
 
@@ -144,7 +145,7 @@ export async function removeContact(userId: string, characterId: string) {
   });
 
   if (character?.slug === DEFAULT_CHARACTER_ID) {
-    throw AppError.badRequest('不能删除默认好友');
+    throw AppError.badRequest('不能删除默认好友', API_ERROR_CODE.CANNOT_DELETE_DEFAULT_CONTACT);
   }
 
   const existing = await prisma.userCharacter.findUnique({

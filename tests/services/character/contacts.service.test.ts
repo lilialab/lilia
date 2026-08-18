@@ -28,6 +28,7 @@ vi.mock('@/services/session/sessions.service', () => ({
 
 import { prisma } from '@/lib/server/prisma';
 import { ensureArborContact, removeContact } from '@/services/character/contacts.service';
+import { API_ERROR_CODE } from '@/types/api-error';
 
 describe('ensureArborContact', () => {
   beforeEach(() => {
@@ -81,6 +82,7 @@ describe('removeContact', () => {
     await expect(removeContact('user-1', 'char-arbor')).rejects.toMatchObject({
       status: AppError.badRequest('').status,
       message: '不能删除默认好友',
+      code: API_ERROR_CODE.CANNOT_DELETE_DEFAULT_CONTACT,
     });
     expect(prisma.userCharacter.findUnique).not.toHaveBeenCalled();
   });

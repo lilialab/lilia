@@ -1,8 +1,9 @@
+import { API_ERROR_CODE } from '@/types/api-error';
 import { z } from 'zod';
 
 export const usernameSchema = z
-  .string()
+  .string({ error: API_ERROR_CODE.USERNAME_REQUIRED })
   .trim()
-  .min(3)
-  .max(32)
-  .regex(/^[a-zA-Z0-9_]+$/, '账号仅支持字母、数字与下划线');
+  .min(3, API_ERROR_CODE.USERNAME_TOO_SHORT)
+  .max(32, API_ERROR_CODE.USERNAME_TOO_LONG)
+  .regex(/^[a-zA-Z0-9_]+$/, API_ERROR_CODE.USERNAME_INVALID);

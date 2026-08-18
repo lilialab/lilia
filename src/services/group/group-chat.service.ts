@@ -13,6 +13,7 @@ import {
 } from '@/services/session/generation-lock.service';
 import { getUserById } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
+import { API_ERROR_CODE } from '@/types/api-error';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
 import {
@@ -276,7 +277,7 @@ export async function streamGroupChatFlow(
       }
       const member = members.find((m) => m.character.slug === slug);
       if (!member) {
-        throw AppError.badRequest('该角色不在群内');
+        throw AppError.badRequest('该角色不在群内', API_ERROR_CODE.CHARACTER_NOT_IN_GROUP);
       }
       return streamGroupAssistantReply({
         groupSessionId,
@@ -295,7 +296,7 @@ export async function streamGroupChatFlow(
     }
     const member = members.find((m) => m.character.slug === slug);
     if (!member) {
-      throw AppError.badRequest('该角色不在群内');
+      throw AppError.badRequest('该角色不在群内', API_ERROR_CODE.CHARACTER_NOT_IN_GROUP);
     }
 
     return streamGroupAssistantReply({

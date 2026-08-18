@@ -1,5 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
+import { API_ERROR_CODE, type ApiErrorCode } from '@/types/api-error';
 import { type NextRequest, NextResponse } from 'next/server';
 
 type ApiHandlerContext = {
@@ -35,7 +36,11 @@ export function withApiHandler<C extends ApiHandlerContext>(
         }
 
         return NextResponse.json(
-          { success: false, error: error.message },
+          {
+            success: false,
+            error: error.message,
+            code: error.code,
+          },
           { status: error.status },
         );
       }
@@ -47,7 +52,14 @@ export function withApiHandler<C extends ApiHandlerContext>(
 
       const errorMessage = error instanceof Error ? error.message : '服务器内部异常';
 
-      return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: errorMessage,
+          code: API_ERROR_CODE.INTERNAL_ERROR,
+        },
+        { status: 500 },
+      );
     }
   };
 }
@@ -62,8 +74,8 @@ export function withMessageMetadata<T>(metadata: T) {
 }
 
 /** 抛出 400 客户端错误 */
-export function badRequest(message: string): never {
-  throw AppError.badRequest(message);
+export function badRequest(message: string, code?: ApiErrorCode): never {
+  throw AppError.badRequest(message, code);
 }
 
 /** 抛出 404 资源不存在 */

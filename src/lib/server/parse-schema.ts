@@ -1,12 +1,17 @@
 import { badRequest } from '@/lib/server/api-handler';
 import { normalizeQueryRecord } from '@/schemas/query';
+import { API_ERROR_CODE, isApiErrorCode } from '@/types/api-error';
 import { type NextRequest } from 'next/server';
 import type { z } from 'zod';
 
 function formatZodError(error: z.ZodError): string {
   const issue = error.issues[0];
   if (!issue) {
-    return '请求参数无效';
+    return API_ERROR_CODE.INVALID_REQUEST;
+  }
+
+  if (isApiErrorCode(issue.message)) {
+    return issue.message;
   }
 
   const path = issue.path.map(String).join('.');
@@ -17,7 +22,8 @@ function formatZodError(error: z.ZodError): string {
 export function parseInput<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
   const result = schema.safeParse(input);
   if (!result.success) {
-    badRequest(formatZodError(result.error));
+    const formatted = formatZodError(result.error);
+    badRequest(formatted, isApiErrorCode(formatted) ? formatted : undefined);
   }
   return result.data;
 }

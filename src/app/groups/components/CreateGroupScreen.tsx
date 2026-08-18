@@ -11,9 +11,10 @@ import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
+import { translateApiError } from '@/i18n/translate-api-error';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { showErrorToast } from '@/lib/client/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -49,7 +50,7 @@ export function CreateGroupScreen() {
       router.replace(`/groups/${group.id}`, { transitionTypes: ['nav-forward'] });
     },
     onError: (err) => {
-      showErrorToast(formatClientError(err), 'group-create');
+      showErrorToast(translateApiError(err), 'group-create');
     },
   });
 

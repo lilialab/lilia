@@ -1,3 +1,5 @@
+import type { ApiErrorCode } from '@/types/api-error';
+
 export const en = {
   common: {
     back: 'Back',
@@ -121,6 +123,31 @@ export const en = {
     submit: 'Log in',
     submitting: 'Logging in...',
   },
+  errors: {
+    fallback: 'Something went wrong',
+    INVALID_REQUEST: 'Invalid request',
+    UNAUTHORIZED: 'Please sign in',
+    NOT_FOUND: 'Not found',
+    CONFLICT: 'Conflict',
+    INTERNAL_ERROR: 'Server error',
+    USERNAME_REQUIRED: 'Username is required',
+    USERNAME_TOO_SHORT: 'Username must be at least 3 characters',
+    USERNAME_TOO_LONG: 'Username must be at most 32 characters',
+    USERNAME_INVALID: 'Username can only contain letters, numbers, and underscores',
+    DISPLAY_NAME_REQUIRED: 'Display name is required',
+    DISPLAY_NAME_TOO_LONG: 'Display name must be at most 64 characters',
+    PASSWORD_REQUIRED: 'Password is required',
+    PASSWORD_TOO_SHORT: 'Password must be at least 8 characters',
+    PASSWORD_MISMATCH: 'Passwords do not match',
+    INVALID_CREDENTIALS: 'Incorrect username or password',
+    USERNAME_TAKEN: 'Username is already taken',
+    CONTACT_REQUIRED: 'Add this AI as a friend first',
+    GROUP_MEMBERS_NOT_CONTACTS: 'Add the selected AI as friends first',
+    GROUP_MUST_INCLUDE_ARBOR: 'Groups must include arbor',
+    CANNOT_DELETE_DEFAULT_CONTACT: 'The default friend cannot be removed',
+    GENERATION_BUSY: 'Still generating a reply. Try again in a moment',
+    CHARACTER_NOT_IN_GROUP: 'That character is not in this group',
+  } satisfies Record<ApiErrorCode | 'fallback', string>,
   register: {
     title: 'Create an account',
     displayName: 'Display name',

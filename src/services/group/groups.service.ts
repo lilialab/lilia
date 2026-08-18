@@ -2,6 +2,7 @@ import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
+import { API_ERROR_CODE } from '@/types/api-error';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -80,11 +81,14 @@ async function assertGroupMembersValid(userId: string, characterIds: string[]): 
   const found = new Set(contacts.map((c) => c.characterId));
   const missing = characterIds.filter((id) => !found.has(id));
   if (missing.length > 0) {
-    throw AppError.badRequest('请先将所选 AI 添加为好友');
+    throw AppError.badRequest(
+      '请先将所选 AI 添加为好友',
+      API_ERROR_CODE.GROUP_MEMBERS_NOT_CONTACTS,
+    );
   }
 
   if (!contacts.some((c) => c.character.slug === DEFAULT_CHARACTER_ID)) {
-    throw AppError.badRequest('群聊须包含 arbor');
+    throw AppError.badRequest('群聊须包含 arbor', API_ERROR_CODE.GROUP_MUST_INCLUDE_ARBOR);
   }
 }
 

@@ -1,5 +1,6 @@
 import { loginBodySchema } from '@/schemas/api/auth/login';
 import { registerBodySchema } from '@/schemas/api/auth/register';
+import { API_ERROR_CODE } from '@/types/api-error';
 import { describe, expect, it } from 'vitest';
 
 describe('loginBodySchema', () => {
@@ -17,6 +18,15 @@ describe('loginBodySchema', () => {
       password: 'short',
     });
     expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.PASSWORD_TOO_SHORT);
+  });
+
+  it('缺少 username 为 USERNAME_REQUIRED', () => {
+    const result = loginBodySchema.safeParse({});
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.USERNAME_REQUIRED);
   });
 });
 
@@ -39,5 +49,7 @@ describe('registerBodySchema', () => {
       confirmPassword: 'password456',
     });
     expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.PASSWORD_MISMATCH);
   });
 });

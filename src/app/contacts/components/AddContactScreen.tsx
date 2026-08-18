@@ -6,14 +6,14 @@ import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
+import { translateApiError } from '@/i18n/translate-api-error';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
-import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
+import { showErrorToast, showSuccessToast } from '@/lib/client/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { toast } from 'sonner';
 
 /* -------------------------------------------------------------------------- */
 /* Subcomponents                                                              */
@@ -36,10 +36,10 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
     mutationFn: addContact,
     onSuccess: async (contact) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.contacts, exact: true });
-      toast.success(t('addedToast', { name: contact.displayName }));
+      showSuccessToast(t('addedToast', { name: contact.displayName }));
     },
     onError: (err) => {
-      showErrorToast(formatClientError(err), 'contact-add');
+      showErrorToast(translateApiError(err), 'contact-add');
     },
   });
 
