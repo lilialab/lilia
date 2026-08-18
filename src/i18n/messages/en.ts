@@ -109,6 +109,27 @@ export const en = {
     title: 'Settings',
     language: 'Language',
   },
+  auth: {
+    username: 'Username',
+    password: 'Password',
+    languageAria: 'Language',
+  },
+  login: {
+    title: 'Log in to pai-arbor',
+    noAccount: "Don't have an account?",
+    goRegister: 'Sign up',
+    submit: 'Log in',
+    submitting: 'Logging in...',
+  },
+  register: {
+    title: 'Create an account',
+    displayName: 'Display name',
+    confirmPassword: 'Confirm password',
+    hasAccount: 'Already have an account?',
+    goLogin: 'Log in',
+    submit: 'Sign up and log in',
+    submitting: 'Creating account...',
+  },
 } as const;
 
 export type Messages = {

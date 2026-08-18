@@ -32,6 +32,12 @@ export function parseLocale(value: string | undefined | null): Locale {
   return DEFAULT_LOCALE;
 }
 
+/** 浏览器语言标签：zh* → zh，其余 → en。 */
+export function localeFromBrowserLanguage(tag: string | undefined | null): Locale {
+  const primary = tag?.split('-')[0]?.toLowerCase();
+  return primary === 'zh' ? 'zh' : DEFAULT_LOCALE;
+}
+
 export function localeToHtmlLang(locale: Locale): string {
   return localeHtmlLang[locale];
 }

@@ -5,11 +5,6 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = Boolean(request.cookies.get(env.AUTH_SESSION_COOKIE_NAME)?.value);
 
-  // 旧通讯录入口 /chat → /contacts
-  if (pathname === '/chat') {
-    return NextResponse.redirect(new URL('/contacts', request.url));
-  }
-
   const needsAuth = pathname.startsWith('/chat/')
     || pathname.startsWith('/contacts')
     || pathname.startsWith('/groups')
@@ -29,7 +24,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/chat',
     '/chat/:path*',
     '/contacts',
     '/contacts/:path*',

@@ -2,6 +2,7 @@
 
 import { register } from '@/client-api/auth';
 import { AuthField, AuthShell } from '@/components/auth';
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import Link from 'next/link';
@@ -10,6 +11,8 @@ import { useState } from 'react';
 
 export function RegisterForm() {
   const router = useRouter();
+  const t = useTranslations('register');
+  const tAuth = useTranslations('auth');
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
@@ -39,12 +42,13 @@ export function RegisterForm() {
 
   return (
     <AuthShell
-      title="注册账号"
+      title={t('title')}
+      returnTo="/register"
       footer={
         <>
-          已有账号？{' '}
+          {t('hasAccount')}{' '}
           <Link href="/login" className={cn('text-primary underline')}>
-            去登录
+            {t('goLogin')}
           </Link>
         </>
       }
@@ -52,21 +56,21 @@ export function RegisterForm() {
       <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
         <AuthField
           id="username"
-          label="账号"
+          label={tAuth('username')}
           value={username}
           onChange={setUsername}
           autoComplete="username"
         />
         <AuthField
           id="displayName"
-          label="昵称"
+          label={t('displayName')}
           value={displayName}
           onChange={setDisplayName}
           autoComplete="nickname"
         />
         <AuthField
           id="password"
-          label="密码"
+          label={tAuth('password')}
           type="password"
           value={password}
           onChange={setPassword}
@@ -74,7 +78,7 @@ export function RegisterForm() {
         />
         <AuthField
           id="confirmPassword"
-          label="确认密码"
+          label={t('confirmPassword')}
           type="password"
           value={confirmPassword}
           onChange={setConfirmPassword}
@@ -88,7 +92,7 @@ export function RegisterForm() {
             'hover:bg-primary-hover disabled:opacity-40',
           )}
         >
-          {isSubmitting ? '注册中...' : '注册并登录'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
     </AuthShell>

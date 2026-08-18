@@ -2,6 +2,7 @@
 
 import { login } from '@/client-api/auth';
 import { AuthField, AuthShell } from '@/components/auth';
+import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { formatClientError, showErrorToast } from '@/lib/client/show-error-toast';
 import Link from 'next/link';
@@ -10,6 +11,8 @@ import { useState } from 'react';
 
 export function LoginForm() {
   const router = useRouter();
+  const t = useTranslations('login');
+  const tAuth = useTranslations('auth');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,12 +35,13 @@ export function LoginForm() {
 
   return (
     <AuthShell
-      title="登录 pai-arbor"
+      title={t('title')}
+      returnTo="/login"
       footer={
         <>
-          还没有账号？{' '}
+          {t('noAccount')}{' '}
           <Link href="/register" className={cn('text-primary underline')}>
-            去注册
+            {t('goRegister')}
           </Link>
         </>
       }
@@ -45,14 +49,14 @@ export function LoginForm() {
       <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
         <AuthField
           id="username"
-          label="账号"
+          label={tAuth('username')}
           value={username}
           onChange={setUsername}
           autoComplete="username"
         />
         <AuthField
           id="password"
-          label="密码"
+          label={tAuth('password')}
           type="password"
           value={password}
           onChange={setPassword}
@@ -66,7 +70,7 @@ export function LoginForm() {
             'hover:bg-primary-hover disabled:opacity-40',
           )}
         >
-          {isSubmitting ? '登录中...' : '登录'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </button>
       </form>
     </AuthShell>

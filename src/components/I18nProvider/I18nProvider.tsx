@@ -1,11 +1,19 @@
 'use client';
 
-import { type Locale, localeToHtmlLang } from '@/i18n/config';
-import { writeLocaleCookie } from '@/i18n/cookie';
+import { type Locale, localeFromBrowserLanguage, localeToHtmlLang } from '@/i18n/config';
+import { readLocaleCookie, writeLocaleCookie } from '@/i18n/cookie';
 import { formatMessage } from '@/i18n/format-message';
 import { getMessages } from '@/i18n/get-messages';
 import type { Messages } from '@/i18n/messages/en';
-import { createContext, type ReactNode, use, useCallback, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 interface I18nContextValue {
   locale: Locale;
@@ -33,6 +41,15 @@ export function I18nProvider(
     setMessages(getMessages(next));
     document.documentElement.lang = localeToHtmlLang(next);
   }, []);
+
+  useEffect(() => {
+    if (readLocaleCookie()) {
+      return;
+    }
+    // 水合后再按浏览器语言种 Cookie
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 对齐 navigator.language
+    setLocale(localeFromBrowserLanguage(navigator.language));
+  }, [setLocale]);
 
   const value = useMemo(
     () => ({ locale, messages, setLocale }),

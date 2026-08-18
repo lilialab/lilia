@@ -108,4 +108,25 @@ export const zh = {
     title: '设置',
     language: '语言',
   },
+  auth: {
+    username: '账号',
+    password: '密码',
+    languageAria: '语言',
+  },
+  login: {
+    title: '登录 pai-arbor',
+    noAccount: '还没有账号？',
+    goRegister: '去注册',
+    submit: '登录',
+    submitting: '登录中...',
+  },
+  register: {
+    title: '注册账号',
+    displayName: '昵称',
+    confirmPassword: '确认密码',
+    hasAccount: '已有账号？',
+    goLogin: '去登录',
+    submit: '注册并登录',
+    submitting: '注册中...',
+  },
 } satisfies Messages;

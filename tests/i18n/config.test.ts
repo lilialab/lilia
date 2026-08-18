@@ -1,4 +1,10 @@
-import { DEFAULT_LOCALE, isLocale, localeToHtmlLang, parseLocale } from '@/i18n/config';
+import {
+  DEFAULT_LOCALE,
+  isLocale,
+  localeFromBrowserLanguage,
+  localeToHtmlLang,
+  parseLocale,
+} from '@/i18n/config';
 import { describe, expect, it } from 'vitest';
 
 describe('isLocale', () => {
@@ -33,5 +39,21 @@ describe('localeToHtmlLang', () => {
   it('映射到 html lang', () => {
     expect(localeToHtmlLang('en')).toBe('en');
     expect(localeToHtmlLang('zh')).toBe('zh-CN');
+  });
+});
+
+describe('localeFromBrowserLanguage', () => {
+  it('zh* 为中文', () => {
+    expect(localeFromBrowserLanguage('zh')).toBe('zh');
+    expect(localeFromBrowserLanguage('zh-CN')).toBe('zh');
+    expect(localeFromBrowserLanguage('zh-TW')).toBe('zh');
+    expect(localeFromBrowserLanguage('ZH-CN')).toBe('zh');
+  });
+
+  it('其余为英文', () => {
+    expect(localeFromBrowserLanguage(undefined)).toBe(DEFAULT_LOCALE);
+    expect(localeFromBrowserLanguage('en')).toBe('en');
+    expect(localeFromBrowserLanguage('en-US')).toBe('en');
+    expect(localeFromBrowserLanguage('ja')).toBe('en');
   });
 });
