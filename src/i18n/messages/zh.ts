@@ -43,6 +43,18 @@ export const zh = {
     add: '添加',
     addedToast: '已添加 {name}',
   },
+  characters: {
+    'arbor.displayName': '阿尔博',
+    'arbor.shortBio': '成长型个人 AI 助理，语气家常平视，偏陪伴与习惯养成。',
+    'bob.displayName': '鲍勃',
+    'bob.shortBio': '占位测试角色，语气简洁中性礼貌。',
+    'cindy.displayName': '辛迪',
+    'cindy.shortBio': '占位测试角色，用于验证多角色与群聊选角。',
+    'dave.displayName': '戴夫',
+    'dave.shortBio': '占位测试角色，用于验证多角色与群聊选角。',
+    'lilia.displayName': '莉莉娅',
+    'lilia.shortBio': '占位测试角色，用于验证多角色与群聊选角。',
+  },
   chat: {
     moreActions: '更多操作',
     clearHistory: '清空聊天记录',

@@ -1,6 +1,6 @@
 import type { HistoryMessage } from '@/client-api/sessions';
 import { Divider } from '@/components/Divider';
-import { useTranslations } from '@/components/I18nProvider';
+import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { ScrollToBottomButton } from '@/components/ScrollToBottomButton';
 import { cn } from '@/lib/client/cn';
 import { isDisplayMessage } from '@/types/message-kind';
@@ -36,6 +36,7 @@ export function MessageList({
   /* State & data                                                               */
   /* -------------------------------------------------------------------------- */
 
+  const tCharacter = useTCharacter();
   const tCommon = useTranslations('common');
   const tDate = useTranslations('chatDate');
   const resolvedUserDisplayName = userDisplayName ?? tCommon('userFallback');
@@ -153,10 +154,11 @@ export function MessageList({
 
           const message = item.message;
           if (awaitingAssistant && message.id === lastMessage?.id) {
+            const slug = message.metadata?.slug;
             return (
               <AssistantLoadingBubble
                 key={message.id}
-                speakerName={message.metadata?.speakerDisplayName ?? undefined}
+                speakerName={slug ? tCharacter(slug) : undefined}
               />
             );
           }

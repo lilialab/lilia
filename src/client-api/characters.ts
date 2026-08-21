@@ -3,7 +3,6 @@ import { apiFetchJson } from '@/lib/client/api-fetch';
 export interface CharacterSummary {
   id: string;
   slug: string;
-  displayName: string;
 }
 
 /** 拉取 AI 角色目录。 */

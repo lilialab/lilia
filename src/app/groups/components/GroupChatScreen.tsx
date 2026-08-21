@@ -11,14 +11,14 @@ import {
 } from '@/client-api/groups';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { useTranslations } from '@/components/I18nProvider';
+import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast, showMessageToast } from '@/lib/client/toast';
@@ -50,6 +50,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const tCharacter = useTCharacter();
   const t = useTranslations('groupChat');
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
@@ -257,15 +258,18 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           e.preventDefault();
           setInputFocusKey((k) => (k ?? 0) + 1);
         }}
-        items={members.map((m) => ({
-          key: m.id,
-          label: selectedMember?.slug === m.slug
-            ? t('currentMember', { name: m.displayName })
-            : m.displayName,
-          onSelect: () => {
-            handleSelectMention(m);
-          },
-        }))}
+        items={members.map((m) => {
+          const name = tCharacter(m.slug);
+          return {
+            key: m.id,
+            label: selectedMember?.slug === m.slug
+              ? t('currentMember', { name })
+              : name,
+            onSelect: () => {
+              handleSelectMention(m);
+            },
+          };
+        })}
       />
 
       <ConfirmDialog
@@ -304,7 +308,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
             onSubmit={handleFormSubmit}
             disabled={inputLocked}
             isStreaming={inputLocked}
-            mentionDisplayName={selectedMember?.displayName}
+            mentionDisplayName={selectedMember ? tCharacter(selectedMember.slug) : undefined}
             onMentionClick={selectedMember && !inputLocked ? () => setMentionOpen(true) : undefined}
             focusKey={inputFocusKey}
           />

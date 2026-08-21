@@ -1,3 +1,4 @@
+import { localeSchema } from '@/schemas/shared/locale';
 import { passwordSchema } from '@/schemas/shared/password';
 import { usernameSchema } from '@/schemas/shared/username';
 import { API_ERROR_CODE } from '@/types/api-error';
@@ -13,6 +14,7 @@ export const registerBodySchema = z
       .max(64, API_ERROR_CODE.DISPLAY_NAME_TOO_LONG),
     password: passwordSchema,
     confirmPassword: passwordSchema,
+    locale: localeSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: API_ERROR_CODE.PASSWORD_MISMATCH,

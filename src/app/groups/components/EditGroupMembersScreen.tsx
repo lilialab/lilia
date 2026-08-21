@@ -11,7 +11,7 @@ import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast } from '@/lib/client/toast';

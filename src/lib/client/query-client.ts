@@ -1,4 +1,4 @@
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
 import { showErrorToast } from '@/lib/client/toast';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 

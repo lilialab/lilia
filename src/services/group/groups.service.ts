@@ -11,7 +11,6 @@ import { API_ERROR_CODE } from '@/types/api-error';
 export type GroupMemberSummary = {
   id: string;
   slug: string;
-  displayName: string;
 };
 
 export type GroupDetail = {
@@ -30,7 +29,6 @@ export type GroupDetail = {
 const characterSelect = {
   id: true,
   slug: true,
-  displayName: true,
 } as const;
 
 const groupDetailSelect = {

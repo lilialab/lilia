@@ -28,13 +28,12 @@ export async function resolveSessionContext(sessionId: string): Promise<{
   userId: string;
   characterId: string;
   characterSlug: string;
-  characterDisplayName: string;
 }> {
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
     select: {
       userId: true,
-      character: { select: { id: true, slug: true, displayName: true } },
+      character: { select: { id: true, slug: true } },
     },
   });
   if (!session?.userId) {
@@ -44,7 +43,6 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     userId: session.userId,
     characterId: session.character.id,
     characterSlug: session.character.slug,
-    characterDisplayName: session.character.displayName,
   };
 }
 
@@ -115,7 +113,7 @@ export async function buildSystemPrompt(
     </historical_contexts>
 
     # 【执行约束】
-    请结合“第一层”的灵魂人设与“第二层”的用户记忆回应用户。向用户提及时间时一律使用用户本地时区与自然口语；不要向用户播报 UTC 或 ISO。记忆「记录于/最近活跃于」或 event 的「系统收录于/最近召回于」是系统元数据；event 类日程以正文中的日期时刻为准。
+    请结合“第一层”的灵魂人设与“第二层”的用户记忆回应用户。回复语言须与用户当前消息一致；勿因系统提示或记忆片段的语言而切换。向用户提及时间时一律使用用户本地时区与自然口语；不要向用户播报 UTC 或 ISO。记忆「记录于/最近活跃于」或 event 的「系统收录于/最近召回于」是系统元数据；event 类日程以正文中的日期时刻为准。
   `.trim();
 
   return {

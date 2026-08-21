@@ -96,7 +96,7 @@ async function prepareChatTurn(
   });
   const userMessageId = userMessage.id;
 
-  const { characterId, characterSlug, characterDisplayName } = await resolveSessionContext(
+  const { characterId, characterSlug } = await resolveSessionContext(
     sessionId,
   );
   await scheduleMemoryJobsBestEffort(sessionId, userId, characterId);
@@ -128,7 +128,6 @@ async function prepareChatTurn(
     metadata: {
       kind: null,
       slug: characterSlug,
-      speakerDisplayName: characterDisplayName,
       speakerCharacterId: characterId,
     },
   };

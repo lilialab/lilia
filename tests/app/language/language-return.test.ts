@@ -1,4 +1,4 @@
-import { languagePageHref, parseLanguageReturnTo } from '@/i18n/language-return';
+import { languagePageHref, parseLanguageReturnTo } from '@/app/language/language-return';
 import { describe, expect, it } from 'vitest';
 
 describe('parseLanguageReturnTo', () => {

@@ -1,6 +1,6 @@
+import { translateApiError } from '@/i18n/client';
 import { en } from '@/i18n/messages/en';
 import { zh } from '@/i18n/messages/zh';
-import { translateApiError } from '@/i18n/translate-api-error';
 import { ApiClientError } from '@/lib/client/api-client';
 import { API_ERROR_CODE } from '@/types/api-error';
 import { describe, expect, it } from 'vitest';

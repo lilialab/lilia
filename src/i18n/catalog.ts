@@ -1,3 +1,17 @@
+import type { Locale } from './config';
+import { en, type Messages } from './messages/en';
+import { zh } from './messages/zh';
+
+const catalogs: Record<Locale, Messages> = {
+  en,
+  zh,
+};
+
+/** 按语言取文案目录。 */
+export function getMessages(locale: Locale): Messages {
+  return catalogs[locale];
+}
+
 /** 将文案中的 `{key}` 替换为 params 对应值；缺省则保留占位符。 */
 export function formatMessage(
   template: string,

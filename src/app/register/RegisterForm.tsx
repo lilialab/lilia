@@ -3,7 +3,8 @@
 import { register } from '@/client-api/auth';
 import { AuthField, AuthShell } from '@/components/auth';
 import { useTranslations } from '@/components/I18nProvider';
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
+import { localeFromBrowserLanguage } from '@/i18n/config';
 import { cn } from '@/lib/client/cn';
 import { showErrorToast } from '@/lib/client/toast';
 import Link from 'next/link';
@@ -31,6 +32,7 @@ export function RegisterForm() {
         displayName: displayName.trim(),
         password,
         confirmPassword,
+        locale: localeFromBrowserLanguage(navigator.language),
       });
       router.push('/contacts');
       router.refresh();

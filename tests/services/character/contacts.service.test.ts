@@ -41,14 +41,12 @@ describe('ensureArborContact', () => {
       .mockResolvedValueOnce({
         id: 'char-arbor',
         slug: DEFAULT_CHARACTER_ID,
-        displayName: '阿尔博',
       } as never);
     vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue({
       createdAt: new Date(),
       character: {
         id: 'char-arbor',
         slug: DEFAULT_CHARACTER_ID,
-        displayName: '阿尔博',
       },
     } as never);
 

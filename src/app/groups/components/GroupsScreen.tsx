@@ -1,7 +1,12 @@
 'use client';
 
 import { fetchGroups, type GroupDetail } from '@/client-api/groups';
-import { useTranslations } from '@/components/I18nProvider';
+import {
+  type CharacterTranslationFn,
+  type TranslationFn,
+  useTCharacter,
+  useTranslations,
+} from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,14 +22,12 @@ import { useRouter } from 'next/navigation';
 
 function memberSubtitle(
   group: GroupDetail,
-  t: (
-    key: 'noMembers' | 'memberCount' | 'memberNameSeparator',
-    params?: { count: number },
-  ) => string,
+  tCharacter: CharacterTranslationFn,
+  t: TranslationFn<'groups'>,
 ): string {
   if (group.members.length === 0) return t('noMembers');
   if (group.members.length <= 3) {
-    return group.members.map((m) => m.displayName).join(t('memberNameSeparator'));
+    return group.members.map((m) => tCharacter(m.slug)).join(t('memberNameSeparator'));
   }
   return t('memberCount', { count: group.members.length });
 }
@@ -63,6 +66,7 @@ interface GroupsListProps {
 
 function GroupsList({ groups }: GroupsListProps) {
   const router = useRouter();
+  const tCharacter = useTCharacter();
   const t = useTranslations('groups');
 
   return (
@@ -92,7 +96,7 @@ function GroupsList({ groups }: GroupsListProps) {
                 {group.title}
               </div>
               <div className={cn('truncate text-xs text-muted-foreground')}>
-                {memberSubtitle(group, t)}
+                {memberSubtitle(group, tCharacter, t)}
               </div>
             </div>
           </button>

@@ -10,7 +10,6 @@ export type MessageMetadata = {
   kind: string | null;
   slug: string | null;
   /** 助手消息才有；用户出站可不带 */
-  speakerDisplayName?: string | null;
   speakerCharacterId?: string | null;
 };
 

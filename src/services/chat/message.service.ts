@@ -22,7 +22,7 @@ const activeMessageFilter = { isDeleted: false };
 /** 将数据库消息行映射为前端历史消息格式。 */
 function mapMessageRow(
   row: { id: string; role: string; parts: unknown; createdAt: Date },
-  speaker: { characterId: string; slug: string; displayName: string } | null,
+  speaker: { characterId: string; slug: string } | null,
 ): {
   id: string;
   role: UIMessage['role'];
@@ -39,7 +39,6 @@ function mapMessageRow(
       ? {
         kind: null,
         slug: speaker.slug,
-        speakerDisplayName: speaker.displayName,
         speakerCharacterId: speaker.characterId,
       }
       : {
@@ -87,14 +86,13 @@ export async function getHistoryPage(
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
     select: {
-      character: { select: { id: true, slug: true, displayName: true } },
+      character: { select: { id: true, slug: true } },
     },
   });
   const speaker = session?.character
     ? {
       characterId: session.character.id,
       slug: session.character.slug,
-      displayName: session.character.displayName,
     }
     : null;
   const mapRow = (row: { id: string; role: string; parts: unknown; createdAt: Date }) =>

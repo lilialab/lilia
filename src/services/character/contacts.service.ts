@@ -13,7 +13,6 @@ import { API_ERROR_CODE } from '@/types/api-error';
 const characterSelect = {
   id: true,
   slug: true,
-  displayName: true,
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -66,7 +65,6 @@ export async function listContacts(userId: string) {
   return rows.map((row) => ({
     id: row.character.id,
     slug: row.character.slug,
-    displayName: row.character.displayName,
     createdAt: row.createdAt,
   }));
 }
@@ -113,7 +111,6 @@ export async function addContact(userId: string, characterId: string) {
     return {
       id: existing.character.id,
       slug: existing.character.slug,
-      displayName: existing.character.displayName,
       createdAt: existing.createdAt,
     };
   }
@@ -129,7 +126,6 @@ export async function addContact(userId: string, characterId: string) {
   return {
     id: created.character.id,
     slug: created.character.slug,
-    displayName: created.character.displayName,
     createdAt: created.createdAt,
   };
 }
@@ -215,16 +211,16 @@ export async function getOrCreateContactSession(userId: string, characterId: str
     return {
       sessionId: existing.id,
       characterId: character.id,
-      displayName: character.displayName,
+      slug: character.slug,
       isGenerating: isGenerationBusy(existing.generatingStartedAt),
     };
   }
 
-  const session = await createSession(userId, characterId, character.displayName);
+  const session = await createSession(userId, characterId, character.slug);
   return {
     sessionId: session.id,
     characterId: character.id,
-    displayName: character.displayName,
+    slug: character.slug,
     isGenerating: false,
   };
 }

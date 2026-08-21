@@ -1,7 +1,7 @@
 'use client';
 
 import type { ContactSummary } from '@/client-api/contacts';
-import { useTranslations } from '@/components/I18nProvider';
+import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 
 /** 与 DEFAULT_CHARACTER_ID / seed slug 对齐；勿从 prompts/load 导入（含 fs）。 */
@@ -19,6 +19,7 @@ export type MemberPickerListProps = {
 };
 
 export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPickerListProps) {
+  const tCharacter = useTCharacter();
   const t = useTranslations('groupMembers');
 
   return (
@@ -41,13 +42,18 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
               onChange={() => onToggle(contact)}
               className={cn('h-4 w-4 rounded border-border')}
             />
-            <span className={cn('text-sm text-foreground')}>
-              {contact.displayName}
-              {isArbor && (
-                <span className={cn('ml-2 text-xs font-normal text-muted-foreground')}>
-                  {t('defaultMember')}
-                </span>
-              )}
+            <span className={cn('min-w-0 flex-1')}>
+              <span className={cn('block truncate text-sm text-foreground')}>
+                {tCharacter(contact.slug)}
+                {isArbor && (
+                  <span className={cn('ml-2 text-xs font-normal text-muted-foreground')}>
+                    {t('defaultMember')}
+                  </span>
+                )}
+              </span>
+              <span className={cn('block truncate text-xs text-muted-foreground')}>
+                {contact.slug}
+              </span>
             </span>
           </label>
         );

@@ -43,6 +43,19 @@ export const en = {
     add: 'Add',
     addedToast: 'Added {name}',
   },
+  characters: {
+    'arbor.displayName': 'Arbor',
+    'arbor.shortBio':
+      'A growth-oriented personal AI assistant. Casual, peer-level tone; companionship and habit-building.',
+    'bob.displayName': 'Bob',
+    'bob.shortBio': 'Placeholder character. Concise, neutral, and polite.',
+    'cindy.displayName': 'Cindy',
+    'cindy.shortBio': 'Placeholder character for multi-character and group-chat selection.',
+    'dave.displayName': 'Dave',
+    'dave.shortBio': 'Placeholder character for multi-character and group-chat selection.',
+    'lilia.displayName': 'Lilia',
+    'lilia.shortBio': 'Placeholder character for multi-character and group-chat selection.',
+  },
   chat: {
     moreActions: 'More actions',
     clearHistory: 'Clear chat history',

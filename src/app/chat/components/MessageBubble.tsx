@@ -1,4 +1,5 @@
 import type { HistoryMessage } from '@/client-api/sessions';
+import { useTCharacter } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { MessagePartRenderer } from './MessagePartRenderer';
 
@@ -8,8 +9,16 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, userDisplayName }: MessageBubbleProps) {
+  const tCharacter = useTCharacter();
   const isUser = message.role === 'user';
-  const speakerName = isUser ? userDisplayName : message.metadata?.speakerDisplayName;
+  const slug = message.metadata?.slug;
+
+  let speakerName: string | undefined;
+  if (isUser) {
+    speakerName = userDisplayName;
+  } else if (slug) {
+    speakerName = tCharacter(slug);
+  }
 
   return (
     <div className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start')}>

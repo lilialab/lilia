@@ -1,21 +1,48 @@
 'use client';
 
+import { updateUserLocale } from '@/client-api/auth';
 import { useI18n, useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { localeLabels, locales } from '@/i18n/config';
-import type { LanguageReturnPath } from '@/i18n/language-return';
+import { translateApiError } from '@/i18n/client';
+import { type Locale, localeLabels, locales } from '@/i18n/config';
 import { cn } from '@/lib/client/cn';
+import { queryKeys } from '@/lib/client/query-keys';
+import { showErrorToast } from '@/lib/client/toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
+import type { LanguageReturnPath } from './language-return';
 
 interface LanguageScreenProps {
   returnTo: LanguageReturnPath;
 }
 
+/** 从设置进入语言页时视为已登录，可双写 DB；login/register 入口只写 Cookie。 */
+function shouldPersistLocaleToDb(returnTo: LanguageReturnPath): boolean {
+  return returnTo === '/me/settings';
+}
+
 export function LanguageScreen({ returnTo }: LanguageScreenProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { locale, setLocale } = useI18n();
   const t = useTranslations('settings');
+
+  const handleSelect = useCallback(async (option: Locale) => {
+    if (option === locale) return;
+
+    setLocale(option);
+
+    if (!shouldPersistLocaleToDb(returnTo)) return;
+
+    try {
+      await updateUserLocale(option);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.authMe });
+    } catch (error) {
+      showErrorToast(translateApiError(error));
+    }
+  }, [locale, queryClient, returnTo, setLocale]);
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
@@ -32,7 +59,7 @@ export function LanguageScreen({ returnTo }: LanguageScreenProps) {
               <li key={option} className={cn('border-t border-border/50')}>
                 <button
                   type="button"
-                  onClick={() => setLocale(option)}
+                  onClick={() => void handleSelect(option)}
                   aria-pressed={selected}
                   className={cn(
                     'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm',

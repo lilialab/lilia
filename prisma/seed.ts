@@ -1,24 +1,30 @@
 import { prisma } from '../src/lib/server/prisma';
+import { registerUser } from '../src/services/user/users.service';
 
-const CHARACTERS = [
-  { slug: 'arbor', displayName: '阿尔博' },
-  { slug: 'bob', displayName: '鲍勃' },
-  { slug: 'cindy', displayName: '辛迪' },
-  { slug: 'dave', displayName: '戴夫' },
-] as const;
+const CHARACTER_SLUGS = ['arbor', 'bob', 'cindy', 'dave'] as const;
+
+const SEED_USER = {
+  username: 'tom',
+  displayName: 'Tom',
+  password: '123123123',
+  locale: 'zh',
+} as const;
 
 async function main() {
-  for (const character of CHARACTERS) {
+  for (const slug of CHARACTER_SLUGS) {
     await prisma.character.upsert({
-      where: { slug: character.slug },
-      create: {
-        slug: character.slug,
-        displayName: character.displayName,
-      },
-      update: {
-        displayName: character.displayName,
-      },
+      where: { slug },
+      create: { slug },
+      update: {},
     });
+  }
+
+  const existing = await prisma.user.findUnique({
+    where: { username: SEED_USER.username },
+    select: { id: true },
+  });
+  if (!existing) {
+    await registerUser(SEED_USER);
   }
 }
 

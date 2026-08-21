@@ -1,7 +1,7 @@
 'use client';
 
+import { languagePageHref, type LanguageReturnPath } from '@/app/language/language-return';
 import { useTranslations } from '@/components/I18nProvider';
-import { languagePageHref, type LanguageReturnPath } from '@/i18n/language-return';
 import { cn } from '@/lib/client/cn';
 import { Languages } from 'lucide-react';
 import Link from 'next/link';

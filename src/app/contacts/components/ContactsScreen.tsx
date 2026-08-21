@@ -1,7 +1,7 @@
 'use client';
 
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
-import { useTranslations } from '@/components/I18nProvider';
+import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,38 +26,43 @@ interface ContactsListProps {
 
 function ContactsList({ contacts }: ContactsListProps) {
   const router = useRouter();
+  const tCharacter = useTCharacter();
 
   return (
     <ul>
-      {contacts.map((contact) => (
-        <li key={contact.id}>
-          <button
-            type="button"
-            onClick={() => router.push(`/chat/${contact.id}`, { transitionTypes: ['nav-forward'] })}
-            className={cn(
-              'flex w-full items-center gap-3 border-t border-border/50 px-4 py-3 text-left',
-              'hover:bg-surface',
-            )}
-          >
-            <span
+      {contacts.map((contact) => {
+        const displayName = tCharacter(contact.slug);
+        return (
+          <li key={contact.id}>
+            <button
+              type="button"
+              onClick={() =>
+                router.push(`/chat/${contact.id}`, { transitionTypes: ['nav-forward'] })}
               className={cn(
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-                'bg-border text-sm font-medium text-foreground/80',
+                'flex w-full items-center gap-3 border-t border-border/50 px-4 py-3 text-left',
+                'hover:bg-surface',
               )}
             >
-              {contact.displayName.slice(0, 1)}
-            </span>
-            <span className={cn('min-w-0')}>
-              <span className={cn('block truncate text-sm font-medium text-foreground')}>
-                {contact.displayName}
+              <span
+                className={cn(
+                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                  'bg-border text-sm font-medium text-foreground/80',
+                )}
+              >
+                {displayName.slice(0, 1)}
               </span>
-              <span className={cn('block truncate text-xs text-muted-foreground')}>
-                {contact.slug}
+              <span className={cn('min-w-0')}>
+                <span className={cn('block truncate text-sm font-medium text-foreground')}>
+                  {displayName}
+                </span>
+                <span className={cn('block truncate text-xs text-muted-foreground')}>
+                  {contact.slug}
+                </span>
               </span>
-            </span>
-          </button>
-        </li>
-      ))}
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

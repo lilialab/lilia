@@ -33,7 +33,6 @@ import {
   withGroupSpeakerLabelsForModel,
 } from './group-message.utils';
 import { buildGroupSystemPrompt } from './group-prompt.service';
-import type { GroupRosterMember } from './group-prompt.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -89,22 +88,6 @@ interface StreamGroupAssistantReplyOptions {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-/** 将群成员列表映射为花名册条目（简介来自 meta.shortBio）。 */
-function listGroupRosterMembers(members: GroupMemberRef[]): GroupRosterMember[] {
-  return members.map((m) => {
-    const character = loadCharacter(m.character.slug);
-    return {
-      slug: character.id,
-      displayName: character.displayName,
-      shortBio: character.shortBio,
-    };
-  });
-}
-
-/* -------------------------------------------------------------------------- */
 /* Turn lifecycle                                                             */
 /* -------------------------------------------------------------------------- */
 
@@ -119,7 +102,6 @@ export async function streamGroupAssistantReply({
   timeZone,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
   const user = await getUserById(userId);
-  const roster = listGroupRosterMembers(members);
   const character = loadCharacter(speaker.slug);
   const tools = resolveToolsForCharacter(character.skills, {
     userId,
@@ -141,7 +123,7 @@ export async function streamGroupAssistantReply({
     userDisplayName: user?.displayName ?? '用户',
     characterId: speaker.characterId,
     characterSlug: speaker.slug,
-    members: roster,
+    memberSlugs: members.map((m) => m.character.slug),
     lastUserContent: ragQueryText,
     timeZone,
   });
@@ -225,7 +207,6 @@ export async function streamGroupAssistantReply({
     metadata: {
       kind: null,
       slug: speaker.slug,
-      speakerDisplayName: character.displayName,
       speakerCharacterId: speaker.characterId,
     },
   };

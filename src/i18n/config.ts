@@ -15,8 +15,8 @@ const localeHtmlLang: Record<Locale, string> = {
   zh: 'zh-CN',
 };
 
-/** 浏览器语言偏好 Cookie（非 HttpOnly，客户端可写）。 */
-export const LOCALE_COOKIE_NAME = 'pai_arbor_locale';
+/** 语言偏好 Cookie 逻辑名（实际名由 `lib/client/cookie` 加 `pai_` 前缀）。 */
+export const LOCALE_COOKIE_NAME = 'locale';
 
 export const LOCALE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 

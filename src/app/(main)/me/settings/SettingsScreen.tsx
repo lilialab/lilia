@@ -1,9 +1,9 @@
 'use client';
 
+import { languagePageHref } from '@/app/language/language-return';
 import { useI18n, useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { localeLabels } from '@/i18n/config';
-import { languagePageHref } from '@/i18n/language-return';
 import { cn } from '@/lib/client/cn';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';

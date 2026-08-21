@@ -4,14 +4,14 @@ import { fetchContactSession, removeContact } from '@/client-api/contacts';
 import type { HistoryMessage } from '@/client-api/sessions';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { useTranslations } from '@/components/I18nProvider';
+import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast } from '@/lib/client/toast';
@@ -38,6 +38,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const tCharacter = useTCharacter();
   const t = useTranslations('chat');
   const tCommon = useTranslations('common');
   const [input, setInput] = useState('');
@@ -56,7 +57,9 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   });
 
   const sessionId = sessionQuery.data?.sessionId ?? '';
-  const displayName = sessionQuery.data?.displayName ?? '';
+  const displayName = sessionQuery.data?.slug
+    ? tCharacter(sessionQuery.data?.slug)
+    : '';
 
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);

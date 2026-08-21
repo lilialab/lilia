@@ -37,6 +37,7 @@ describe('registerBodySchema', () => {
       displayName: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
+      locale: 'en',
     });
     expect(result.success).toBe(true);
   });
@@ -47,6 +48,7 @@ describe('registerBodySchema', () => {
       displayName: 'Tom',
       password: 'password123',
       confirmPassword: 'password456',
+      locale: 'zh',
     });
     expect(result.success).toBe(false);
     if (result.success) return;

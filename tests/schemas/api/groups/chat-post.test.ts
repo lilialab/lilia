@@ -133,7 +133,6 @@ describe('groupChatPostBodySchema', () => {
           metadata: {
             kind: null,
             slug: 'arbor',
-            speakerDisplayName: null,
             speakerCharacterId: null,
           },
         },

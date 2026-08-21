@@ -8,7 +8,7 @@ const groupChatMessagePartSchema = z.looseObject({
   text: z.string().optional(),
 });
 
-/** 入参只约束 kind/slug；其余 metadata（展示字段等）可原样带上。 */
+/** 入参只约束 kind/slug；其余 metadata 可原样带上。 */
 const groupChatInboundMetadataSchema = z.looseObject({
   kind: z.enum([MESSAGE_KIND_TURN_CUE]).nullable().optional(),
   slug: z.string().trim().min(1).nullable().optional(),

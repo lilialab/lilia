@@ -8,7 +8,7 @@ export interface ContactSummary extends CharacterSummary {
 export interface ContactSession {
   sessionId: string;
   characterId: string;
-  displayName: string;
+  slug: string;
   /** 服务端仍在生成助手回复（含断线后台续跑） */
   isGenerating: boolean;
 }

@@ -1,5 +1,12 @@
-import { formatMessage } from '@/i18n/format-message';
+import { formatMessage, getMessages } from '@/i18n/catalog';
 import { describe, expect, it } from 'vitest';
+
+describe('getMessages', () => {
+  it('按语言返回对应目录', () => {
+    expect(getMessages('en').settings.language).toBe('Language');
+    expect(getMessages('zh').settings.language).toBe('语言');
+  });
+});
 
 describe('formatMessage', () => {
   it('无 params 时原样返回', () => {

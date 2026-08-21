@@ -36,7 +36,7 @@ function mapGroupMessageRow(row: {
   parts: unknown;
   createdAt: Date;
   speakerCharacterId: string | null;
-  speakerCharacter: { displayName: string; slug: string } | null;
+  speakerCharacter: { slug: string } | null;
 }): {
   id: string;
   role: UIMessage['role'];
@@ -54,7 +54,6 @@ function mapGroupMessageRow(row: {
       ? {
         kind: null,
         slug: row.speakerCharacter.slug,
-        speakerDisplayName: row.speakerCharacter.displayName,
         speakerCharacterId: row.speakerCharacterId,
       }
       : {
@@ -71,7 +70,7 @@ const groupMessageSelect = {
   parts: true,
   createdAt: true,
   speakerCharacterId: true,
-  speakerCharacter: { select: { displayName: true, slug: true } },
+  speakerCharacter: { select: { slug: true } },
 } as const;
 
 /* -------------------------------------------------------------------------- */

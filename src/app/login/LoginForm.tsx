@@ -3,7 +3,7 @@
 import { login } from '@/client-api/auth';
 import { AuthField, AuthShell } from '@/components/auth';
 import { useTranslations } from '@/components/I18nProvider';
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { showErrorToast } from '@/lib/client/toast';
 import Link from 'next/link';

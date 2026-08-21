@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n/config';
 import { apiFetchJson } from '@/lib/client/api-fetch';
 import type { LoginBody } from '@/schemas/api/auth/login';
 import type { RegisterBody } from '@/schemas/api/auth/register';
@@ -6,6 +7,7 @@ export interface AuthUser {
   id: string;
   username: string;
   displayName: string;
+  locale: Locale;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,4 +41,14 @@ export async function logout(): Promise<void> {
   await apiFetchJson<Record<string, never>>('/api/auth/logout', {
     method: 'POST',
   });
+}
+
+/** 更新当前用户的界面语言偏好。 */
+export async function updateUserLocale(locale: Locale): Promise<AuthUser> {
+  const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ locale }),
+  });
+  return data.user;
 }

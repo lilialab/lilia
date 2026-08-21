@@ -7,19 +7,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   const { username, password } = await parseJsonBody(loginBodySchema, req);
-  const user = await authenticateUser(username, password);
+  const { id } = await authenticateUser(username, password);
 
-  const token = await createAuthSession(user.id);
-  const response = NextResponse.json({
-    success: true,
-    data: {
-      user: {
-        id: user.id,
-        username: user.username,
-        displayName: user.displayName,
-      },
-    },
-  });
+  const token = await createAuthSession(id);
+  const response = NextResponse.json({ success: true, data: {} });
   setSessionCookie(response, token);
   return response;
 });

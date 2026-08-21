@@ -1,4 +1,4 @@
-import { parseLanguageReturnTo } from '@/i18n/language-return';
+import { parseLanguageReturnTo } from './language-return';
 import { LanguageScreen } from './LanguageScreen';
 
 export default async function LanguagePage(props: PageProps<'/language'>) {

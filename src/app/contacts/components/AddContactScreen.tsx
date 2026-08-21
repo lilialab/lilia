@@ -2,11 +2,11 @@
 
 import { type CharacterSummary, fetchCharacters } from '@/client-api/characters';
 import { addContact, fetchContacts } from '@/client-api/contacts';
-import { useTranslations } from '@/components/I18nProvider';
+import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
-import { translateApiError } from '@/i18n/translate-api-error';
+import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast, showSuccessToast } from '@/lib/client/toast';
@@ -30,13 +30,14 @@ interface AvailableCharactersListProps {
 
 function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
   const queryClient = useQueryClient();
+  const tCharacter = useTCharacter();
   const t = useTranslations('addContact');
 
   const addMutation = useMutation({
     mutationFn: addContact,
     onSuccess: async (contact) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.contacts, exact: true });
-      showSuccessToast(t('addedToast', { name: contact.displayName }));
+      showSuccessToast(t('addedToast', { name: tCharacter(contact.slug) }));
     },
     onError: (err) => {
       showErrorToast(translateApiError(err), 'contact-add');
@@ -54,7 +55,7 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
         >
           <div className={cn('min-w-0')}>
             <p className={cn('truncate text-sm font-medium text-foreground')}>
-              {character.displayName}
+              {tCharacter(character.slug)}
             </p>
             <p className={cn('truncate text-xs text-muted-foreground')}>{character.slug}</p>
           </div>

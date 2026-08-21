@@ -11,7 +11,7 @@ const MAX_LIMIT = 20;
 export type SearchedMessage = {
   messageId: string;
   sessionId: string;
-  characterDisplayName: string;
+  characterSlug: string;
   role: string;
   createdAt: string;
   parts: unknown;
@@ -78,11 +78,6 @@ export async function searchUserMessages(options: {
       parts: true,
       createdAt: true,
       sessionId: true,
-      session: {
-        select: {
-          character: { select: { displayName: true } },
-        },
-      },
     },
   });
 
@@ -98,12 +93,12 @@ export async function searchUserMessages(options: {
   });
 
   return rows.flatMap((row) => {
-    if (!row.sessionId || !row.session) return [];
+    if (!row.sessionId) return [];
     return [
       {
         messageId: row.id,
         sessionId: row.sessionId,
-        characterDisplayName: row.session.character.displayName,
+        characterSlug,
         role: row.role,
         createdAt: row.createdAt.toISOString(),
         parts: row.parts,

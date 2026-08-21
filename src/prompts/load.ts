@@ -7,10 +7,7 @@ export type JobPromptId = 'maintain' | 'profile';
 
 export interface CharacterPrompt {
   id: string;
-  displayName: string;
   persona: string;
-  /** 群花名册用短简介；缺省则花名册不写简介。 */
-  shortBio: string | undefined;
   /** 角色可用的 skill id 列表（如 searchChatHistory）。 */
   skills: string[];
 }
@@ -29,34 +26,25 @@ function readPromptFile(...segments: string[]): string {
   return text;
 }
 
+function loadCharacterSkills(slug: string): string[] {
+  const raw = readPromptFile('characters', slug, 'skills.json');
+  const parsed = JSON.parse(raw) as { skills?: string[] };
+  return Array.isArray(parsed.skills) ? parsed.skills : [];
+}
+
 /** 加载平台共用安全约束。 */
 export function loadPlatformSafety(): string {
   return readPromptFile('platform', 'safety.md');
 }
 
-/** 加载角色人设（meta + persona）；slug 对齐 characters/{slug}/ 目录。 */
+/** 加载角色人设（skills.json + persona）；slug 对齐 characters/{slug}/ 目录。 */
 export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPrompt {
-  const metaRaw = readPromptFile('characters', slug, 'meta.json');
-  const meta = JSON.parse(metaRaw) as {
-    id: string;
-    displayName: string;
-    shortBio?: string;
-    skills?: string[];
-  };
   const persona = readPromptFile('characters', slug, 'persona.md');
-
-  if (meta.id !== slug) {
-    throw new Error(`角色 meta.id (${meta.id}) 与目录名 (${slug}) 不一致`);
-  }
-
-  const shortBio = typeof meta.shortBio === 'string' ? meta.shortBio.trim() : '';
 
   return {
     id: slug,
-    displayName: meta.displayName,
     persona,
-    shortBio: shortBio.length > 0 ? shortBio : undefined,
-    skills: Array.isArray(meta.skills) ? meta.skills : [],
+    skills: loadCharacterSkills(slug),
   };
 }
 
