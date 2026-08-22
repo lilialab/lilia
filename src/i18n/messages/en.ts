@@ -142,6 +142,7 @@ export const en = {
     UNAUTHORIZED: 'Please sign in',
     NOT_FOUND: 'Not found',
     CONFLICT: 'Conflict',
+    RATE_LIMITED: 'Too many attempts. Please try again later',
     INTERNAL_ERROR: 'Server error',
     USERNAME_REQUIRED: 'Username is required',
     USERNAME_TOO_SHORT: 'Username must be at least 3 characters',

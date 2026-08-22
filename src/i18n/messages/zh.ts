@@ -138,6 +138,7 @@ export const zh = {
     UNAUTHORIZED: '请先登录',
     NOT_FOUND: '未找到',
     CONFLICT: '操作冲突',
+    RATE_LIMITED: '操作太频繁，请稍后再试',
     INTERNAL_ERROR: '服务器异常',
     USERNAME_REQUIRED: '请输入账号',
     USERNAME_TOO_SHORT: '账号至少 3 个字符',

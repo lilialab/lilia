@@ -15,6 +15,7 @@ describe('AppError', () => {
     expect(AppError.unauthorized('未登录').code).toBe(API_ERROR_CODE.UNAUTHORIZED);
     expect(AppError.notFound('会话不存在').code).toBe(API_ERROR_CODE.NOT_FOUND);
     expect(AppError.conflict('生成中').code).toBe(API_ERROR_CODE.CONFLICT);
+    expect(AppError.tooManyRequests('太频繁').code).toBe(API_ERROR_CODE.RATE_LIMITED);
     expect(AppError.internal('boom').code).toBe(API_ERROR_CODE.INTERNAL_ERROR);
   });
 });

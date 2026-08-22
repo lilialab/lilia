@@ -27,6 +27,10 @@ export class AppError extends Error {
     return new AppError(409, message, code);
   }
 
+  static tooManyRequests(message: string, code: ApiErrorCode = API_ERROR_CODE.RATE_LIMITED) {
+    return new AppError(429, message, code);
+  }
+
   static internal(message: string, code: ApiErrorCode = API_ERROR_CODE.INTERNAL_ERROR) {
     return new AppError(500, message, code);
   }
