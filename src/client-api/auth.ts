@@ -1,6 +1,7 @@
 import type { Locale } from '@/i18n/config';
 import { apiFetchJson } from '@/lib/client/api-fetch';
 import type { ChangePasswordBody } from '@/schemas/api/auth/change-password';
+import type { DeleteAccountBody } from '@/schemas/api/auth/delete-account';
 import type { LoginBody } from '@/schemas/api/auth/login';
 import type { RegisterBody } from '@/schemas/api/auth/register';
 
@@ -47,6 +48,15 @@ export async function logout(): Promise<void> {
 /** 修改登录密码。 */
 export async function changePassword(input: ChangePasswordBody): Promise<void> {
   await apiFetchJson('/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+}
+
+/** 永久删除当前用户账号。 */
+export async function deleteAccount(input: DeleteAccountBody): Promise<void> {
+  await apiFetchJson('/api/auth/delete-account', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

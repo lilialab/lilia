@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
 import { revokeAllAuthSessions } from '@/lib/server/session';
 import { ensureArborContact } from '@/services/character/contacts.service';
+import { VectorService } from '@/services/memory/vector.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
 /* -------------------------------------------------------------------------- */
@@ -174,4 +175,25 @@ export async function changeUserPassword(
   });
 
   await revokeAllAuthSessions(userId);
+}
+
+const vectorService = new VectorService();
+
+/** 永久删除用户账号及其关联数据（不含 ConsolidationJob）。 */
+export async function deleteUserAccount(userId: string, currentPassword: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, passwordHash: true },
+  });
+
+  if (!user) {
+    throw AppError.unauthorized('用户不存在');
+  }
+
+  if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+    throw AppError.unauthorized('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
+  }
+
+  await vectorService.deleteMemoriesByUserId(userId);
+  await prisma.user.delete({ where: { id: userId } });
 }

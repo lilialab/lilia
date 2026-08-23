@@ -121,6 +121,7 @@ export const zh = {
     changeDisplayName: '修改昵称',
     changePassword: '修改密码',
     language: '语言',
+    deleteAccount: '删除账号',
   },
   changeDisplayName: {
     title: '修改昵称',
@@ -137,6 +138,14 @@ export const zh = {
     submit: '保存新密码',
     submitting: '保存中...',
     success: '密码已更新，请重新登录',
+  },
+  deleteAccount: {
+    title: '删除账号',
+    warning: '此操作不可恢复。将永久删除你的聊天记录、记忆、画像与登录信息。',
+    currentPassword: '当前密码',
+    confirmLabel: '我了解此操作不可恢复',
+    submit: '永久删除账号',
+    submitting: '删除中...',
   },
   auth: {
     username: '账号',
@@ -172,6 +181,7 @@ export const zh = {
     INVALID_CREDENTIALS: '账号或密码错误',
     INVALID_CURRENT_PASSWORD: '当前密码错误',
     PASSWORD_UNCHANGED: '新密码不能与当前密码相同',
+    DELETE_ACCOUNT_CONFIRMATION_REQUIRED: '请勾选确认删除',
     USERNAME_TAKEN: '账号已被占用',
     CONTACT_REQUIRED: '请先添加该 AI 好友',
     GROUP_MEMBERS_NOT_CONTACTS: '请先将所选 AI 添加为好友',

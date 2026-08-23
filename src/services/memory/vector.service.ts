@@ -233,6 +233,14 @@ export class VectorService {
     await collection.delete({ ids });
   }
 
+  /** 删除该用户在 Chroma 中的全部记忆向量。 */
+  async deleteMemoriesByUserId(userId: string): Promise<void> {
+    const collection = await this.getCollection(this.memoryCollectionName);
+    await collection.delete({
+      where: { user_id: userId },
+    });
+  }
+
   /** 更新单条记忆的向量与 metadata。 */
   async updateMemory(input: UpdateMemoryInput): Promise<void> {
     const collection = await this.getCollection(this.memoryCollectionName);

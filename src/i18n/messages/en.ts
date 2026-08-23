@@ -125,6 +125,7 @@ export const en = {
     changeDisplayName: 'Change display name',
     changePassword: 'Change password',
     language: 'Language',
+    deleteAccount: 'Delete account',
   },
   changeDisplayName: {
     title: 'Change display name',
@@ -141,6 +142,15 @@ export const en = {
     submit: 'Save new password',
     submitting: 'Saving...',
     success: 'Password updated. Please log in again.',
+  },
+  deleteAccount: {
+    title: 'Delete account',
+    warning:
+      'This cannot be undone. Your chats, memories, profiles, and login data will be permanently deleted.',
+    currentPassword: 'Current password',
+    confirmLabel: 'I understand this cannot be undone',
+    submit: 'Delete account permanently',
+    submitting: 'Deleting...',
   },
   auth: {
     username: 'Username',
@@ -176,6 +186,7 @@ export const en = {
     INVALID_CREDENTIALS: 'Incorrect username or password',
     INVALID_CURRENT_PASSWORD: 'Current password is incorrect',
     PASSWORD_UNCHANGED: 'New password must be different from the current password',
+    DELETE_ACCOUNT_CONFIRMATION_REQUIRED: 'Please confirm account deletion',
     USERNAME_TAKEN: 'Username is already taken',
     CONTACT_REQUIRED: 'Add this AI as a friend first',
     GROUP_MEMBERS_NOT_CONTACTS: 'Add the selected AI as friends first',

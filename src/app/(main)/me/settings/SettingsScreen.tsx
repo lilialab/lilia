@@ -60,6 +60,20 @@ export function SettingsScreen() {
             </span>
           </Link>
         </section>
+
+        <section className={cn('mt-3 bg-background')}>
+          <Link
+            href="/me/settings/delete-account"
+            transitionTypes={['nav-forward']}
+            className={cn(
+              'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm text-destructive',
+              'hover:bg-surface',
+            )}
+          >
+            <span>{t('deleteAccount')}</span>
+            <ChevronRight className={cn('h-4 w-4 text-destructive/70')} aria-hidden />
+          </Link>
+        </section>
       </div>
     </div>
   );
