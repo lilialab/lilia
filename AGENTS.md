@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # pai-arbor Agent 指南
 
-本地 RAG 聊天应用（Next.js + Prisma + Chroma + Ollama）。
+带长期记忆的本地聊天应用（Next.js + Prisma + Chroma + Ollama）。
 
 **读代码**：Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止全仓 explore、整目录 Read、全仓 subagent，或一次串读 chat + memory + group 全链路。
 
@@ -35,9 +35,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | `memory/` | 记忆整理、向量检索、衰减、metadata、用户画像、job |
 | `session/` | 会话 |
 | `character/` | AI 角色、通讯录、联系人 session |
-| `knowledge/` | 文档导入、file 记录 |
 | `debug/` | Chroma 调试 |
-| `user/` | 注册；`resolveUserIdByUsername` |
+| `user/` | 注册登录、账号资料（改密/昵称/删号）、`resolveUserIdByUsername` |
 
 - 同域 import：`./`；跨域：`@/services/{domain}/...`。**不要**恢复 `src/services/` 根目录平铺旧路径。
 - 有域语义的纯函数跟域走：`services/**/**.utils.ts`（勿塞进 `src/utils/`）。
@@ -127,8 +126,8 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 记忆检索 / 衰减 | `vector` + `decay.utils` + `metadata.utils` |
 | 用户画像 | `user-profile.service.ts` |
 | 会话 / 历史 | `sessions.service.ts` + `message.service.ts` |
-| 知识库上传 | `api/upload` + `services/knowledge/` |
 | 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/记忆/`；`api/memory/?username=`；memory workers |
 | 登录 / 注册 | `session` + `request-user`；`api/auth/`；`client-api/auth`；`login/`、`register/` |
+| 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / `delete-account`；`/me/settings` |
 | 聊天 UI / 流 | `ChatScreen.tsx` + `api/chat` |
 | 通讯录 | `contacts.service.ts`；`/contacts`、`/chat/add`、`/chat/[characterId]` |

@@ -18,7 +18,7 @@ services:
     volumes:
       - ./docker-volumes/mysql-data:/var/lib/mysql
 
-  # 向量库：UserMemory / 知识库文档切片的 embedding 检索
+  # 向量库：UserMemory 的 embedding 检索
   chromadb:
     image: chromadb/chroma:latest
     container_name: pai-arbor-chroma
@@ -29,22 +29,6 @@ services:
       - '8000:8000'
     volumes:
       - ./docker-volumes/chroma-data:/data
-
-  # S3 兼容对象存储：知识库上传文件；9000=API，9001=控制台
-  minio:
-    image: elestio/minio:latest
-    container_name: pai-arbor-minio
-    restart: unless-stopped
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    environment:
-      <<: *timezone
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
-    volumes:
-      - ./docker-volumes/minio-data:/data
-    command: server /data --console-address ":9001"
 
   # 日志接收：pino → Loki（无 Web UI）；配置见 docker/loki-config.yml
   loki:

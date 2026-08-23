@@ -1,5 +1,7 @@
 # 记忆流水线总览
 
+文中 **RAG** 指聊天时按当前输入从 `UserMemory` 向量检索相关记忆并注入 prompt，**不是**文档知识库上传。
+
 - [对话记忆整理 extract](./extract.md)（行为说明见文档内 **「说明」**）
 - [记忆维护 maintain](./maintain.md)（行为说明见文档内 **「说明」**）
 - [画像维护 profile](./profile.md)

@@ -237,30 +237,3 @@ model ConsolidationJob {
   @@index([startedAt])
   @@map("consolidation_jobs")
 }
-
-/**
- * 知识库上传文件元数据（MinIO）；与聊天会话无直接 FK
- */
-model File {
-  id        String      @id @default(uuid())
-  fileName  String      @map("file_name")
-  ossKey    String      @map("oss_key") // 存储在 MinIO 中的唯一 Object Key
-  fileSize  Int         @map("file_size")
-  chunks    FileChunk[]
-  createdAt DateTime    @default(now()) @map("created_at")
-
-  @@map("files")
-}
-
-/**
- * 文件切片预览文本；向量等内容在 Chroma 等侧
- */
-model FileChunk {
-  id             String @id @default(uuid())
-  fileId         String @map("file_id")
-  chunkIndex     Int    @map("chunk_index") // 切片排序索引 (0, 1, 2...)
-  contentPreview String @map("content_preview") @db.Text // 存储纯文本，用于备用或普通展示
-  file           File   @relation(fields: [fileId], references: [id], onDelete: Cascade)
-
-  @@map("file_chunks")
-}

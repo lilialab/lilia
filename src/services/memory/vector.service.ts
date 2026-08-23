@@ -10,11 +10,6 @@ import { parseMemoryMetadata } from './metadata.utils';
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-interface AddChunksInput {
-  fileId: string;
-  chunks: { id: string; chunkIndex: number; text: string }[];
-}
-
 interface AddMemoryInput {
   id: string;
   userId: string;
@@ -70,7 +65,6 @@ interface FindMemoryNeighborsOptions {
 /* -------------------------------------------------------------------------- */
 
 export class VectorService {
-  private docCollectionName = 'doc_knowledge_base';
   private memoryCollectionName = 'user_memory_base';
 
   /* -------------------------------------------------------------------------- */
@@ -308,62 +302,6 @@ export class VectorService {
         character_id: row.characterId,
         last_active_at: nowMs,
       })),
-    });
-  }
-
-  /* -------------------------------------------------------------------------- */
-  /* Document knowledge                                                         */
-  /* -------------------------------------------------------------------------- */
-
-  /**
-   * 从向量知识库中依据语义检索 Top-K 切片
-   */
-  async queryKnowledge(queryText: string, limit = env.KNOWLEDGE_RAG_LIMIT): Promise<string[]> {
-    const collection = await this.getCollection(this.docCollectionName);
-
-    const response = await collection.query({
-      queryTexts: [queryText],
-      nResults: limit,
-    });
-
-    return (response.documents[0] as string[]) ?? [];
-  }
-
-  /**
-   * 将切片同步向量化并推送到 ChromaDB
-   * @param input.fileId 主文件 UUID
-   * @param input.chunks 包含与 MySQL 严格对齐的真实主键与全文的切片数组
-   */
-  async addFileChunks(input: AddChunksInput): Promise<void> {
-    const { fileId, chunks } = input;
-
-    if (chunks.length === 0) return;
-
-    const collection = await this.getCollection(this.docCollectionName);
-
-    const ids = chunks.map((c) => c.id);
-    const documents = chunks.map((c) => c.text);
-    const metadatas = chunks.map((c) => ({
-      file_id: fileId,
-      index: c.chunkIndex,
-    }));
-
-    await collection.add({
-      ids,
-      documents,
-      metadatas,
-    });
-  }
-
-  /**
-   * 依据主文件 ID，抹除对应的所有子向量切片
-   * @param fileId 主文件 UUID
-   */
-  async deleteFileChunks(fileId: string): Promise<void> {
-    const collection = await this.getCollection(this.docCollectionName);
-
-    await collection.delete({
-      where: { file_id: fileId },
     });
   }
 }

@@ -4,7 +4,7 @@
 
 ## ER（核心）
 
-省略 `AuthSession`、`File` / `FileChunk`、`ConsolidationJob`（无会话 FK）。
+省略 `AuthSession`、`ConsolidationJob`（无会话 FK）。
 
 ```mermaid
 erDiagram
@@ -96,7 +96,6 @@ erDiagram
 | `UserMemory` | `user_memories` | 长期记忆（按 `userId + characterId` 私有） |
 | `UserProfile` | `user_profiles` | 用户×角色画像（按 `userId + characterId` 私有） |
 | `ConsolidationJob` | `consolidation_jobs` | extract / maintain / profile 任务记录 |
-| `File` / `FileChunk` | `files` / `file_chunks` | 知识库上传元数据与切片预览 |
 
 ## Message 约束
 

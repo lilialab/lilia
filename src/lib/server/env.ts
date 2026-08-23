@@ -113,11 +113,6 @@ export const env = {
   CHROMA_HOST: requireStringEnv('CHROMA_HOST'),
   CHROMA_PORT: requireNumberEnv('CHROMA_PORT'),
 
-  MINIO_ACCESS_KEY: requireStringEnv('MINIO_ACCESS_KEY'),
-  MINIO_SECRET_KEY: requireStringEnv('MINIO_SECRET_KEY'),
-  MINIO_ENDPOINT: requireStringEnv('MINIO_ENDPOINT'),
-  MINIO_BUCKET_NAME: requireStringEnv('MINIO_BUCKET_NAME'),
-
   REDIS_URL: requireStringEnv('REDIS_URL'),
 
   LOG_LEVEL: requireStringEnv('LOG_LEVEL'),
@@ -148,7 +143,6 @@ export const env = {
   LLM_STRUCTURED_MAX_RETRIES: requireNonNegativeIntEnv('LLM_STRUCTURED_MAX_RETRIES'),
   CONSOLIDATION_JOB_MAX_HISTORY: requirePositiveIntEnv('CONSOLIDATION_JOB_MAX_HISTORY'),
   MEMORY_DEFAULT_CONFIDENCE: requireUnitIntervalEnv('MEMORY_DEFAULT_CONFIDENCE'),
-  KNOWLEDGE_RAG_LIMIT: requirePositiveIntEnv('KNOWLEDGE_RAG_LIMIT'),
 
   AUTH_SESSION_SECRET: requireStringEnv('AUTH_SESSION_SECRET'),
   AUTH_SESSION_TTL_DAYS: requirePositiveNumberEnv('AUTH_SESSION_TTL_DAYS'),

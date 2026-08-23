@@ -9,7 +9,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'pai-arbor',
-  description: '本地 RAG 聊天应用',
+  description: '带长期记忆的本地聊天应用',
   appleWebApp: {
     capable: true,
   },

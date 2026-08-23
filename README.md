@@ -1,6 +1,6 @@
 # pai-arbor
 
-基于 Next.js 的本地 RAG 聊天应用。
+基于 Next.js 的本地聊天应用，带按用户与角色的长期记忆：离线从对话抽取、整理与画像维护，聊天时向量检索相关记忆并注入 prompt。
 
 ## 技术栈
 
@@ -10,7 +10,6 @@
 | 后端 | Next.js Route Handlers |
 | 关系数据库 | MySQL 8 + Prisma 7 |
 | 向量数据库 | ChromaDB |
-| 对象存储 | MinIO（S3 兼容） |
 | 任务队列 | Redis（BullMQ 后端） |
 | 日志 | Loki + Grafana（pino 推送） |
 | 模型服务 | Ollama（对话 + Embedding） |
@@ -18,7 +17,7 @@
 ## 前置依赖
 
 - [Node.js](https://nodejs.org/) 24+ 与 [pnpm](https://pnpm.io/)
-- [Docker](https://www.docker.com/)（运行 MySQL、Chroma、MinIO、Redis 等）
+- [Docker](https://www.docker.com/)（运行 MySQL、Chroma、Redis 等）
 - [Ollama](https://ollama.com/)（本地 LLM 与 Embedding 服务）
 
 可选：使用项目自带的 Nix flake 开发环境（Node 24 + pnpm）：
@@ -41,7 +40,7 @@ pnpm install
 cp .env.example .env
 ```
 
-按需修改 `.env` 中的数据库、Chroma、MinIO 配置。Ollama 相关变量说明见下方表格。
+按需修改 `.env` 中的数据库、Chroma 配置。Ollama 相关变量说明见下方表格。
 
 ### 3. 启动基础设施
 
@@ -53,9 +52,8 @@ docker compose up -d
 
 | 服务 | 端口 | 用途 |
 |------|------|------|
-| MySQL | 3306 | 会话、消息、文件元数据 |
-| ChromaDB | 8000 | 向量检索 |
-| MinIO | 9000（API）/ 9001（控制台） | 文件存储 |
+| MySQL | 3306 | 会话、消息、记忆元数据 |
+| ChromaDB | 8000 | 记忆向量检索 |
 | Redis | 6379 | BullMQ 任务队列 |
 | Loki | 3100 | 日志接收 API（无 Web UI，应用往这里推送） |
 | Grafana | 3001 | 日志查询界面（admin / admin） |
@@ -130,7 +128,6 @@ pnpm dev
 
 - 本项目使用 **Next.js 16**，部分 API 与常见版本存在差异，编写代码前建议查阅 `node_modules/next/dist/docs/`。
 - Prisma Client 生成路径为 `src/generated/prisma`，Schema 变更后需重新执行 `pnpm exec prisma generate`。
-- 知识库导入失败时会自动回滚 MySQL、MinIO 与 Chroma，避免产生脏数据。
 
 ## 常用命令
 
