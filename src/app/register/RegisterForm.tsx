@@ -1,7 +1,12 @@
 'use client';
 
 import { register } from '@/client-api/auth';
-import { AuthField, AuthShell } from '@/components/auth';
+import {
+  AuthField,
+  AuthShell,
+  TurnstileWidget,
+  type TurnstileWidgetHandle,
+} from '@/components/auth';
 import { useTranslations } from '@/components/I18nProvider';
 import { translateApiError } from '@/i18n/client';
 import { localeFromBrowserLanguage } from '@/i18n/config';
@@ -9,21 +14,36 @@ import { cn } from '@/lib/client/cn';
 import { showErrorToast } from '@/lib/client/toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  turnstileSiteKey: string;
+}
+
+export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
   const router = useRouter();
   const t = useTranslations('register');
   const tAuth = useTranslations('auth');
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleTurnstileTokenChange = useCallback((token: string | null) => {
+    setTurnstileToken(token);
+  }, []);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!username.trim() || !displayName.trim() || !password) return;
+
+    if (!turnstileToken) {
+      showErrorToast(t('completeVerification'), 'auth-register');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -32,11 +52,13 @@ export function RegisterForm() {
         displayName: displayName.trim(),
         password,
         confirmPassword,
+        turnstileToken,
         locale: localeFromBrowserLanguage(navigator.language),
       });
       router.push('/contacts');
       router.refresh();
     } catch (err) {
+      turnstileRef.current?.reset();
       showErrorToast(translateApiError(err), 'auth-register');
     } finally {
       setIsSubmitting(false);
@@ -86,6 +108,11 @@ export function RegisterForm() {
           value={confirmPassword}
           onChange={setConfirmPassword}
           autoComplete="new-password"
+        />
+        <TurnstileWidget
+          ref={turnstileRef}
+          siteKey={turnstileSiteKey}
+          onTokenChange={handleTurnstileTokenChange}
         />
         <button
           type="submit"

@@ -37,9 +37,23 @@ describe('registerBodySchema', () => {
       displayName: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
+      turnstileToken: 'turnstile-token',
       locale: 'en',
     });
     expect(result.success).toBe(true);
+  });
+
+  it('缺少 turnstileToken 为 TURNSTILE_TOKEN_REQUIRED', () => {
+    const result = registerBodySchema.safeParse({
+      username: 'tom_user',
+      displayName: 'Tom',
+      password: 'password123',
+      confirmPassword: 'password123',
+      locale: 'en',
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.TURNSTILE_TOKEN_REQUIRED);
   });
 
   it('两次密码不一致解析失败', () => {
@@ -48,6 +62,7 @@ describe('registerBodySchema', () => {
       displayName: 'Tom',
       password: 'password123',
       confirmPassword: 'password456',
+      turnstileToken: 'turnstile-token',
       locale: 'zh',
     });
     expect(result.success).toBe(false);

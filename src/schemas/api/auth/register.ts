@@ -14,6 +14,10 @@ export const registerBodySchema = z
       .max(64, API_ERROR_CODE.DISPLAY_NAME_TOO_LONG),
     password: passwordSchema,
     confirmPassword: passwordSchema,
+    turnstileToken: z
+      .string({ error: API_ERROR_CODE.TURNSTILE_TOKEN_REQUIRED })
+      .trim()
+      .min(1, API_ERROR_CODE.TURNSTILE_TOKEN_REQUIRED),
     locale: localeSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {

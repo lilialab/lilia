@@ -161,4 +161,6 @@ export const env = {
   AUTH_RATE_LIMIT_LOGIN_PER_USERNAME_15MIN: requirePositiveIntEnv(
     'AUTH_RATE_LIMIT_LOGIN_PER_USERNAME_15MIN',
   ),
+  TURNSTILE_SITE_KEY: requireStringEnv('TURNSTILE_SITE_KEY'),
+  TURNSTILE_SECRET_KEY: requireStringEnv('TURNSTILE_SECRET_KEY'),
 } as const;
