@@ -1,5 +1,6 @@
 import type { Locale } from '@/i18n/config';
 import { apiFetchJson } from '@/lib/client/api-fetch';
+import type { ChangePasswordBody } from '@/schemas/api/auth/change-password';
 import type { LoginBody } from '@/schemas/api/auth/login';
 import type { RegisterBody } from '@/schemas/api/auth/register';
 
@@ -40,6 +41,15 @@ export async function register(input: RegisterBody): Promise<void> {
 export async function logout(): Promise<void> {
   await apiFetchJson<Record<string, never>>('/api/auth/logout', {
     method: 'POST',
+  });
+}
+
+/** 修改登录密码。 */
+export async function changePassword(input: ChangePasswordBody): Promise<void> {
+  await apiFetchJson('/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
   });
 }
 

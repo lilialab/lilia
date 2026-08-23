@@ -122,7 +122,17 @@ export const en = {
   },
   settings: {
     title: 'Settings',
+    changePassword: 'Change password',
     language: 'Language',
+  },
+  changePassword: {
+    title: 'Change password',
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    confirmNewPassword: 'Confirm new password',
+    submit: 'Save new password',
+    submitting: 'Saving...',
+    success: 'Password updated. Please log in again.',
   },
   auth: {
     username: 'Username',
@@ -156,6 +166,8 @@ export const en = {
     PASSWORD_TOO_SHORT: 'Password must be at least 8 characters',
     PASSWORD_MISMATCH: 'Passwords do not match',
     INVALID_CREDENTIALS: 'Incorrect username or password',
+    INVALID_CURRENT_PASSWORD: 'Current password is incorrect',
+    PASSWORD_UNCHANGED: 'New password must be different from the current password',
     USERNAME_TAKEN: 'Username is already taken',
     CONTACT_REQUIRED: 'Add this AI as a friend first',
     GROUP_MEMBERS_NOT_CONTACTS: 'Add the selected AI as friends first',

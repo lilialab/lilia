@@ -118,7 +118,17 @@ export const zh = {
   },
   settings: {
     title: '设置',
+    changePassword: '修改密码',
     language: '语言',
+  },
+  changePassword: {
+    title: '修改密码',
+    currentPassword: '当前密码',
+    newPassword: '新密码',
+    confirmNewPassword: '确认新密码',
+    submit: '保存新密码',
+    submitting: '保存中...',
+    success: '密码已更新，请重新登录',
   },
   auth: {
     username: '账号',
@@ -152,6 +162,8 @@ export const zh = {
     PASSWORD_TOO_SHORT: '密码至少 8 位',
     PASSWORD_MISMATCH: '两次输入的密码不一致',
     INVALID_CREDENTIALS: '账号或密码错误',
+    INVALID_CURRENT_PASSWORD: '当前密码错误',
+    PASSWORD_UNCHANGED: '新密码不能与当前密码相同',
     USERNAME_TAKEN: '账号已被占用',
     CONTACT_REQUIRED: '请先添加该 AI 好友',
     GROUP_MEMBERS_NOT_CONTACTS: '请先将所选 AI 添加为好友',

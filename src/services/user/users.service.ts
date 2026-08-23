@@ -2,6 +2,7 @@ import { type Locale, parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
+import { revokeAllAuthSessions } from '@/lib/server/session';
 import { ensureArborContact } from '@/services/character/contacts.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
@@ -129,4 +130,35 @@ export async function updateUserLocale(userId: string, locale: Locale): Promise<
     select: publicUserSelect,
   });
   return { ...row, locale: parseLocale(row.locale) };
+}
+
+/** 修改登录密码；成功后吊销该用户全部登录会话。 */
+export async function changeUserPassword(
+  userId: string,
+  input: { currentPassword: string; newPassword: string },
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, passwordHash: true },
+  });
+
+  if (!user) {
+    throw AppError.unauthorized('用户不存在');
+  }
+
+  if (!(await verifyPassword(input.currentPassword, user.passwordHash))) {
+    throw AppError.unauthorized('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
+  }
+
+  if (await verifyPassword(input.newPassword, user.passwordHash)) {
+    throw AppError.badRequest('新密码不能与当前密码相同', API_ERROR_CODE.PASSWORD_UNCHANGED);
+  }
+
+  const passwordHash = await hashPassword(input.newPassword);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash },
+  });
+
+  await revokeAllAuthSessions(userId);
 }

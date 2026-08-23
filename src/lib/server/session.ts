@@ -49,6 +49,13 @@ export async function revokeAuthSession(token: string): Promise<void> {
   await prisma.authSession.deleteMany({ where: { tokenHash } });
 }
 
+/** 吊销该用户的所有登录会话。 */
+export async function revokeAllAuthSessions(userId: string): Promise<void> {
+  await prisma.authSession.deleteMany({
+    where: { userId },
+  });
+}
+
 /** 将 session token 写入 httpOnly Cookie。 */
 export function setSessionCookie(response: NextResponse, token: string): void {
   response.cookies.set(env.AUTH_SESSION_COOKIE_NAME, token, {
