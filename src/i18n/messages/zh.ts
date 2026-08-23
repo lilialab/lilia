@@ -118,8 +118,16 @@ export const zh = {
   },
   settings: {
     title: '设置',
+    changeDisplayName: '修改昵称',
     changePassword: '修改密码',
     language: '语言',
+  },
+  changeDisplayName: {
+    title: '修改昵称',
+    displayName: '昵称',
+    submit: '保存',
+    submitting: '保存中...',
+    success: '昵称已更新',
   },
   changePassword: {
     title: '修改密码',

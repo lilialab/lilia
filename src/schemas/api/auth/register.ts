@@ -1,3 +1,4 @@
+import { displayNameSchema } from '@/schemas/shared/display-name';
 import { localeSchema } from '@/schemas/shared/locale';
 import { passwordSchema } from '@/schemas/shared/password';
 import { usernameSchema } from '@/schemas/shared/username';
@@ -7,11 +8,7 @@ import { z } from 'zod';
 export const registerBodySchema = z
   .object({
     username: usernameSchema,
-    displayName: z
-      .string({ error: API_ERROR_CODE.DISPLAY_NAME_REQUIRED })
-      .trim()
-      .min(1, API_ERROR_CODE.DISPLAY_NAME_REQUIRED)
-      .max(64, API_ERROR_CODE.DISPLAY_NAME_TOO_LONG),
+    displayName: displayNameSchema,
     password: passwordSchema,
     confirmPassword: passwordSchema,
     turnstileToken: z

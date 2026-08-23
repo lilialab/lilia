@@ -122,8 +122,16 @@ export const en = {
   },
   settings: {
     title: 'Settings',
+    changeDisplayName: 'Change display name',
     changePassword: 'Change password',
     language: 'Language',
+  },
+  changeDisplayName: {
+    title: 'Change display name',
+    displayName: 'Display name',
+    submit: 'Save',
+    submitting: 'Saving...',
+    success: 'Display name updated',
   },
   changePassword: {
     title: 'Change password',

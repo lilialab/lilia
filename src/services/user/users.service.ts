@@ -132,6 +132,19 @@ export async function updateUserLocale(userId: string, locale: Locale): Promise<
   return { ...row, locale: parseLocale(row.locale) };
 }
 
+/** 更新用户展示昵称。 */
+export async function updateUserDisplayName(
+  userId: string,
+  displayName: string,
+): Promise<PublicUser> {
+  const row = await prisma.user.update({
+    where: { id: userId },
+    data: { displayName },
+    select: publicUserSelect,
+  });
+  return { ...row, locale: parseLocale(row.locale) };
+}
+
 /** 修改登录密码；成功后吊销该用户全部登录会话。 */
 export async function changeUserPassword(
   userId: string,

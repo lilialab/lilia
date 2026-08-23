@@ -62,3 +62,13 @@ export async function updateUserLocale(locale: Locale): Promise<AuthUser> {
   });
   return data.user;
 }
+
+/** 更新当前用户的展示昵称。 */
+export async function updateUserDisplayName(displayName: string): Promise<AuthUser> {
+  const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ displayName }),
+  });
+  return data.user;
+}
