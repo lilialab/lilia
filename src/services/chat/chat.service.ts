@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
+import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
-import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
@@ -16,8 +16,8 @@ import type { MessageMetadata, UIMessageStreamPayload } from '@/types/message-ki
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import {
   convertToModelMessages,
+  isStepCount,
   type LanguageModelUsage,
-  stepCountIs,
   streamText,
   type UIDataTypes,
 } from 'ai';
@@ -110,7 +110,7 @@ async function prepareChatTurn(
   logger.info({
     event: 'llm.chat.request',
     sessionId,
-    model: env.OLLAMA_MODEL,
+    model: env.LLM_MODEL,
     userMessageId,
     userContent: lastUserContent,
     contextMessageCount: contextMessages.length,
@@ -156,7 +156,7 @@ async function finishChatTurn(params: {
     logger.info({
       event: 'llm.chat.response',
       sessionId,
-      model: env.OLLAMA_MODEL,
+      model: env.LLM_MODEL,
       userMessageId,
       assistantMessageId,
       text,
@@ -202,20 +202,20 @@ export async function streamChatFlow(
 
     // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
     const streamResult = streamText({
-      model: ollamaProvider(env.OLLAMA_MODEL),
-      system: prepared.systemPrompt,
+      model: getChatModel(),
+      instructions: prepared.systemPrompt,
       messages: prepared.modelMessages,
       tools: prepared.tools,
-      stopWhen: stepCountIs(5),
+      stopWhen: isStepCount(5),
 
-      onFinish: async ({ text, reasoningText, usage }) => {
+      onEnd: async ({ text, usage, finalStep }) => {
         await finishChatTurn({
           sessionId,
           claimedAt,
           userMessageId: prepared.userMessageId,
           startedAt: prepared.startedAt,
           text,
-          reasoningText,
+          reasoningText: finalStep.reasoningText,
           usage,
         });
       },

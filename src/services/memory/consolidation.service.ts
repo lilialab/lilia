@@ -1,6 +1,6 @@
 import { env } from '@/lib/server/env';
+import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
-import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadExtractPrompt } from '@/prompts/load';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
@@ -228,7 +228,7 @@ async function extractMemoriesFromTranscript(
     event: 'llm.consolidation.request',
     jobId: job.id,
     characterId,
-    model: env.OLLAMA_MODEL,
+    model: env.LLM_MODEL,
     messageIds,
     messageCount: messageIds.length,
     transcript,
@@ -239,9 +239,9 @@ async function extractMemoriesFromTranscript(
 
   try {
     const { output, text } = await generateText({
-      model: getStructuredOllamaModel(env.OLLAMA_MODEL),
+      model: getChatModel(),
       output: Output.object({ schema: consolidationOutputSchema }),
-      system: systemPrompt,
+      instructions: systemPrompt,
       prompt: userPrompt,
       maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });
@@ -254,7 +254,7 @@ async function extractMemoriesFromTranscript(
       event: 'llm.consolidation.response',
       jobId: job.id,
       characterId,
-      model: env.OLLAMA_MODEL,
+      model: env.LLM_MODEL,
       messageIds,
       response: text,
       output,

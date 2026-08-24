@@ -1,6 +1,6 @@
 import { env } from '@/lib/server/env';
+import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
-import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadJobPrompt } from '@/prompts/load';
 import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
@@ -192,15 +192,15 @@ export async function refreshUserProfile(
     event: 'llm.profile.request',
     userId,
     characterId,
-    model: env.OLLAMA_MODEL,
+    model: env.LLM_MODEL,
     referenceMemoryCount: referenceMemories.length,
     prompt: userPrompt,
   });
 
   const { output, text } = await generateText({
-    model: getStructuredOllamaModel(env.OLLAMA_MODEL),
+    model: getChatModel(),
     output: Output.object({ schema: profileOutputSchema }),
-    system: PROFILE_REFRESH_PROMPT,
+    instructions: PROFILE_REFRESH_PROMPT,
     prompt: userPrompt,
     maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
   });
@@ -209,7 +209,7 @@ export async function refreshUserProfile(
     event: 'llm.profile.response',
     userId,
     characterId,
-    model: env.OLLAMA_MODEL,
+    model: env.LLM_MODEL,
     response: text,
     output,
   });

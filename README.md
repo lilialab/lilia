@@ -12,13 +12,14 @@
 | 向量数据库 | ChromaDB |
 | 任务队列 | Redis（BullMQ 后端） |
 | 日志 | Loki + Grafana（pino 推送） |
-| 模型服务 | Ollama（对话 + Embedding） |
+| 模型服务 | OpenAI 兼容对话 API（如 DeepSeek）+ Ollama Embedding |
 
 ## 前置依赖
 
 - [Node.js](https://nodejs.org/) 24+ 与 [pnpm](https://pnpm.io/)
 - [Docker](https://www.docker.com/)（运行 MySQL、Chroma、Redis 等）
-- [Ollama](https://ollama.com/)（本地 LLM 与 Embedding 服务）
+- [Ollama](https://ollama.com/)（仅 Embedding；对话走第三方 API）
+- 第三方对话 API Key（如 [DeepSeek](https://platform.deepseek.com)）
 
 可选：使用项目自带的 Nix flake 开发环境（Node 24 + pnpm）：
 
@@ -40,7 +41,7 @@ pnpm install
 cp .env.example .env
 ```
 
-按需修改 `.env` 中的数据库、Chroma 配置。Ollama 相关变量说明见下方表格。
+按需修改 `.env` 中的数据库、Chroma、对话 LLM 与 Embedding 配置。
 
 ### 3. 启动基础设施
 
@@ -88,22 +89,15 @@ pnpm exec prisma generate
 pnpm exec prisma db push
 ```
 
-### 5. 准备 Ollama 模型
+### 5. 准备对话 LLM 与 Embedding
+
+对话与记忆 Job 走 `.env` 中的 OpenAI 兼容接口（`LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL`）。本地只需拉 Embedding 模型：
 
 ```bash
-# 对话模型（名称需与 .env 中 OLLAMA_MODEL 一致）
-ollama pull gemma4:26b
-
-# Embedding 模型（代码中固定使用 nomic-embed-text）
 ollama pull nomic-embed-text
 ```
 
-通过环境变量指定 Ollama 地址与对话模型：
-
-```bash
-export OLLAMA_HOST=127.0.0.1:11434   # 或完整 URL
-export OLLAMA_MODEL=gemma4:26b
-```
+`OLLAMA_HOST` 可选（默认 `127.0.0.1:11434`）。
 
 ### 6. 启动开发服务器
 
@@ -115,7 +109,7 @@ pnpm dev
 
 ## 环境变量
 
-服务端统一从 [`src/lib/server/env.ts`](src/lib/server/env.ts) 读取配置；本地开发可复制 [`.env.example`](.env.example) 为 `.env`。**除 `OLLAMA_HOST` 外均为必填**（未设置则启动报错）。
+服务端统一从 [`src/lib/server/env.ts`](src/lib/server/env.ts) 读取配置；本地开发可复制 [`.env.example`](.env.example) 为 `.env`。**除 `OLLAMA_HOST` 外均为必填**（未设置则启动报错）。对话模型请填 `LLM_*`，不要把 API Key 写进日志。
 
 | 变量 | 说明 | 必填 |
 |------|------|------|

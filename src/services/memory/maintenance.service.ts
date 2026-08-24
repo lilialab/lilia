@@ -1,6 +1,6 @@
 import { env } from '@/lib/server/env';
+import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
-import { getStructuredOllamaModel } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadJobPrompt } from '@/prompts/load';
 import type {
@@ -240,7 +240,7 @@ async function decideMaintenanceRewrite(
   logger.info({
     event: 'llm.maintenance.merge.request',
     jobId: job.id,
-    model: env.OLLAMA_MODEL,
+    model: env.LLM_MODEL,
     cursorId: cursor.id,
     neighborCount: neighbors.length,
     inputCount,
@@ -249,9 +249,9 @@ async function decideMaintenanceRewrite(
 
   try {
     const { output, text } = await generateText({
-      model: getStructuredOllamaModel(env.OLLAMA_MODEL),
+      model: getChatModel(),
       output: Output.object({ schema: maintenanceOutputSchema }),
-      system: MEMORY_MAINTENANCE_PROMPT,
+      instructions: MEMORY_MAINTENANCE_PROMPT,
       prompt: userPrompt,
       maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });
@@ -259,7 +259,7 @@ async function decideMaintenanceRewrite(
     logger.info({
       event: 'llm.maintenance.merge.response',
       jobId: job.id,
-      model: env.OLLAMA_MODEL,
+      model: env.LLM_MODEL,
       response: text,
       output,
     });

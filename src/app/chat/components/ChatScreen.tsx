@@ -81,7 +81,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
   const { messages, status, sendMessage, setMessages } = useChat<HistoryMessage>({
     id: sessionId || `character-${characterId}`,
-    experimental_throttle: 50,
+    throttle: 50,
     transport: chatTransport,
   });
 

@@ -103,7 +103,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
   const { messages, status, sendMessage, setMessages } = useChat<GroupHistoryMessage>({
     id: `group-${groupSessionId}`,
-    experimental_throttle: 50,
+    throttle: 50,
     transport: chatTransport,
     onFinish: ({ message, isAbort, isDisconnect, isError }) => {
       if (isAbort || isDisconnect || isError || message.role !== 'assistant') return;

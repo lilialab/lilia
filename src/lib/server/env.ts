@@ -119,9 +119,12 @@ export const env = {
   LOKI_URL: requireStringEnv('LOKI_URL'),
   LOG_TO_LOKI: requireBooleanEnv('LOG_TO_LOKI'),
 
-  OLLAMA_MODEL: requireStringEnv('OLLAMA_MODEL'),
   OLLAMA_EMBED_MODEL: requireStringEnv('OLLAMA_EMBED_MODEL'),
   OLLAMA_BASE_URL: buildOllamaBaseURL(),
+
+  LLM_BASE_URL: requireStringEnv('LLM_BASE_URL'),
+  LLM_API_KEY: requireStringEnv('LLM_API_KEY'),
+  LLM_MODEL: requireStringEnv('LLM_MODEL'),
 
   // 记忆 / 聊天调参：说明见 .env.example
   MEMORY_HALF_LIFE_EVENT_DAYS: requirePositiveNumberEnv('MEMORY_HALF_LIFE_EVENT_DAYS'),

@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
+import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
-import { ollamaProvider } from '@/lib/server/ollama';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
@@ -18,7 +18,7 @@ import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind
 import { extractTextFromParts } from '@/utils/message-parts';
 import {
   convertToModelMessages,
-  stepCountIs,
+  isStepCount,
   streamText,
   type UIDataTypes,
   type UIMessage,
@@ -131,7 +131,7 @@ export async function streamGroupAssistantReply({
   logger.info({
     event: 'llm.group_chat.request',
     groupSessionId,
-    model: env.OLLAMA_MODEL,
+    model: env.LLM_MODEL,
     userMessageId,
     characterSlug: speaker.slug,
     userContent: ragQueryText,
@@ -147,14 +147,15 @@ export async function streamGroupAssistantReply({
   const startedAt = Date.now();
 
   const streamResult = streamText({
-    model: ollamaProvider(env.OLLAMA_MODEL),
-    system: systemPrompt,
+    model: getChatModel(),
+    instructions: systemPrompt,
     messages: await convertToModelMessages(messagesForModel),
     tools,
-    stopWhen: stepCountIs(5),
+    stopWhen: isStepCount(5),
 
-    onFinish: async ({ text, reasoningText, usage }) => {
+    onEnd: async ({ text, usage, finalStep }) => {
       await releaseGroupGeneration(groupSessionId, generationClaimedAt);
+      const reasoningText = finalStep.reasoningText;
 
       try {
         const assistantParts: UIDataTypes[] = [];
@@ -180,7 +181,7 @@ export async function streamGroupAssistantReply({
         logger.info({
           event: 'llm.group_chat.response',
           groupSessionId,
-          model: env.OLLAMA_MODEL,
+          model: env.LLM_MODEL,
           userMessageId,
           assistantMessageId,
           characterSlug: speaker.slug,
