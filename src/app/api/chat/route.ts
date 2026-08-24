@@ -4,6 +4,7 @@ import { resolveRequestUserId } from '@/lib/server/request-user';
 import { chatPostBodySchema } from '@/schemas/api/chat/post';
 import { streamChatFlow } from '@/services/chat/chat.service';
 import { assertSessionOwnedByUser } from '@/services/session/sessions.service';
+import { createUIMessageStreamResponse, toUIMessageStream } from 'ai';
 import { type NextRequest } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
@@ -13,7 +14,10 @@ export const POST = withApiHandler(async (req: NextRequest) => {
   await assertSessionOwnedByUser(sessionId, userId);
 
   const { streamResult, metadata } = await streamChatFlow(sessionId, userId, messages, timeZone);
-  // 客户端断连后仍消费完流，保证 streamText onEnd 落库
-  streamResult.consumeStream();
-  return streamResult.toUIMessageStreamResponse(withMessageMetadata(metadata));
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({
+      stream: streamResult.stream,
+      ...withMessageMetadata(metadata),
+    }),
+  });
 });

@@ -1,5 +1,6 @@
 export const queryKeys = {
   authMe: ['auth', 'me'] as const,
+  llmConfig: ['auth', 'llm-config'] as const,
   characters: ['characters'] as const,
   contacts: ['contacts'] as const,
   characterSession: (characterId: string) => ['contacts', characterId, 'session'] as const,

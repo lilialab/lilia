@@ -5,6 +5,7 @@ import { groupChatPostBodySchema } from '@/schemas/api/groups/chat-post';
 import { groupParamsSchema } from '@/schemas/api/groups/params';
 import { streamGroupChatFlow } from '@/services/group/group-chat.service';
 import { assertGroupOwnedByUser } from '@/services/group/groups.service';
+import { createUIMessageStreamResponse, toUIMessageStream } from 'ai';
 import { type NextRequest } from 'next/server';
 
 export const POST = withApiHandler(
@@ -20,8 +21,11 @@ export const POST = withApiHandler(
       messages,
       timeZone,
     );
-    // 客户端断连后仍消费完流，保证 streamText onEnd 落库
-    streamResult.consumeStream();
-    return streamResult.toUIMessageStreamResponse(withMessageMetadata(metadata));
+    return createUIMessageStreamResponse({
+      stream: toUIMessageStream({
+        stream: streamResult.stream,
+        ...withMessageMetadata(metadata),
+      }),
+    });
   },
 );

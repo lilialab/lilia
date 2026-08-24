@@ -46,6 +46,17 @@ export function SettingsScreen() {
             <ChevronRight className={cn('h-4 w-4 text-muted-foreground')} aria-hidden />
           </Link>
           <Link
+            href="/me/settings/llm"
+            transitionTypes={['nav-forward']}
+            className={cn(
+              'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm text-foreground',
+              'hover:bg-surface',
+            )}
+          >
+            <span>{t('llmConfig')}</span>
+            <ChevronRight className={cn('h-4 w-4 text-muted-foreground')} aria-hidden />
+          </Link>
+          <Link
             href={languagePageHref('/me/settings')}
             transitionTypes={['nav-forward']}
             className={cn(

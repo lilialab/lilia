@@ -14,6 +14,7 @@ interface AuthFieldProps {
   value: string;
   onChange: (value: string) => void;
   autoComplete?: string;
+  placeholder?: string;
 }
 
 export function AuthField({
@@ -23,6 +24,7 @@ export function AuthField({
   value,
   onChange,
   autoComplete,
+  placeholder,
 }: AuthFieldProps) {
   return (
     <label htmlFor={id} className={cn('flex flex-col gap-1.5')}>
@@ -32,6 +34,7 @@ export function AuthField({
         type={type}
         value={value}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           'rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground',

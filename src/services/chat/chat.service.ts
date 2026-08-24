@@ -1,11 +1,10 @@
 import { AppError } from '@/lib/server/app-error';
-import { env } from '@/lib/server/env';
-import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
 import { assertChatDailyTurnQuota } from '@/services/chat/chat-quota.service';
+import { resolveChatLlm } from '@/services/chat/resolve-chat-llm';
 import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
@@ -35,6 +34,7 @@ type PreparedChatTurn = {
   userMessageId: string;
   startedAt: number;
   systemPrompt: string;
+  modelId: string;
   modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
   tools: ReturnType<typeof resolveToolsForCharacter>;
   metadata: MessageMetadata;
@@ -71,7 +71,7 @@ async function scheduleMemoryJobsBestEffort(
 function buildAssistantParts(text: string, reasoningText: string | undefined): UIDataTypes[] {
   const parts: UIDataTypes[] = [];
   if (reasoningText) {
-    parts.push({ type: 'reasoning', reasoning: reasoningText });
+    parts.push({ type: 'reasoning', text: reasoningText });
   }
   parts.push({ type: 'text', text });
   return parts;
@@ -87,6 +87,7 @@ async function prepareChatTurn(
   userId: string,
   lastMessage: ChatIncomingMessage,
   timeZone: string,
+  modelId: string,
 ): Promise<PreparedChatTurn> {
   const userMessage = await prisma.message.create({
     data: {
@@ -111,7 +112,7 @@ async function prepareChatTurn(
   logger.info({
     event: 'llm.chat.request',
     sessionId,
-    model: env.LLM_MODEL,
+    model: modelId,
     userMessageId,
     userContent: lastUserContent,
     contextMessageCount: contextMessages.length,
@@ -124,6 +125,7 @@ async function prepareChatTurn(
     userMessageId,
     startedAt: Date.now(),
     systemPrompt,
+    modelId,
     modelMessages: await convertToModelMessages(contextMessages),
     tools,
     metadata: {
@@ -140,11 +142,13 @@ async function finishChatTurn(params: {
   claimedAt: Date;
   userMessageId: string;
   startedAt: number;
+  modelId: string;
   text: string;
   reasoningText: string | undefined;
   usage: LanguageModelUsage | undefined;
 }): Promise<void> {
-  const { sessionId, claimedAt, userMessageId, startedAt, text, reasoningText, usage } = params;
+  const { sessionId, claimedAt, userMessageId, startedAt, modelId, text, reasoningText, usage } =
+    params;
 
   await releaseChatGeneration(sessionId, claimedAt);
 
@@ -157,7 +161,7 @@ async function finishChatTurn(params: {
     logger.info({
       event: 'llm.chat.response',
       sessionId,
-      model: env.LLM_MODEL,
+      model: modelId,
       userMessageId,
       assistantMessageId,
       text,
@@ -196,16 +200,25 @@ export async function streamChatFlow(
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
 
-  await assertChatDailyTurnQuota(userId);
+  const chatLlm = await resolveChatLlm(userId);
+  if (!chatLlm.usesUserEndpoint) {
+    await assertChatDailyTurnQuota(userId);
+  }
 
   const claimedAt = await claimChatGeneration(sessionId);
 
   try {
-    const prepared = await prepareChatTurn(sessionId, userId, lastMessage, timeZone);
+    const prepared = await prepareChatTurn(
+      sessionId,
+      userId,
+      lastMessage,
+      timeZone,
+      chatLlm.modelId,
+    );
 
     // tools 为空时等价于无工具；stopWhen 允许多步（需模型支持 tool calling）
     const streamResult = streamText({
-      model: getChatModel(),
+      model: chatLlm.model,
       instructions: prepared.systemPrompt,
       messages: prepared.modelMessages,
       tools: prepared.tools,
@@ -217,14 +230,37 @@ export async function streamChatFlow(
           claimedAt,
           userMessageId: prepared.userMessageId,
           startedAt: prepared.startedAt,
+          modelId: prepared.modelId,
           text,
           reasoningText: finalStep.reasoningText,
           usage,
         });
       },
 
-      onError: async () => {
+      onError: async ({ error }) => {
+        logger.error(
+          {
+            event: 'llm.chat.failed',
+            sessionId,
+            userMessageId: prepared.userMessageId,
+            model: prepared.modelId,
+            err: error,
+          },
+          '聊天流生成失败',
+        );
         await releaseChatGeneration(sessionId, claimedAt);
+      },
+    });
+
+    // 客户端断连后仍消费完流，保证 onEnd 落库；
+    // consumeStream 吃掉的解析错误不会进 streamText.onError，须在此补放锁。
+    void streamResult.consumeStream({
+      onError: (error) => {
+        logger.error(
+          { event: 'llm.chat.failed', sessionId, err: error },
+          '聊天流 consumeStream 失败',
+        );
+        void releaseChatGeneration(sessionId, claimedAt);
       },
     });
 

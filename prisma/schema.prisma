@@ -11,14 +11,18 @@ datasource db {
  * 登录用户；画像与长期记忆均按 userId+characterId 私有
  */
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  passwordHash String   @map("password_hash")
-  displayName  String   @map("display_name")
+  id              String   @id @default(uuid())
+  username        String   @unique
+  passwordHash    String   @map("password_hash")
+  displayName     String   @map("display_name")
   /// UI 语言偏好（en | zh）；注册时由客户端 body 写入
-  locale       String   @default("zh")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  locale          String   @default("zh")
+  /// 用户自备 OpenAI 兼容对话接口；三项齐全才视为启用。密钥只存密文。
+  llmBaseUrl      String?  @map("llm_base_url")
+  llmApiKeyCipher String?  @map("llm_api_key_cipher") @db.Text
+  llmModel        String?  @map("llm_model")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   authSessions   AuthSession[]
   sessions       ChatSession[]

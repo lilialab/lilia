@@ -1,4 +1,3 @@
-// 基于 Prisma 的 MySQL 存储服务
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { clearChatGeneration } from '@/services/session/generation-lock.service';

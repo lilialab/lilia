@@ -1,11 +1,10 @@
 import { AppError } from '@/lib/server/app-error';
-import { env } from '@/lib/server/env';
-import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
 import { assertChatDailyTurnQuota } from '@/services/chat/chat-quota.service';
+import { resolveChatLlm, type ResolvedChatLlm } from '@/services/chat/resolve-chat-llm';
 import { scheduleGroupMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
@@ -83,6 +82,7 @@ interface StreamGroupAssistantReplyOptions {
   ephemeralUserText?: string;
   /** claimGroupGeneration 返回值，流结束 / 出错时释放 */
   generationClaimedAt: Date;
+  chatLlm: ResolvedChatLlm;
   /** 群成员列表（提供则跳过花名册 DB 查询） */
   members: GroupMemberRef[];
   timeZone: string;
@@ -99,6 +99,7 @@ export async function streamGroupAssistantReply({
   userMessageId,
   ephemeralUserText,
   generationClaimedAt,
+  chatLlm,
   members,
   timeZone,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
@@ -132,7 +133,7 @@ export async function streamGroupAssistantReply({
   logger.info({
     event: 'llm.group_chat.request',
     groupSessionId,
-    model: env.LLM_MODEL,
+    model: chatLlm.modelId,
     userMessageId,
     characterSlug: speaker.slug,
     userContent: ragQueryText,
@@ -148,7 +149,7 @@ export async function streamGroupAssistantReply({
   const startedAt = Date.now();
 
   const streamResult = streamText({
-    model: getChatModel(),
+    model: chatLlm.model,
     instructions: systemPrompt,
     messages: await convertToModelMessages(messagesForModel),
     tools,
@@ -164,7 +165,7 @@ export async function streamGroupAssistantReply({
         if (reasoningText) {
           assistantParts.push({
             type: 'reasoning',
-            reasoning: reasoningText,
+            text: reasoningText,
           });
         }
 
@@ -182,7 +183,7 @@ export async function streamGroupAssistantReply({
         logger.info({
           event: 'llm.group_chat.response',
           groupSessionId,
-          model: env.LLM_MODEL,
+          model: chatLlm.modelId,
           userMessageId,
           assistantMessageId,
           characterSlug: speaker.slug,
@@ -199,8 +200,31 @@ export async function streamGroupAssistantReply({
       }
     },
 
-    onError: async () => {
+    onError: async ({ error }) => {
+      logger.error(
+        {
+          event: 'llm.group_chat.failed',
+          groupSessionId,
+          userMessageId,
+          characterSlug: speaker.slug,
+          model: chatLlm.modelId,
+          err: error,
+        },
+        '群聊流生成失败',
+      );
       await releaseGroupGeneration(groupSessionId, generationClaimedAt);
+    },
+  });
+
+  // 客户端断连后仍消费完流，保证 onEnd 落库；
+  // consumeStream 吃掉的解析错误不会进 streamText.onError，须在此补放锁。
+  void streamResult.consumeStream({
+    onError: (error) => {
+      logger.error(
+        { event: 'llm.group_chat.failed', groupSessionId, err: error },
+        '群聊流 consumeStream 失败',
+      );
+      void releaseGroupGeneration(groupSessionId, generationClaimedAt);
     },
   });
 
@@ -235,7 +259,10 @@ export async function streamGroupChatFlow(
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
 
-  await assertChatDailyTurnQuota(userId);
+  const chatLlm = await resolveChatLlm(userId);
+  if (!chatLlm.usesUserEndpoint) {
+    await assertChatDailyTurnQuota(userId);
+  }
 
   const claimedAt = await claimGroupGeneration(groupSessionId);
 
@@ -271,6 +298,7 @@ export async function streamGroupChatFlow(
         userMessageId,
         ephemeralUserText: text,
         generationClaimedAt: claimedAt,
+        chatLlm,
         members,
         timeZone,
       });
@@ -290,6 +318,7 @@ export async function streamGroupChatFlow(
       speaker: { characterId: member.characterId, slug: member.character.slug },
       userMessageId,
       generationClaimedAt: claimedAt,
+      chatLlm,
       members,
       timeZone,
     });
