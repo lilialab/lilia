@@ -29,6 +29,28 @@ describe('assertRateLimits', () => {
     expect(evalMock).toHaveBeenNthCalledWith(2, expect.any(String), 1, 'b', 86400, 15);
   });
 
+  it('超限时可使用窗口自定义文案与错误码', async () => {
+    evalMock.mockResolvedValue(0);
+
+    await expect(
+      assertRateLimits([
+        {
+          key: 'a',
+          limit: 1,
+          windowSeconds: 60,
+          message: '今日对话次数已用完，请明天再试',
+          code: API_ERROR_CODE.CHAT_DAILY_TURN_LIMIT,
+        },
+      ]),
+    ).rejects.toMatchObject(
+      {
+        status: 429,
+        code: API_ERROR_CODE.CHAT_DAILY_TURN_LIMIT,
+        message: '今日对话次数已用完，请明天再试',
+      } satisfies Partial<AppError>,
+    );
+  });
+
   it('任一窗口超限时抛 429', async () => {
     evalMock.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
 

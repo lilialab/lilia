@@ -11,7 +11,7 @@ import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
-import { translateApiError } from '@/i18n/client';
+import { translateApiError, translateChatApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast } from '@/lib/client/toast';
@@ -83,6 +83,9 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     id: sessionId || `character-${characterId}`,
     throttle: 50,
     transport: chatTransport,
+    onError: (err) => {
+      showErrorToast(translateChatApiError(err), 'chat-send');
+    },
   });
 
   const { hasMore, isLoadingMore, isInitialLoading, loadMore, clearHistory } = useMessageHistory({

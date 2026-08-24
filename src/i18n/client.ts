@@ -26,6 +26,15 @@ function readErrorCode(error: unknown): string | undefined {
   return undefined;
 }
 
+function readCodeFromJsonMessage(message: string): string | undefined {
+  try {
+    const parsed = JSON.parse(message) as { code?: unknown };
+    return typeof parsed?.code === 'string' ? parsed.code : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** 按稳定 code 翻成当前语言；可传入 t，省略则 getLocale()。未知码回退到 error.message 或 fallback。 */
 export function translateApiError(error: unknown, t: TranslateError = catalogTranslate): string {
   const code = readErrorCode(error);
@@ -36,4 +45,16 @@ export function translateApiError(error: unknown, t: TranslateError = catalogTra
     return error.message;
   }
   return t('fallback');
+}
+
+/** 翻译 AI SDK 聊天 onError：message 可能是 API JSON 信封。 */
+export function translateChatApiError(
+  error: unknown,
+  t: TranslateError = catalogTranslate,
+): string {
+  if (error instanceof Error) {
+    const code = readCodeFromJsonMessage(error.message);
+    if (code) return translateApiError({ code }, t);
+  }
+  return translateApiError(error, t);
 }

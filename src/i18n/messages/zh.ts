@@ -166,6 +166,7 @@ export const zh = {
     NOT_FOUND: '未找到',
     CONFLICT: '操作冲突',
     RATE_LIMITED: '操作太频繁，请稍后再试',
+    CHAT_DAILY_TURN_LIMIT: '今日对话次数已用完，请明天再试',
     TURNSTILE_TOKEN_REQUIRED: '请完成人机验证',
     TURNSTILE_VERIFICATION_FAILED: '人机验证失败，请重试',
     INTERNAL_ERROR: '服务器异常',

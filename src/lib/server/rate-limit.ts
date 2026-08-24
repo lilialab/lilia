@@ -1,11 +1,13 @@
 import { AppError } from '@/lib/server/app-error';
 import { getRedisConnection } from '@/lib/server/redis';
-import { API_ERROR_CODE } from '@/types/api-error';
+import { API_ERROR_CODE, type ApiErrorCode } from '@/types/api-error';
 
 export type RateLimitWindow = {
   key: string;
   limit: number;
   windowSeconds: number;
+  message?: string;
+  code?: ApiErrorCode;
 };
 
 const RATE_LIMIT_LUA = `
@@ -33,7 +35,10 @@ export async function assertRateLimits(windows: RateLimitWindow[]): Promise<void
     );
 
     if (allowed !== 1) {
-      throw AppError.tooManyRequests('操作太频繁，请稍后再试', API_ERROR_CODE.RATE_LIMITED);
+      throw AppError.tooManyRequests(
+        window.message ?? '操作太频繁，请稍后再试',
+        window.code ?? API_ERROR_CODE.RATE_LIMITED,
+      );
     }
   }
 }

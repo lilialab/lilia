@@ -5,6 +5,7 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
+import { assertChatDailyTurnQuota } from '@/services/chat/chat-quota.service';
 import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
@@ -177,7 +178,7 @@ async function finishChatTurn(params: {
 /* -------------------------------------------------------------------------- */
 
 /**
- * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流（适配 AI SDK 5.0 Parts 架构）
+ * 核心业务：控制并编排整个 RAG（检索增强生成）聊天流
  * @param sessionId 聊天会话 ID
  * @param userId 所属用户（用于滑动窗口调度 extract / maintain）
  * @param messages 前端传过来的消息（用于校验与 UI 流式协议；模型上下文以 DB 为准）
@@ -194,6 +195,8 @@ export async function streamChatFlow(
   if (lastMessage?.role !== 'user') {
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
+
+  await assertChatDailyTurnQuota(userId);
 
   const claimedAt = await claimChatGeneration(sessionId);
 

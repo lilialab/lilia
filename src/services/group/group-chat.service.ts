@@ -5,6 +5,7 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
+import { assertChatDailyTurnQuota } from '@/services/chat/chat-quota.service';
 import { scheduleGroupMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
@@ -233,6 +234,8 @@ export async function streamGroupChatFlow(
   if (lastMessage?.role !== 'user') {
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
+
+  await assertChatDailyTurnQuota(userId);
 
   const claimedAt = await claimGroupGeneration(groupSessionId);
 

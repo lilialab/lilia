@@ -18,7 +18,7 @@ import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
-import { translateApiError } from '@/i18n/client';
+import { translateApiError, translateChatApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast, showMessageToast } from '@/lib/client/toast';
@@ -105,6 +105,9 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     id: `group-${groupSessionId}`,
     throttle: 50,
     transport: chatTransport,
+    onError: (err) => {
+      showErrorToast(translateChatApiError(err), 'group-send');
+    },
     onFinish: ({ message, isAbort, isDisconnect, isError }) => {
       if (isAbort || isDisconnect || isError || message.role !== 'assistant') return;
 

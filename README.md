@@ -117,6 +117,7 @@ pnpm dev
 | `MEMORY_EXTRACT_IDLE_MINUTES` | 用户发消息后闲置多久触发 extract（分钟）；发消息会重置 | 是 |
 | `MEMORY_MAINTAIN_IDLE_HOURS` | 用户发消息后闲置多久才考虑触发 maintain（小时）；发消息会重置 | 是 |
 | `MEMORY_MAINTAIN_MIN_INTERVAL_HOURS` | 距上次 maintain 管线完成至少该小时数后才执行 | 是 |
+| `CHAT_DAILY_TURN_LIMIT` | 每用户每天（UTC）单聊 + 群聊合计次数上限 | 是 |
 
 ## 开发说明
 

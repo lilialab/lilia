@@ -1,14 +1,14 @@
-import { translateApiError } from '@/i18n/client';
+import { translateApiError, translateChatApiError } from '@/i18n/client';
 import { en } from '@/i18n/messages/en';
 import { zh } from '@/i18n/messages/zh';
 import { ApiClientError } from '@/lib/client/api-client';
 import { API_ERROR_CODE } from '@/types/api-error';
 import { describe, expect, it } from 'vitest';
 
-describe('translateApiError', () => {
-  const tEn = (key: keyof typeof en.errors) => en.errors[key];
-  const tZh = (key: keyof typeof zh.errors) => zh.errors[key];
+const tEn = (key: keyof typeof en.errors) => en.errors[key];
+const tZh = (key: keyof typeof zh.errors) => zh.errors[key];
 
+describe('translateApiError', () => {
   it('按传入的 t 翻成对应语言', () => {
     const error = new ApiClientError(
       API_ERROR_CODE.INVALID_CREDENTIALS,
@@ -16,6 +16,15 @@ describe('translateApiError', () => {
     );
     expect(translateApiError(error, tEn)).toBe('Incorrect username or password');
     expect(translateApiError(error, tZh)).toBe('账号或密码错误');
+  });
+
+  it('CHAT_DAILY_TURN_LIMIT 有对应文案', () => {
+    const error = new ApiClientError(
+      '今日对话次数已用完，请明天再试',
+      API_ERROR_CODE.CHAT_DAILY_TURN_LIMIT,
+    );
+    expect(translateApiError(error, tEn)).toBe(en.errors.CHAT_DAILY_TURN_LIMIT);
+    expect(translateApiError(error, tZh)).toBe(zh.errors.CHAT_DAILY_TURN_LIMIT);
   });
 
   it('RATE_LIMITED 有对应文案', () => {
@@ -38,5 +47,23 @@ describe('translateApiError', () => {
 
   it('无 message 时用 fallback', () => {
     expect(translateApiError({})).toBe(en.errors.fallback);
+  });
+});
+
+describe('translateChatApiError', () => {
+  it('从 AI SDK Error.message 里的 JSON 读出 code', () => {
+    const error = new Error(
+      JSON.stringify({
+        success: false,
+        error: '今日对话次数已用完，请明天再试',
+        code: API_ERROR_CODE.CHAT_DAILY_TURN_LIMIT,
+      }),
+    );
+    expect(translateChatApiError(error, tZh)).toBe(zh.errors.CHAT_DAILY_TURN_LIMIT);
+    expect(translateChatApiError(error, tEn)).toBe(en.errors.CHAT_DAILY_TURN_LIMIT);
+  });
+
+  it('非 JSON message 时与 translateApiError 一致', () => {
+    expect(translateChatApiError(new Error('会话不存在'), tZh)).toBe('会话不存在');
   });
 });
