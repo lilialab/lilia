@@ -1,5 +1,5 @@
 // app/api/debug-chroma/service.ts
-import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
+import { chromaClient, getEmbeddingFunction } from '@/lib/server/chroma';
 import { randomUUID } from 'crypto';
 
 /** 列出 Chroma 中全部 collection 及其元信息。 */
@@ -19,7 +19,7 @@ export async function listAllCollections() {
 export async function getCollectionInfo(collectionName: string, limit: number) {
   const collection = await chromaClient.getCollection({
     name: collectionName,
-    embeddingFunction: getOllamaEmbeddingFunction(),
+    embeddingFunction: getEmbeddingFunction(),
   });
   const count = await collection.count();
   const preview = await collection.get({
@@ -41,7 +41,7 @@ export async function getCollectionInfo(collectionName: string, limit: number) {
 export async function insertTestData(collectionName: string, dataArray: string[]) {
   const collection = await chromaClient.getOrCreateCollection({
     name: collectionName,
-    embeddingFunction: getOllamaEmbeddingFunction(),
+    embeddingFunction: getEmbeddingFunction(),
   });
 
   const entries = dataArray.map((item) => ({
@@ -75,7 +75,7 @@ export async function resetCollection(collectionName: string) {
   await chromaClient.deleteCollection({ name: collectionName });
   await chromaClient.createCollection({
     name: collectionName,
-    embeddingFunction: getOllamaEmbeddingFunction(),
+    embeddingFunction: getEmbeddingFunction(),
   });
   return { message: `集合 ${collectionName} 已清空` };
 }

@@ -1,50 +1,47 @@
-import { ollamaProvider } from '@/lib/server/ollama';
-import { embed } from 'ai';
+import { env } from '@/lib/server/env';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { embedMany } from 'ai';
 import type { EmbeddingFunction } from 'chromadb';
 
-export interface OllamaEmbeddingConfig {
+const embedProvider = createOpenAICompatible({
+  name: 'openai-compatible-embed',
+  baseURL: env.EMBED_BASE_URL,
+  apiKey: env.EMBED_API_KEY,
+});
+
+export interface CompatibleEmbeddingConfig {
   model: string;
 }
 
-export class OllamaEmbeddingFunction implements EmbeddingFunction {
-  // 必须声明 name 属性
-  public readonly name = 'ollama-embedding-function';
+/** Chroma EmbeddingFunction：OpenAI 兼容 /v1/embeddings */
+export class CompatibleEmbeddingFunction implements EmbeddingFunction {
+  public readonly name = 'openai-compatible-embedding-function';
   private readonly modelName: string;
 
   constructor(args: { model: string }) {
     this.modelName = args.model;
   }
 
-  // 核心的生成向量方法
   async generate(texts: string[]): Promise<number[][]> {
-    const embeddings = await Promise.all(
-      texts.map(async (text) => {
-        const { embedding } = await embed({
-          model: ollamaProvider.embedding(this.modelName),
-          value: text,
-        });
-        return embedding;
-      }),
-    );
-    return embeddings;
+    if (texts.length === 0) return [];
+    const { embeddings } = await embedMany({
+      model: embedProvider.embeddingModel(this.modelName),
+      values: texts,
+    });
+    return embeddings as number[][];
   }
 
-  // 获取配置，用于 Chroma 内部注册登记
-  getConfig(): OllamaEmbeddingConfig {
-    return {
-      model: this.modelName,
-    };
+  getConfig(): CompatibleEmbeddingConfig {
+    return { model: this.modelName };
   }
 
-  // 校验配置更新（如无特殊逻辑直接留空或抛错）
   validateConfigUpdate(config: Record<string, unknown>) {
     if ('model' in config) {
       throw new Error('Model cannot be updated');
     }
   }
 
-  // 静态构建工厂，Chroma 内部反序列化时会调用
-  static buildFromConfig(config: OllamaEmbeddingConfig): OllamaEmbeddingFunction {
-    return new OllamaEmbeddingFunction(config);
+  static buildFromConfig(config: CompatibleEmbeddingConfig): CompatibleEmbeddingFunction {
+    return new CompatibleEmbeddingFunction(config);
   }
 }

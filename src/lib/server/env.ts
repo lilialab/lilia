@@ -84,12 +84,6 @@ function requireBooleanEnv(key: string): boolean {
   return raw === 'true';
 }
 
-function buildOllamaBaseURL(): string {
-  const host = process.env.OLLAMA_HOST?.trim();
-  if (!host) return 'http://127.0.0.1:11434/api';
-  return host.endsWith('/api') ? host : `http://${host}/api`;
-}
-
 /* -------------------------------------------------------------------------- */
 /* Exported env                                                               */
 /* -------------------------------------------------------------------------- */
@@ -119,8 +113,9 @@ export const env = {
   LOKI_URL: requireStringEnv('LOKI_URL'),
   LOG_TO_LOKI: requireBooleanEnv('LOG_TO_LOKI'),
 
-  OLLAMA_EMBED_MODEL: requireStringEnv('OLLAMA_EMBED_MODEL'),
-  OLLAMA_BASE_URL: buildOllamaBaseURL(),
+  EMBED_BASE_URL: requireStringEnv('EMBED_BASE_URL'),
+  EMBED_API_KEY: requireStringEnv('EMBED_API_KEY'),
+  EMBED_MODEL: requireStringEnv('EMBED_MODEL'),
 
   LLM_BASE_URL: requireStringEnv('LLM_BASE_URL'),
   LLM_API_KEY: requireStringEnv('LLM_API_KEY'),

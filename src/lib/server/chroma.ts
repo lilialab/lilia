@@ -1,11 +1,12 @@
-import { OllamaEmbeddingFunction } from '@/lib/server/embeddings';
+import { CompatibleEmbeddingFunction } from '@/lib/server/embeddings';
 import { env } from '@/lib/server/env';
 import { ChromaClient } from 'chromadb';
 
-let sharedEmbed: OllamaEmbeddingFunction | undefined;
+let sharedEmbed: CompatibleEmbeddingFunction | undefined;
 
-export function getOllamaEmbeddingFunction(): OllamaEmbeddingFunction {
-  sharedEmbed ??= new OllamaEmbeddingFunction({ model: env.OLLAMA_EMBED_MODEL });
+/** Chroma 用的共享 EmbeddingFunction（OpenAI 兼容远程模型）。 */
+export function getEmbeddingFunction(): CompatibleEmbeddingFunction {
+  sharedEmbed ??= new CompatibleEmbeddingFunction({ model: env.EMBED_MODEL });
   return sharedEmbed;
 }
 

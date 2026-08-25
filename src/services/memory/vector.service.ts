@@ -1,4 +1,4 @@
-import { chromaClient, getOllamaEmbeddingFunction } from '@/lib/server/chroma';
+import { chromaClient, getEmbeddingFunction } from '@/lib/server/chroma';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import type { MemoryType } from '@/types/memory';
@@ -77,7 +77,7 @@ export class VectorService {
   private async getCollection(name: string) {
     return await chromaClient.getOrCreateCollection({
       name: name,
-      embeddingFunction: getOllamaEmbeddingFunction(),
+      embeddingFunction: getEmbeddingFunction(),
     });
   }
 

@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # pai-arbor Agent 指南
 
-带长期记忆的本地聊天应用（Next.js + Prisma + Chroma + Ollama）。
+带长期记忆的本地聊天应用（Next.js + Prisma + Chroma + OpenAI 兼容 LLM/Embedding）。
 
 **读代码**：Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止全仓 explore、整目录 Read、全仓 subagent，或一次串读 chat + memory + group 全链路。
 
@@ -17,7 +17,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | HTTP 入口 | `src/app/api/`：改 API 先读对应 `route.ts`，再进 service |
 | 业务逻辑 | `src/services/{domain}/`（域见下表） |
 | 共享类型 | `src/types/`（如 `memory.ts`、`consolidation-job.ts`） |
-| 服务端基础设施 | `src/lib/server/`（env、prisma、chroma、ollama、logger） |
+| 服务端基础设施 | `src/lib/server/`（env、prisma、chroma、embeddings、llm、logger） |
 | 浏览器 HTTP 封装 | `src/client-api/`（auth、sessions、groups…） |
 | 客户端基础设施 | `src/lib/client/`（`api-fetch`、`query-keys`、cn、toast） |
 | 同构纯函数 | `src/utils/`（无 I/O、不依赖 Next/Prisma/env；前后端可共用） |

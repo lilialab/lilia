@@ -12,14 +12,13 @@
 | 向量数据库 | ChromaDB |
 | 任务队列 | Redis（BullMQ 后端） |
 | 日志 | Loki + Grafana（pino 推送） |
-| 模型服务 | OpenAI 兼容对话 API（如 DeepSeek）+ Ollama Embedding |
+| 模型服务 | OpenAI 兼容对话 API + OpenAI 兼容 Embedding（如硅基 Qwen3-Embedding） |
 
 ## 前置依赖
 
 - [Node.js](https://nodejs.org/) 24+ 与 [pnpm](https://pnpm.io/)
 - [Docker](https://www.docker.com/)（运行 MySQL、Chroma、Redis 等）
-- [Ollama](https://ollama.com/)（仅 Embedding；对话走第三方 API）
-- 第三方对话 API Key（如 [DeepSeek](https://platform.deepseek.com)）
+- 第三方对话与 Embedding API Key（如 [硅基流动](https://siliconflow.cn) / [DeepSeek](https://platform.deepseek.com)）
 
 可选：使用项目自带的 Nix flake 开发环境（Node 24 + pnpm）：
 
@@ -91,13 +90,9 @@ pnpm exec prisma db push
 
 ### 5. 准备对话 LLM 与 Embedding
 
-对话与记忆 Job 走 `.env` 中的 OpenAI 兼容接口（`LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL`）。本地只需拉 Embedding 模型：
+对话与记忆 Job 走 `.env` 中的 `LLM_*`；向量检索走 `EMBED_*`（OpenAI 兼容 `/v1/embeddings`，例如硅基 `Qwen/Qwen3-Embedding-8B`）。若 LLM 也在硅基，可与 Embedding 共用 Base URL 与 API Key。
 
-```bash
-ollama pull nomic-embed-text
-```
-
-`OLLAMA_HOST` 可选（默认 `127.0.0.1:11434`）。
+更换 Embedding 模型后请清空或重建 Chroma collection（向量空间不兼容）。
 
 ### 6. 启动开发服务器
 
@@ -109,7 +104,7 @@ pnpm dev
 
 ## 环境变量
 
-服务端统一从 [`src/lib/server/env.ts`](src/lib/server/env.ts) 读取配置；本地开发可复制 [`.env.example`](.env.example) 为 `.env`。**除 `OLLAMA_HOST` 外均为必填**（未设置则启动报错）。对话模型请填 `LLM_*`，不要把 API Key 写进日志。
+服务端统一从 [`src/lib/server/env.ts`](src/lib/server/env.ts) 读取配置；本地开发可复制 [`.env.example`](.env.example) 为 `.env`。**均为必填**（未设置则启动报错）。不要把 API Key 写进日志。
 
 | 变量 | 说明 | 必填 |
 |------|------|------|
