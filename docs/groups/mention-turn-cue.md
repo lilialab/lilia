@@ -7,7 +7,7 @@
 - **谁决定召唤谁**：
   - **用户主动发送**：左侧单选展示当前成员 **displayName**（`localStorage` 按群 sticky）；发送时正文前拼 `@slug `，`metadata.slug` **由单选直接写入**（不解析用户正文）。
   - **助手续聊**：仍从助手正文解析第一个 `@slug`，发 `turn_cue`。
-- **后端**：只读最后一条 user 的 `metadata.kind` / `metadata.slug`；普通用户消息**必须**带有效群内 slug（**无默认 arbor**）；校验成员后选 speaker。
+- **后端**：只读最后一条 user 的 `metadata.kind` / `metadata.slug`；普通用户消息**必须**带有效群内 slug（**无默认 speaker**）；校验成员后选 speaker。
 - **被召唤角色** system 含 **`<group_roster>`**（人类用户 displayName + AI 成员展示名/slug/`shortBio`）。
 - **turn_cue**：特殊用户消息（`kind: 'turn_cue'`），正文是系统触发语，**不进气泡列表**（`isDisplayMessage`）；**不进**历史分页（`getGroupHistoryPage`）与上下文窗口（`getGroupContextMessages`）；**本次召唤**仍把 cue 正文作为 ephemeral user 回合注入 LLM（否则对话以 assistant 结尾易空回复）；RAG 取上下文末条干净正文（用户句或上一助手句，见 `extractLatestContextTextForRag`）；进模型前再经 `withGroupSpeakerLabelsForModel` 加 `(slug):`。
 
@@ -15,8 +15,8 @@
 
 正则：`/@([a-zA-Z0-9_-]+)/`，取**第一处**。
 
-- 合法：`@arbor`、`@ai_bot-2`
-- 中文等会截断或匹配失败：`@arbor你好` → `arbor`；`@阿尔博` → 无 slug
+- 合法：`@lilia`、`@ai_bot-2`
+- 中文等会截断或匹配失败：`@lilia你好` → `lilia`；`@莉莉娅` → 无 slug
 
 实现：`GroupChatScreen.utils.ts` 内私有 `extractFirstMentionSlug`（仅助手续聊用）。
 
@@ -51,9 +51,9 @@ sequenceDiagram
 
 | 步骤 | 行为 |
 |------|------|
-| 选人 | 左侧单选 displayName；`localStorage` 按群 sticky；无效回落 arbor |
+| 选人 | 左侧单选 displayName；`localStorage` 按群 sticky；无效回落默认角色 |
 | 组出站 | `buildUserOutboundMessage(text, slug)` → 正文 `@slug …` + `{ kind: null, slug }` |
-| 后端 | **必须**带 slug 且为群成员；否则 400（无默认 arbor） |
+| 后端 | **必须**带 slug 且为群成员；否则 400（无默认 speaker） |
 | RAG | 用本条用户正文（含 `@slug` 前缀） |
 
 ### 2. 助手结束后自动续聊

@@ -1,7 +1,7 @@
 import { prisma } from '../src/lib/server/prisma';
 import { registerUser } from '../src/services/user/users.service';
 
-const CHARACTER_SLUGS = ['arbor', 'bob', 'cindy', 'dave'] as const;
+const CHARACTER_SLUGS = ['lilia', 'bob', 'cindy', 'dave'] as const;
 
 const SEED_USER = {
   username: 'tom',

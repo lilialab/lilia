@@ -48,7 +48,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   });
 
   const contacts = contactsQuery.data ?? [];
-  const arborId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
+  const defaultCharacterId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
   const members = groupQuery.data?.members ?? [];
 
   const defaultExtraIds = new Set(
@@ -56,7 +56,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   );
   const effectiveExtraIds = extraSelectedIds ?? defaultExtraIds;
   const selectedIds = new Set(effectiveExtraIds);
-  if (arborId) selectedIds.add(arborId);
+  if (defaultCharacterId) selectedIds.add(defaultCharacterId);
 
   const goBackToChat = () => {
     router.push(`/groups/${groupSessionId}`, { transitionTypes: ['nav-back'] });

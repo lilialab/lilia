@@ -29,7 +29,7 @@ export function CreateGroupScreen() {
   const { user } = useAuth();
   const t = useTranslations('createGroup');
   const [title, setTitle] = useState('');
-  /** 用户可切换的成员；arbor 由下方 selectedIds 派生强制选中 */
+  /** 用户可切换的成员；默认角色由下方 selectedIds 派生强制选中 */
   const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string>>(new Set());
 
   const contactsQuery = useQuery({
@@ -39,9 +39,9 @@ export function CreateGroupScreen() {
   });
 
   const contacts = contactsQuery.data ?? [];
-  const arborId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
+  const defaultCharacterId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
   const selectedIds = new Set(extraSelectedIds);
-  if (arborId) selectedIds.add(arborId);
+  if (defaultCharacterId) selectedIds.add(defaultCharacterId);
 
   const createMutation = useMutation({
     mutationFn: createGroup,

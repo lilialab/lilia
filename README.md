@@ -1,4 +1,4 @@
-# pai-arbor
+# lilia
 
 基于 Next.js 的本地聊天应用，带按用户与角色的长期记忆：离线从对话抽取、整理与画像维护，聊天时向量检索相关记忆并注入 prompt。
 
@@ -70,13 +70,13 @@ docker compose up -d
 
 - Grafana：[http://localhost:3001](http://localhost:3001) → Explore → 数据源 Loki（Label filters 可选 `event`）
 - 重启应用后新日志带 `event` label；
-- 聊天请求（记忆片段等）：`{app="pai-arbor", event="llm.chat.request"}`
-- 聊天回复：`{app="pai-arbor", event="llm.chat.response"}`
-- 按消息过滤：`{app="pai-arbor"} | json | userMessageId="<uuid>"` 或 `assistantMessageId`
-- 记忆整理：`{app="pai-arbor", event=~"llm.consolidation.*"}`
-- 整理结果摘要：`{app="pai-arbor", event="llm.consolidation.complete"}`
-- globalMax 前缀标记：`{app="pai-arbor", event="llm.consolidation.mark"}`
-- 按 job 过滤：`{app="pai-arbor"} | json | jobId="<uuid>"`
+- 聊天请求（记忆片段等）：`{app="lilia", event="llm.chat.request"}`
+- 聊天回复：`{app="lilia", event="llm.chat.response"}`
+- 按消息过滤：`{app="lilia"} | json | userMessageId="<uuid>"` 或 `assistantMessageId`
+- 记忆整理：`{app="lilia", event=~"llm.consolidation.*"}`
+- 整理结果摘要：`{app="lilia", event="llm.consolidation.complete"}`
+- globalMax 前缀标记：`{app="lilia", event="llm.consolidation.mark"}`
+- 按 job 过滤：`{app="lilia"} | json | jobId="<uuid>"`
 - 设 `LOG_TO_LOKI=false` 时不记录日志（终端也不会有输出）
 
 `consolidation_jobs.snapshot` 仅保留 `messageIds` / `userId`；LLM 输入输出在 Loki 中查询。
@@ -126,6 +126,7 @@ pnpm dev          # 启动开发服务器
 pnpm dev:all      # Next + extract/maintain Worker（需 Redis；一条命令）
 pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
+pnpm start:all    # 生产 Next + extract/maintain Worker（需先 build；需 Redis）
 pnpm lint         # ESLint 检查
 pnpm worker:memory-extract  # 记忆整理 Worker（需 Redis；另开终端）
 pnpm worker:memory-maintain  # maintain→profile 闲置窗口（需 Redis；另开终端）
@@ -140,7 +141,7 @@ pnpm exec prisma db push
 # 开发：清空库并按 schema 重建（会丢数据）
 pnpm exec prisma db push --force-reset
 
-# 灌入种子数据（如默认角色 arbor）
+# 灌入种子数据（如默认角色 lilia）
 pnpm exec prisma db seed
 
 # 开发：根据 schema 变更生成迁移并应用到本地库

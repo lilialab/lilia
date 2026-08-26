@@ -5,7 +5,7 @@ import { useTCharacter, useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 
 /** 与 DEFAULT_CHARACTER_ID / seed slug 对齐；勿从 prompts/load 导入（含 fs）。 */
-export const DEFAULT_CHARACTER_SLUG = 'arbor';
+export const DEFAULT_CHARACTER_SLUG = 'lilia';
 
 export function MemberPickerEmpty() {
   const t = useTranslations('groupMembers');
@@ -25,27 +25,27 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
   return (
     <section className={cn('bg-background')}>
       {contacts.map((contact) => {
-        const isArbor = contact.slug === DEFAULT_CHARACTER_SLUG;
+        const isDefaultCharacter = contact.slug === DEFAULT_CHARACTER_SLUG;
         const checked = selectedIds.has(contact.id);
         return (
           <label
             key={contact.id}
             className={cn(
               'flex items-center gap-3 border-b border-border/50 px-4 py-3',
-              isArbor ? 'cursor-default' : 'cursor-pointer hover:bg-surface',
+              isDefaultCharacter ? 'cursor-default' : 'cursor-pointer hover:bg-surface',
             )}
           >
             <input
               type="checkbox"
               checked={checked}
-              disabled={isArbor}
+              disabled={isDefaultCharacter}
               onChange={() => onToggle(contact)}
               className={cn('h-4 w-4 rounded border-border')}
             />
             <span className={cn('min-w-0 flex-1')}>
               <span className={cn('block truncate text-sm text-foreground')}>
                 {tCharacter(contact.slug)}
-                {isArbor && (
+                {isDefaultCharacter && (
                   <span className={cn('ml-2 text-xs font-normal text-muted-foreground')}>
                     {t('defaultMember')}
                   </span>

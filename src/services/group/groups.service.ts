@@ -63,7 +63,7 @@ function mapGroupDetail(row: {
   };
 }
 
-/** 校验全部 characterId 均在用户通讯录中，且含默认角色 arbor。 */
+/** 校验全部 characterId 均在用户通讯录中，且含默认角色。 */
 async function assertGroupMembersValid(userId: string, characterIds: string[]): Promise<void> {
   const contacts = await prisma.userCharacter.findMany({
     where: {
@@ -86,7 +86,10 @@ async function assertGroupMembersValid(userId: string, characterIds: string[]): 
   }
 
   if (!contacts.some((c) => c.character.slug === DEFAULT_CHARACTER_ID)) {
-    throw AppError.badRequest('群聊须包含 arbor', API_ERROR_CODE.GROUP_MUST_INCLUDE_ARBOR);
+    throw AppError.badRequest(
+      '群聊须包含默认 AI 好友',
+      API_ERROR_CODE.GROUP_MUST_INCLUDE_DEFAULT_CHARACTER,
+    );
   }
 }
 
@@ -139,7 +142,7 @@ export async function listGroups(userId: string): Promise<GroupDetail[]> {
 
 /**
  * 创建群聊（同批成员可建多个群）。
- * 成员须已在通讯录中，且必须包含 arbor。
+ * 成员须已在通讯录中，且必须包含默认角色。
  */
 export async function createGroup(
   userId: string,
@@ -171,7 +174,7 @@ export async function deleteGroup(groupSessionId: string, userId: string): Promi
 }
 
 /**
- * 整表覆盖群成员（须含 arbor、须为好友）；踢人只删 GroupMember，不动消息。
+ * 整表覆盖群成员（须含默认角色、须为好友）；踢人只删 GroupMember，不动消息。
  */
 export async function replaceGroupMembers(
   groupSessionId: string,

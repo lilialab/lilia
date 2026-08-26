@@ -10,14 +10,14 @@ function buildLogger(): pino.Logger {
     target: 'pino-loki',
     options: {
       host: env.LOKI_URL,
-      labels: { app: 'pai-arbor' },
+      labels: { app: 'lilia' },
       propsToLabels: ['event'],
       batching: { interval: 5 },
     },
     level: env.LOG_LEVEL,
   });
 
-  return pino({ level: env.LOG_LEVEL, base: { app: 'pai-arbor' } }, transport);
+  return pino({ level: env.LOG_LEVEL, base: { app: 'lilia' } }, transport);
 }
 
 export const logger = buildLogger();

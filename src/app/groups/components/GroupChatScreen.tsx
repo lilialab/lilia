@@ -58,7 +58,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mentionOpen, setMentionOpen] = useState(false);
-  /** 用户点选；未点选时为 null，selectedMember 再回落 storage → arbor */
+  /** 用户点选；未点选时为 null，selectedMember 再回落 storage → 默认角色 */
   const [pickedMember, setPickedMember] = useState<GroupMemberSummary | null>(null);
   const [inputFocusKey, setInputFocusKey] = useState<number | undefined>();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);

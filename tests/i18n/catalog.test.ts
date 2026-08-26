@@ -14,7 +14,7 @@ describe('formatMessage', () => {
   });
 
   it('替换已有占位符', () => {
-    expect(formatMessage('Added {name}', { name: 'Arbor' })).toBe('Added Arbor');
+    expect(formatMessage('Added {name}', { name: 'Lilia' })).toBe('Added Lilia');
   });
 
   it('缺失的占位符保持原样', () => {

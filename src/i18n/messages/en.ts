@@ -44,8 +44,8 @@ export const en = {
     addedToast: 'Added {name}',
   },
   characters: {
-    'arbor.displayName': 'Arbor',
-    'arbor.shortBio':
+    'lilia.displayName': 'Lilia',
+    'lilia.shortBio':
       'A growth-oriented personal AI assistant. Casual, peer-level tone; companionship and habit-building.',
     'bob.displayName': 'Bob',
     'bob.shortBio': 'Placeholder character. Concise, neutral, and polite.',
@@ -53,8 +53,6 @@ export const en = {
     'cindy.shortBio': 'Placeholder character for multi-character and group-chat selection.',
     'dave.displayName': 'Dave',
     'dave.shortBio': 'Placeholder character for multi-character and group-chat selection.',
-    'lilia.displayName': 'Lilia',
-    'lilia.shortBio': 'Placeholder character for multi-character and group-chat selection.',
   },
   chat: {
     moreActions: 'More actions',
@@ -177,7 +175,7 @@ export const en = {
     languageAria: 'Language',
   },
   login: {
-    title: 'Log in to pai-arbor',
+    title: 'Log in to lilia',
     noAccount: "Don't have an account?",
     goRegister: 'Sign up',
     submit: 'Log in',
@@ -210,7 +208,7 @@ export const en = {
     USERNAME_TAKEN: 'Username is already taken',
     CONTACT_REQUIRED: 'Add this AI as a friend first',
     GROUP_MEMBERS_NOT_CONTACTS: 'Add the selected AI as friends first',
-    GROUP_MUST_INCLUDE_ARBOR: 'Groups must include arbor',
+    GROUP_MUST_INCLUDE_DEFAULT_CHARACTER: 'Groups must include the default AI friend',
     CANNOT_DELETE_DEFAULT_CONTACT: 'The default friend cannot be removed',
     GENERATION_BUSY: 'Still generating a reply. Try again in a moment',
     CHARACTER_NOT_IN_GROUP: 'That character is not in this group',

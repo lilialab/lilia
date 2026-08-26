@@ -47,8 +47,9 @@ flowchart TD
 ### transcript 构建
 
 - 按消息 `createdAt` **正序**拼接
-- 每条消息格式为 `<message id="..." seq="...">`；`seq` 为从 0 起的相对序号，**不带**绝对时间给 LLM
-- 说话人标签：用户为「用户」；单聊助理为「阿尔博」；群聊助理为角色 `slug`
+- 每条消息格式为 `<message id="..." seq="..." speaker="...">正文</message>`；`seq` 为从 0 起的相对序号，**不带**绝对时间给 LLM
+- 每条 `<message>` 含 `speaker` 属性（`consolidationSpeaker`）：`user` 或角色 **slug**；正文为纯对话（单聊 / 群聊一致）
+- utils **无内置默认**；assistant 须显式带 `assistantSlug`
 - LLM 须按对话先后理解话题边界（含 A→B→A 分段）
 
 ### LLM 产出与进度标记
@@ -80,6 +81,7 @@ flowchart TD
 | 创建 job 并清理旧记录 | `prepareConsolidationJob` |
 | 整理主流程编排 | `runConsolidation`（`sessionId` 或 `groupSessionId`） |
 | 构建待整理对话 transcript | `buildSessionTranscript` / `buildGroupTranscript` |
+| transcript speaker 属性 | `consolidationSpeaker` |
 | LLM 提取 finished_memories | `extractMemoriesFromTranscript` |
 | 解析 / 校验 LLM 输出与 message id | `mapConsolidationOutput`, `validateAndMergeIds` |
 | 全员扇出展开 | `fanOutMemoriesToCharacters` |

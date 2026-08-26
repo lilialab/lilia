@@ -27,42 +27,42 @@ vi.mock('@/services/session/sessions.service', () => ({
 }));
 
 import { prisma } from '@/lib/server/prisma';
-import { ensureArborContact, removeContact } from '@/services/character/contacts.service';
+import { ensureDefaultContact, removeContact } from '@/services/character/contacts.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
-describe('ensureArborContact', () => {
+describe('ensureDefaultContact', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('arbor 存在时幂等添加并返回 id', async () => {
+  it('默认角色存在时幂等添加并返回 id', async () => {
     vi.mocked(prisma.character.findUnique)
-      .mockResolvedValueOnce({ id: 'char-arbor' } as never)
+      .mockResolvedValueOnce({ id: 'char-default' } as never)
       .mockResolvedValueOnce({
-        id: 'char-arbor',
+        id: 'char-default',
         slug: DEFAULT_CHARACTER_ID,
       } as never);
     vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue({
       createdAt: new Date(),
       character: {
-        id: 'char-arbor',
+        id: 'char-default',
         slug: DEFAULT_CHARACTER_ID,
       },
     } as never);
 
-    await expect(ensureArborContact('user-1')).resolves.toBe('char-arbor');
+    await expect(ensureDefaultContact('user-1')).resolves.toBe('char-default');
     expect(prisma.character.findUnique).toHaveBeenCalledWith({
       where: { slug: DEFAULT_CHARACTER_ID },
       select: { id: true },
     });
   });
 
-  it('库中无 arbor 时抛 500', async () => {
+  it('库中无默认角色时抛 500', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue(null);
 
-    await expect(ensureArborContact('user-1')).rejects.toMatchObject({
+    await expect(ensureDefaultContact('user-1')).rejects.toMatchObject({
       status: AppError.internal('').status,
-      message: '默认角色 arbor 不存在，请先执行 seed',
+      message: `默认角色 ${DEFAULT_CHARACTER_ID} 不存在，请先执行 seed`,
     });
   });
 });
@@ -72,12 +72,12 @@ describe('removeContact', () => {
     vi.clearAllMocks();
   });
 
-  it('拒绝删除 arbor', async () => {
+  it('拒绝删除默认角色', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
       slug: DEFAULT_CHARACTER_ID,
     } as never);
 
-    await expect(removeContact('user-1', 'char-arbor')).rejects.toMatchObject({
+    await expect(removeContact('user-1', 'char-default')).rejects.toMatchObject({
       status: AppError.badRequest('').status,
       message: '不能删除默认好友',
       code: API_ERROR_CODE.CANNOT_DELETE_DEFAULT_CONTACT,

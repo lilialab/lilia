@@ -1,5 +1,5 @@
 import {
-  consolidationSpeakerLabel,
+  consolidationSpeaker,
   isIncludedInGroupExtract,
   mapConsolidationOutput,
   parseFinishedMemoryItem,
@@ -21,17 +21,17 @@ describe('isIncludedInGroupExtract', () => {
   });
 });
 
-describe('consolidationSpeakerLabel', () => {
-  it('labels user as 用户', () => {
-    expect(consolidationSpeakerLabel('user')).toBe('用户');
+describe('consolidationSpeaker', () => {
+  it('labels user as user', () => {
+    expect(consolidationSpeaker('user')).toBe('user');
   });
 
   it('uses assistant slug when provided', () => {
-    expect(consolidationSpeakerLabel('assistant', { assistantSlug: 'arbor' })).toBe('arbor');
+    expect(consolidationSpeaker('assistant', 'lilia')).toBe('lilia');
   });
 
-  it('falls back to 阿尔博 for single chat', () => {
-    expect(consolidationSpeakerLabel('assistant')).toBe('阿尔博');
+  it('assistant 未指定 slug 时抛错', () => {
+    expect(() => consolidationSpeaker('assistant')).toThrow(/assistant 消息须指定 assistantSlug/);
   });
 });
 

@@ -4,7 +4,7 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# pai-arbor Agent 指南
+# lilia Agent 指南
 
 带长期记忆的本地聊天应用（Next.js + Prisma + Chroma + OpenAI 兼容 LLM/Embedding）。
 
@@ -46,6 +46,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Shell（WSL / NixOS）：一律 `nix develop --command …`（例：`nix develop --command pnpm lint`）
 - 改完：`pnpm format`、`pnpm lint`（eslint + `tsc --noEmit`）、`pnpm test:run`
 - 本地记忆联调：`pnpm dev:all`（Next + extract/maintain Worker；需 Redis）
+- 生产同机联调：先 `pnpm build`，再 `pnpm start:all`
 - 单测需完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等）；无 fallback
 - Prisma schema 变更：`pnpm exec prisma generate`；必要时 `pnpm exec prisma db push`
 - **禁止**：改 `docker-volumes/`；提交 `.env`；用户未要求时 `git commit` / 扩 scope 的无关重构；编辑 `.cursor/plans/` 下的 plan

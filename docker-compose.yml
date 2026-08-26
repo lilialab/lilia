@@ -7,7 +7,7 @@ services:
   # Prisma：用户、会话、消息、记忆元数据、ConsolidationJob 等
   mysql:
     image: mysql:8
-    container_name: pai-arbor-mysql
+    container_name: lilia-mysql
     restart: unless-stopped
     environment:
       <<: *timezone
@@ -21,7 +21,7 @@ services:
   # 向量库：UserMemory 的 embedding 检索
   chromadb:
     image: chromadb/chroma:latest
-    container_name: pai-arbor-chroma
+    container_name: lilia-chroma
     restart: unless-stopped
     environment:
       <<: *timezone
@@ -33,7 +33,7 @@ services:
   # 日志接收：pino → Loki（无 Web UI）；配置见 docker/loki-config.yml
   loki:
     image: grafana/loki:latest
-    container_name: pai-arbor-loki
+    container_name: lilia-loki
     restart: unless-stopped
     environment:
       <<: *timezone
@@ -44,10 +44,10 @@ services:
       - ./docker/loki-config.yml:/etc/loki/loki-config.yml:ro
       - ./docker-volumes/loki-data:/loki
 
-  # 日志查询 UI：宿主机 http://localhost:3001（admin/admin），预置 Loki 数据源
+  # 日志查询 UI：宿主机 http://localhost:3001（admin/password），预置 Loki 数据源
   grafana:
     image: grafana/grafana:latest
-    container_name: pai-arbor-grafana
+    container_name: lilia-grafana
     restart: unless-stopped
     depends_on:
       - loki
@@ -65,7 +65,7 @@ services:
   # BullMQ / ioredis（REDIS_URL）；AOF 持久化延迟任务与队列状态
   redis:
     image: redis:8
-    container_name: pai-arbor-redis
+    container_name: lilia-redis
     restart: unless-stopped
     environment:
       <<: *timezone

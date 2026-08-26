@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 describe('stripLeadingSpeakerLabels', () => {
   it('去掉开头一层或多层 (slug):', () => {
     expect(stripLeadingSpeakerLabels('(bob): 你好')).toBe('你好');
-    expect(stripLeadingSpeakerLabels('(bob): (arbor): hi')).toBe('hi');
+    expect(stripLeadingSpeakerLabels('(bob): (lilia): hi')).toBe('hi');
   });
 
   it('无前缀时原样返回', () => {

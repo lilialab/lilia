@@ -43,16 +43,14 @@ export function isIncludedInGroupExtract(kind: string | null | undefined): boole
 }
 
 /**
- * transcript 说话人标签：用户；群聊助理用 slug；单聊助理默认「阿尔博」。
+ * transcript 的 speaker 属性：用户为 `user`；助理为角色 slug（单聊 / 群聊一致）。
+ * @param assistantSlug 非 user 消息必填；user 消息可省略
  */
-export function consolidationSpeakerLabel(
-  role: string,
-  options?: { assistantSlug?: string | null; singleChatAssistantName?: string },
-): string {
-  if (role === 'user') return '用户';
-  const slug = options?.assistantSlug?.trim();
+export function consolidationSpeaker(role: string, assistantSlug?: string | null): string {
+  if (role === 'user') return 'user';
+  const slug = assistantSlug?.trim();
   if (slug) return slug;
-  return options?.singleChatAssistantName ?? '阿尔博';
+  throw new Error('assistant 消息须指定 assistantSlug');
 }
 
 /** 从未知值解析非空字符串数组，非法输入返回空数组。 */

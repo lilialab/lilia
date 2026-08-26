@@ -8,7 +8,7 @@ import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import {
   type ConsolidationParseResult,
-  consolidationSpeakerLabel,
+  consolidationSpeaker,
   type FinishedMemory,
   isIncludedInGroupExtract,
   mapConsolidationOutput,
@@ -48,7 +48,7 @@ export type RunConsolidationParams = {
 /* -------------------------------------------------------------------------- */
 
 /** 将单条消息格式化为 LLM 可读的 XML 片段；无有效文本时返回 null。 */
-function formatMessageXml(id: string, seq: number, label: string, parts: unknown): string | null {
+function formatMessageXml(id: string, seq: number, speaker: string, parts: unknown): string | null {
   const messageParts = parts as { type: string; text?: string }[];
   const text = messageParts
     .flatMap((part) => (part.type === 'text' && part.text ? [part.text] : []))
@@ -57,7 +57,7 @@ function formatMessageXml(id: string, seq: number, label: string, parts: unknown
 
   if (!text) return null;
 
-  return `<message id="${id}" seq="${seq}">${label}: ${text}</message>`;
+  return `<message id="${id}" seq="${seq}" speaker="${speaker}">${text}</message>`;
 }
 
 /** 将内部记忆结构转换为 job 结果中的精简格式。 */
@@ -111,6 +111,12 @@ function failJob(job: ConsolidationJob, errorMessage: string): Promise<void> {
  * 捞取指定单聊会话未整理的消息，按时间正序构建带 id + seq 的 XML transcript。
  */
 async function buildSessionTranscript(sessionId: string): Promise<TranscriptResult | null> {
+  const session = await prisma.chatSession.findUnique({
+    where: { id: sessionId },
+    select: { character: { select: { slug: true } } },
+  });
+  const assistantSlug = session?.character.slug;
+
   const messages = await prisma.message.findMany({
     where: {
       isConsolidated: false,
@@ -128,8 +134,8 @@ async function buildSessionTranscript(sessionId: string): Promise<TranscriptResu
 
   const messageIds = messages.map((message) => message.id);
   const lines = messages.flatMap((message, seq) => {
-    const label = consolidationSpeakerLabel(message.role);
-    const line = formatMessageXml(message.id, seq, label, message.parts);
+    const speaker = consolidationSpeaker(message.role, assistantSlug);
+    const line = formatMessageXml(message.id, seq, speaker, message.parts);
     return line === null ? [] : [line];
   });
 
@@ -140,7 +146,7 @@ async function buildSessionTranscript(sessionId: string): Promise<TranscriptResu
 }
 
 /**
- * 捞取群聊未整理消息（排除 turn_cue），助理标签用 slug。
+ * 捞取群聊未整理消息（排除 turn_cue），助理标签用 speaker slug。
  */
 async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptResult | null> {
   const messages = await prisma.message.findMany({
@@ -163,10 +169,8 @@ async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptR
 
   const messageIds = included.map((message) => message.id);
   const lines = included.flatMap((message, seq) => {
-    const label = consolidationSpeakerLabel(message.role, {
-      assistantSlug: message.speakerCharacter?.slug,
-    });
-    const line = formatMessageXml(message.id, seq, label, message.parts);
+    const speaker = consolidationSpeaker(message.role, message.speakerCharacter?.slug);
+    const line = formatMessageXml(message.id, seq, speaker, message.parts);
     return line === null ? [] : [line];
   });
 
@@ -220,7 +224,7 @@ async function extractMemoriesFromTranscript(
   });
 
   const groupHint = scope.groupSessionId
-    ? '【说明】以下为群聊。消息标签为「用户」或助理 slug；只提炼用户侧长期事实，文案规范与单聊相同。\n'
+    ? '【说明】以下为群聊。每条 message 含 speaker 属性（user 或助理 slug）；只提炼用户侧长期事实，文案规范与单聊相同。\n'
     : '';
   const userPrompt = `${groupHint}<conversation>\n${transcript}\n</conversation>`;
 

@@ -1,5 +1,5 @@
 {
-  "name": "pai-arbor",
+  "name": "lilia",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,6 +8,7 @@
     "dev:all": "concurrently -n web,extract,maintain -c blue,magenta,magenta \"pnpm dev\" \"pnpm worker:memory-extract\" \"pnpm worker:memory-maintain\"",
     "build": "next build",
     "start": "next start",
+    "start:all": "concurrently -n web,extract,maintain -c blue,magenta,magenta \"pnpm start\" \"pnpm worker:memory-extract\" \"pnpm worker:memory-maintain\"",
     "lint": "eslint && tsc --noEmit",
     "format": "dprint fmt",
     "test": "vitest",

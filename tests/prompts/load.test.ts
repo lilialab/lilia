@@ -8,11 +8,11 @@ import {
 import { describe, expect, it } from 'vitest';
 
 describe('prompts/load', () => {
-  it('默认角色为 arbor', () => {
-    expect(DEFAULT_CHARACTER_ID).toBe('arbor');
-    const character = loadCharacter();
-    expect(character.id).toBe('arbor');
-    expect(character.persona).toContain('阿尔博');
+  it('默认角色为 lilia', () => {
+    expect(DEFAULT_CHARACTER_ID).toBe('lilia');
+    const character = loadCharacter(DEFAULT_CHARACTER_ID);
+    expect(character.id).toBe('lilia');
+    expect(character.persona).toContain('莉莉娅');
     expect(character.skills).toEqual(['searchChatHistory']);
   });
 
@@ -31,12 +31,12 @@ describe('prompts/load', () => {
     expect(dave.skills).toEqual([]);
   });
 
-  it('loadExtractPrompt(arbor) 含核心规则与弱模型约束', () => {
-    const prompt = loadExtractPrompt('arbor');
+  it('loadExtractPrompt(lilia) 含核心规则与弱模型约束', () => {
+    const prompt = loadExtractPrompt('lilia');
     expect(prompt.length).toBeGreaterThan(100);
     expect(prompt).toContain('finished_memories');
     expect(prompt).toContain('弱模型额外约束');
-    expect(prompt).toContain('阿尔博');
+    expect(prompt).toContain('莉莉娅');
   });
 
   it('loadExtractPrompt 未知角色 fallback 到全局默认', () => {
@@ -54,5 +54,9 @@ describe('prompts/load', () => {
 
   it('loadJobPrompt 未知 id 抛错', () => {
     expect(() => loadJobPrompt('unknown' as never)).toThrow(/未知 job prompt/);
+  });
+
+  it('loadCharacter 未知 slug 抛错', () => {
+    expect(() => loadCharacter('nonexistent')).toThrow(/未知角色 prompt/);
   });
 });

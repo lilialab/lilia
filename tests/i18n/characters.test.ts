@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 describe('tCharacter', () => {
   it('按 slug 与语言取 displayName', () => {
-    expect(tCharacter('arbor', 'displayName', 'zh')).toBe('阿尔博');
-    expect(tCharacter('arbor', 'displayName', 'en')).toBe('Arbor');
+    expect(tCharacter('lilia', 'displayName', 'zh')).toBe('莉莉娅');
+    expect(tCharacter('lilia', 'displayName', 'en')).toBe('Lilia');
   });
 
   it('按 slug 与语言取 shortBio', () => {

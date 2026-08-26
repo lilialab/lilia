@@ -5,7 +5,7 @@ const mockResolveSessionUserId = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/server/env', () => ({
   env: {
-    AUTH_SESSION_COOKIE_NAME: 'pai_arbor_session',
+    AUTH_SESSION_COOKIE_NAME: 'lilia_session',
   },
 }));
 
@@ -15,7 +15,7 @@ vi.mock('@/lib/server/session', () => ({
 
 import { getSessionTokenFromRequest, resolveRequestUserId } from '@/lib/server/request-user';
 
-const SESSION_COOKIE = 'pai_arbor_session';
+const SESSION_COOKIE = 'lilia_session';
 
 describe('getSessionTokenFromRequest', () => {
   it('从 Cookie 读取 session token', () => {

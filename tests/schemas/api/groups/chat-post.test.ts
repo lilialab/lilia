@@ -132,7 +132,7 @@ describe('groupChatPostBodySchema', () => {
           parts: [{ type: 'text', text: 'hi' }],
           metadata: {
             kind: null,
-            slug: 'arbor',
+            slug: 'lilia',
             speakerCharacterId: null,
           },
         },

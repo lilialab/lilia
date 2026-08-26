@@ -4,7 +4,7 @@ import { extractTextFromParts } from '@/utils/message-parts';
 /** 一次用户发言后，自动 turn_cue 续聊最多轮次。 */
 export const MAX_TURN_CUE_HOPS = 5;
 
-const GROUP_MENTION_STORAGE_PREFIX = 'pai-arbor:group-mention:';
+const GROUP_MENTION_STORAGE_PREFIX = 'lilia:group-mention:';
 
 /**
  * 从文本中提取第一个 @slug（精确匹配用）。

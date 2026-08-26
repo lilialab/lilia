@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
-export const DEFAULT_CHARACTER_ID = 'arbor';
+export const DEFAULT_CHARACTER_ID = 'lilia';
 
 export type JobPromptId = 'maintain' | 'profile';
 
@@ -38,7 +38,12 @@ export function loadPlatformSafety(): string {
 }
 
 /** 加载角色人设（skills.json + persona）；slug 对齐 characters/{slug}/ 目录。 */
-export function loadCharacter(slug: string = DEFAULT_CHARACTER_ID): CharacterPrompt {
+export function loadCharacter(slug: string): CharacterPrompt {
+  const personaPath = path.join(PROMPTS_ROOT, 'characters', slug, 'persona.md');
+  if (!existsSync(personaPath)) {
+    throw new Error(`未知角色 prompt: ${slug}`);
+  }
+
   const persona = readPromptFile('characters', slug, 'persona.md');
 
   return {

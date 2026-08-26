@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 describe('groupMentionStorageKey', () => {
   it('按群 id 区分', () => {
-    expect(groupMentionStorageKey('g1')).toBe('pai-arbor:group-mention:g1');
+    expect(groupMentionStorageKey('g1')).toBe('lilia:group-mention:g1');
   });
 });
 
@@ -19,15 +19,15 @@ describe('buildUserOutboundMessage', () => {
       text: '@bob 你好',
       metadata: { kind: null, slug: 'bob' },
     });
-    expect(buildUserOutboundMessage('  hi  ', 'arbor')).toEqual({
-      text: '@arbor hi',
-      metadata: { kind: null, slug: 'arbor' },
+    expect(buildUserOutboundMessage('  hi  ', 'lilia')).toEqual({
+      text: '@lilia hi',
+      metadata: { kind: null, slug: 'lilia' },
     });
   });
 });
 
 describe('sendTurnCueIfMentioned', () => {
-  const members = [{ slug: 'arbor' }, { slug: 'bob' }];
+  const members = [{ slug: 'lilia' }, { slug: 'bob' }];
 
   it('助手 @ 群成员时发送 turn_cue', () => {
     const sendMessage = vi.fn();
