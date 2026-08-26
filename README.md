@@ -141,7 +141,7 @@ pnpm exec prisma db push
 # 开发：清空库并按 schema 重建（会丢数据）
 pnpm exec prisma db push --force-reset
 
-# 灌入种子数据（如默认角色 lilia）
+# 灌入角色目录（幂等）；非 production 时还会建本地用户 tom
 pnpm exec prisma db seed
 
 # 开发：根据 schema 变更生成迁移并应用到本地库

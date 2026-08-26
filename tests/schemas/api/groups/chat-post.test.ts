@@ -49,8 +49,8 @@ describe('groupChatPostBodySchema', () => {
         {
           id: 'u1',
           role: 'user',
-          parts: [{ type: 'text', text: '@bob 继续' }],
-          metadata: { kind: null, slug: 'bob' },
+          parts: [{ type: 'text', text: '@einstein 继续' }],
+          metadata: { kind: null, slug: 'einstein' },
         },
       ],
       timeZone: 'Asia/Shanghai',
@@ -70,23 +70,25 @@ describe('groupChatPostBodySchema', () => {
   it('接受 metadata.kind: turn_cue', () => {
     const result = groupChatPostBodySchema.safeParse(
       userMessage({
-        text: '【系统】你（@bob）被点名',
+        text: '【系统】你（@einstein）被点名',
         kind: 'turn_cue',
-        slug: 'bob',
+        slug: 'einstein',
       }),
     );
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.messages[0].metadata?.kind).toBe('turn_cue');
-      expect(result.data.messages[0].metadata?.slug).toBe('bob');
+      expect(result.data.messages[0].metadata?.slug).toBe('einstein');
     }
   });
 
   it('slug 会 trim', () => {
-    const result = groupChatPostBodySchema.safeParse(userMessage({ text: 'hi', slug: '  bob  ' }));
+    const result = groupChatPostBodySchema.safeParse(
+      userMessage({ text: 'hi', slug: '  einstein  ' }),
+    );
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.messages[0].metadata?.slug).toBe('bob');
+      expect(result.data.messages[0].metadata?.slug).toBe('einstein');
     }
   });
 
@@ -143,13 +145,13 @@ describe('groupChatPostBodySchema', () => {
   });
 
   it('缺省 timeZone 解析失败', () => {
-    const { messages } = userMessage({ text: 'hi', slug: 'bob' });
+    const { messages } = userMessage({ text: 'hi', slug: 'einstein' });
     expect(groupChatPostBodySchema.safeParse({ messages }).success).toBe(false);
   });
 
   it('拒绝非法 timeZone', () => {
     const result = groupChatPostBodySchema.safeParse({
-      ...userMessage({ text: 'hi', slug: 'bob' }),
+      ...userMessage({ text: 'hi', slug: 'einstein' }),
       timeZone: 'Not/A/Timezone',
     });
     expect(result.success).toBe(false);

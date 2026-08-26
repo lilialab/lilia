@@ -47,12 +47,10 @@ export const en = {
     'lilia.displayName': 'Lilia',
     'lilia.shortBio':
       'A growth-oriented personal AI assistant. Casual, peer-level tone; companionship and habit-building.',
-    'bob.displayName': 'Bob',
-    'bob.shortBio': 'Placeholder character. Concise, neutral, and polite.',
-    'cindy.displayName': 'Cindy',
-    'cindy.shortBio': 'Placeholder character for multi-character and group-chat selection.',
-    'dave.displayName': 'Dave',
-    'dave.shortBio': 'Placeholder character for multi-character and group-chat selection.',
+    'einstein.displayName': 'Einstein',
+    'einstein.shortBio': 'Placeholder character. Calm, concise, and analytical.',
+    'socrates.displayName': 'Socrates',
+    'socrates.shortBio': 'Placeholder character. Brief, questioning, and reflective.',
   },
   chat: {
     moreActions: 'More actions',

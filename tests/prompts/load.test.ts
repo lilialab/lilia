@@ -16,19 +16,16 @@ describe('prompts/load', () => {
     expect(character.skills).toEqual(['searchChatHistory']);
   });
 
-  it('可加载占位角色 bob / cindy / dave', () => {
-    const bob = loadCharacter('bob');
-    expect(bob.id).toBe('bob');
-    expect(bob.persona).toContain('鲍勃');
-    expect(bob.skills).toEqual([]);
+  it('可加载占位角色 einstein / socrates', () => {
+    const einstein = loadCharacter('einstein');
+    expect(einstein.id).toBe('einstein');
+    expect(einstein.persona).toContain('爱因斯坦');
+    expect(einstein.skills).toEqual([]);
 
-    const cindy = loadCharacter('cindy');
-    expect(cindy.id).toBe('cindy');
-    expect(cindy.skills).toEqual([]);
-
-    const dave = loadCharacter('dave');
-    expect(dave.id).toBe('dave');
-    expect(dave.skills).toEqual([]);
+    const socrates = loadCharacter('socrates');
+    expect(socrates.id).toBe('socrates');
+    expect(socrates.persona).toContain('苏格拉底');
+    expect(socrates.skills).toEqual([]);
   });
 
   it('loadExtractPrompt(lilia) 含核心规则与弱模型约束', () => {

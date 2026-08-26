@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
 
 describe('stripLeadingSpeakerLabels', () => {
   it('去掉开头一层或多层 (slug):', () => {
-    expect(stripLeadingSpeakerLabels('(bob): 你好')).toBe('你好');
-    expect(stripLeadingSpeakerLabels('(bob): (lilia): hi')).toBe('hi');
+    expect(stripLeadingSpeakerLabels('(einstein): 你好')).toBe('你好');
+    expect(stripLeadingSpeakerLabels('(einstein): (lilia): hi')).toBe('hi');
   });
 
   it('无前缀时原样返回', () => {
@@ -24,12 +24,12 @@ describe('withGroupSpeakerLabelsForModel', () => {
         id: 'a1',
         role: 'assistant',
         parts: [{ type: 'text', text: '答' }],
-        metadata: { kind: null, slug: 'bob' },
+        metadata: { kind: null, slug: 'einstein' },
       },
     ]);
 
     expect(labeled[0]?.parts).toEqual([{ type: 'text', text: '问' }]);
-    expect(labeled[1]?.parts).toEqual([{ type: 'text', text: '(bob): 答' }]);
+    expect(labeled[1]?.parts).toEqual([{ type: 'text', text: '(einstein): 答' }]);
   });
 
   it('缺 slug 时用 assistant', () => {
@@ -53,7 +53,7 @@ describe('extractLatestContextTextForRag', () => {
           id: 'a1',
           role: 'assistant',
           parts: [{ type: 'text', text: '助手' }],
-          metadata: { kind: null, slug: 'bob' },
+          metadata: { kind: null, slug: 'einstein' },
         },
       ]),
     ).toBe('助手');

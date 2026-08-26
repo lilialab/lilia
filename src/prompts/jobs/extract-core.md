@@ -2,7 +2,7 @@
 
 【输入格式】
 对话由若干 <message id="消息UUID" seq="序号" speaker="说话人">内容</message> 标签组成。
-- speaker：人类用户为 `user`；AI 助理为该角色的 slug（如 `lilia`、`bob`）。正文为纯对话，不含「说话人: 」前缀。
+- speaker：人类用户为 `user`；AI 助理为该角色的 slug（如 `lilia`、`einstein`）。正文为纯对话，不含「说话人: 」前缀。
 - id：消息的唯一标识，回填时必须原样使用，不得编造。
 - seq：从 0 开始的顺序序号，与对话时间顺序一致；仅作阅读辅助，回填仍以 id 为准。
 

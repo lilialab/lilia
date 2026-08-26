@@ -1,31 +1,10 @@
 import { prisma } from '../src/lib/server/prisma';
-import { registerUser } from '../src/services/user/users.service';
-
-const CHARACTER_SLUGS = ['lilia', 'bob', 'cindy', 'dave'] as const;
-
-const SEED_USER = {
-  username: 'tom',
-  displayName: 'Tom',
-  password: '123123123',
-  locale: 'zh',
-} as const;
+import { seedCharacterCatalog } from './seed-catalog';
+import { seedDevUser } from './seed-dev-user';
 
 async function main() {
-  for (const slug of CHARACTER_SLUGS) {
-    await prisma.character.upsert({
-      where: { slug },
-      create: { slug },
-      update: {},
-    });
-  }
-
-  const existing = await prisma.user.findUnique({
-    where: { username: SEED_USER.username },
-    select: { id: true },
-  });
-  if (!existing) {
-    await registerUser(SEED_USER);
-  }
+  await seedCharacterCatalog();
+  await seedDevUser();
 }
 
 main()

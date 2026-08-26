@@ -46,12 +46,10 @@ export const zh = {
   characters: {
     'lilia.displayName': '莉莉娅',
     'lilia.shortBio': '成长型个人 AI 助理，语气家常平视，偏陪伴与习惯养成。',
-    'bob.displayName': '鲍勃',
-    'bob.shortBio': '占位测试角色，语气简洁中性礼貌。',
-    'cindy.displayName': '辛迪',
-    'cindy.shortBio': '占位测试角色，用于验证多角色与群聊选角。',
-    'dave.displayName': '戴夫',
-    'dave.shortBio': '占位测试角色，用于验证多角色与群聊选角。',
+    'einstein.displayName': '爱因斯坦',
+    'einstein.shortBio': '占位测试角色，语气沉稳简洁偏理性。',
+    'socrates.displayName': '苏格拉底',
+    'socrates.shortBio': '占位测试角色，语气简短爱追问偏思辨。',
   },
   chat: {
     moreActions: '更多操作',

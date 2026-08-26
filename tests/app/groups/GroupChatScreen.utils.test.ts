@@ -15,9 +15,9 @@ describe('groupMentionStorageKey', () => {
 
 describe('buildUserOutboundMessage', () => {
   it('正文前拼 @slug，metadata 直接带 slug', () => {
-    expect(buildUserOutboundMessage('你好', 'bob')).toEqual({
-      text: '@bob 你好',
-      metadata: { kind: null, slug: 'bob' },
+    expect(buildUserOutboundMessage('你好', 'einstein')).toEqual({
+      text: '@einstein 你好',
+      metadata: { kind: null, slug: 'einstein' },
     });
     expect(buildUserOutboundMessage('  hi  ', 'lilia')).toEqual({
       text: '@lilia hi',
@@ -27,12 +27,12 @@ describe('buildUserOutboundMessage', () => {
 });
 
 describe('sendTurnCueIfMentioned', () => {
-  const members = [{ slug: 'lilia' }, { slug: 'bob' }];
+  const members = [{ slug: 'lilia' }, { slug: 'einstein' }];
 
   it('助手 @ 群成员时发送 turn_cue', () => {
     const sendMessage = vi.fn();
     const result = sendTurnCueIfMentioned({
-      assistantParts: [{ type: 'text', text: '交给 @bob 吧' }],
+      assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
       members,
       sendMessage,
       hopCount: 0,
@@ -40,8 +40,8 @@ describe('sendTurnCueIfMentioned', () => {
 
     expect(result).toBe('sent');
     expect(sendMessage).toHaveBeenCalledWith({
-      text: '【系统】你（@bob）被点名，请基于上文以自己身份继续发言。',
-      metadata: { kind: MESSAGE_KIND_TURN_CUE, slug: 'bob' },
+      text: '【系统】你（@einstein）被点名，请基于上文以自己身份继续发言。',
+      metadata: { kind: MESSAGE_KIND_TURN_CUE, slug: 'einstein' },
     });
   });
 
@@ -69,7 +69,7 @@ describe('sendTurnCueIfMentioned', () => {
   it(`hopCount 达 ${MAX_TURN_CUE_HOPS} 时 capped 且不发送`, () => {
     const sendMessage = vi.fn();
     const result = sendTurnCueIfMentioned({
-      assistantParts: [{ type: 'text', text: '交给 @bob 吧' }],
+      assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
       members,
       sendMessage,
       hopCount: MAX_TURN_CUE_HOPS,
@@ -81,7 +81,7 @@ describe('sendTurnCueIfMentioned', () => {
   it('hopCount 未达上限时可继续发送', () => {
     const sendMessage = vi.fn();
     const result = sendTurnCueIfMentioned({
-      assistantParts: [{ type: 'text', text: '交给 @bob 吧' }],
+      assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
       members,
       sendMessage,
       hopCount: MAX_TURN_CUE_HOPS - 1,
