@@ -2,13 +2,10 @@ import { tCharacter } from '@/i18n/characters';
 import type { Locale } from '@/i18n/config';
 import { interpolate } from '@/prompts/interpolate';
 import { loadCharacter, readPromptFile } from '@/prompts/load';
-import {
-  formatHistoricalContexts,
-  formatRuntimeContextInner,
-  xmlBlock,
-} from '@/services/chat/format.utils';
+import { formatHistoricalContexts, formatRuntimeContextInner } from '@/services/chat/format.utils';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
+import { xmlBlock } from '@/utils/xml-block';
 import { formatGroupChatRulesInner, formatGroupRosterInner } from './prompt.utils';
 
 /* -------------------------------------------------------------------------- */

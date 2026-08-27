@@ -2,8 +2,9 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadExtractPrompt } from '@/prompts/load';
+import { readPromptFile } from '@/prompts/load';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
+import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import {
@@ -35,6 +36,11 @@ const consolidationOutputSchema = z.object({
 interface TranscriptResult {
   transcript: string;
   messageIds: string[];
+}
+
+interface ExtractTarget {
+  characterId: string;
+  characterSlug: string;
 }
 
 export type RunConsolidationParams = {
@@ -180,23 +186,27 @@ async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptR
   };
 }
 
-/** 读取群当前成员 characterId 列表（job 执行时快照）。 */
-async function loadGroupMemberCharacterIds(groupSessionId: string): Promise<string[]> {
+/** 读取群当前成员（job 执行时快照；id 落库，slug 读 extract.md）。 */
+async function loadGroupMemberCharacters(groupSessionId: string): Promise<ExtractTarget[]> {
   const members = await prisma.groupMember.findMany({
     where: { groupSessionId },
-    select: { characterId: true },
+    select: { characterId: true, character: { select: { slug: true } } },
     orderBy: { createdAt: 'asc' },
   });
-  return members.map((member) => member.characterId);
+  return members.map((member) => ({
+    characterId: member.characterId,
+    characterSlug: member.character.slug,
+  }));
 }
 
-/** 单聊会话的 characterId。 */
-async function loadSessionCharacterId(sessionId: string): Promise<string | null> {
+/** 单聊会话的角色 id 与 slug。 */
+async function loadSessionCharacter(sessionId: string): Promise<ExtractTarget | null> {
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
-    select: { characterId: true },
+    select: { characterId: true, character: { select: { slug: true } } },
   });
-  return session?.characterId ?? null;
+  if (!session) return null;
+  return { characterId: session.characterId, characterSlug: session.character.slug };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,8 +221,15 @@ async function extractMemoriesFromTranscript(
   userId: string,
   scope: { sessionId?: string; groupSessionId?: string },
   characterId: string,
+  characterSlug: string,
 ): Promise<{ parsed: ConsolidationParseResult } | { error: string }> {
-  const systemPrompt = loadExtractPrompt(characterId);
+  const systemPrompt = [
+    xmlBlock('extract_rules', readPromptFile('jobs', 'extract-core.md')),
+    xmlBlock('character_extract_focus', readPromptFile('characters', characterSlug, 'extract.md')),
+  ].join('\n\n');
+
+  const userPrompt = xmlBlock('conversation', transcript);
+
   await updateConsolidationJob(job.id, {
     progress: `正在调用模型提取记忆（${messageIds.length} 条消息）...`,
     snapshot: {
@@ -223,15 +240,11 @@ async function extractMemoriesFromTranscript(
     },
   });
 
-  const groupHint = scope.groupSessionId
-    ? '【说明】以下为群聊。每条 message 含 speaker 属性（user 或助理 slug）；只提炼用户侧长期事实，文案规范与单聊相同。\n'
-    : '';
-  const userPrompt = `${groupHint}<conversation>\n${transcript}\n</conversation>`;
-
   logger.info({
     event: 'llm.consolidation.request',
     jobId: job.id,
     characterId,
+    characterSlug,
     model: env.LLM_MODEL,
     messageIds,
     messageCount: messageIds.length,
@@ -258,6 +271,7 @@ async function extractMemoriesFromTranscript(
       event: 'llm.consolidation.response',
       jobId: job.id,
       characterId,
+      characterSlug,
       model: env.LLM_MODEL,
       messageIds,
       response: text,
@@ -343,6 +357,7 @@ async function extractForCharacter(
   userId: string,
   scope: { sessionId?: string; groupSessionId?: string },
   characterId: string,
+  characterSlug: string,
 ): Promise<PerCharacterResult | null> {
   const extracted = await extractMemoriesFromTranscript(
     job,
@@ -351,6 +366,7 @@ async function extractForCharacter(
     userId,
     scope,
     characterId,
+    characterSlug,
   );
   if ('error' in extracted) {
     logger.warn(
@@ -358,9 +374,10 @@ async function extractForCharacter(
         event: 'llm.consolidation.character.failed',
         jobId: job.id,
         characterId,
+        characterSlug,
         error: extracted.error,
       },
-      `[MemoryConsolidation] 角色 ${characterId} 提取失败`,
+      `[MemoryConsolidation] 角色 ${characterSlug} 提取失败`,
     );
     return null;
   }
@@ -444,11 +461,13 @@ export async function runConsolidation(
       return;
     }
 
-    const characterIds = isGroup
-      ? await loadGroupMemberCharacterIds(scope.groupSessionId)
-      : [await loadSessionCharacterId(scope.sessionId)].flatMap((id) => (id ? [id] : []));
+    const characters = isGroup
+      ? await loadGroupMemberCharacters(scope.groupSessionId)
+      : [await loadSessionCharacter(scope.sessionId)].flatMap(
+        (character) => character ? [character] : [],
+      );
 
-    if (characterIds.length === 0) {
+    if (characters.length === 0) {
       await failJob(
         job,
         isGroup ? '群内无成员，无法写入记忆' : '会话角色不存在，无法写入记忆',
@@ -464,8 +483,8 @@ export async function runConsolidation(
     const perCharMemories = new Map<string, FinishedMemory[]>();
     const results: PerCharacterResult[] = [];
 
-    for (const characterId of characterIds) {
-      const charLabel = isGroup ? `角色 ${characterId}` : '';
+    for (const { characterId, characterSlug } of characters) {
+      const charLabel = isGroup ? `角色 ${characterSlug}` : '';
       await updateConsolidationJob(job.id, {
         progress: `正在${charLabel}提取记忆（${messageIds.length} 条消息）...`,
       });
@@ -477,6 +496,7 @@ export async function runConsolidation(
         userId,
         extractScope,
         characterId,
+        characterSlug,
       );
       if (result) {
         results.push(result);
@@ -553,7 +573,7 @@ export async function runConsolidation(
       jobId: job.id,
       sessionId: isGroup ? undefined : scope.sessionId,
       groupSessionId: isGroup ? scope.groupSessionId : undefined,
-      characterIds,
+      characterIds: characters.map((character) => character.characterId),
       memoriesExtracted: result.memoriesExtracted,
       memoryRowsWritten: rowCount,
       consolidatedMessageCount: result.consolidatedMessageCount,
@@ -562,7 +582,7 @@ export async function runConsolidation(
     });
 
     const perCharNote = isGroup
-      ? `，${characterIds.length} 个角色各自提取，共写入 ${rowCount} 条`
+      ? `，${characters.length} 个角色各自提取，共写入 ${rowCount} 条`
       : '';
 
     await completeJob(

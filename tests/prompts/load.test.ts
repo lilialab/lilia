@@ -1,10 +1,4 @@
-import {
-  DEFAULT_CHARACTER_ID,
-  loadCharacter,
-  loadExtractPrompt,
-  loadJobPrompt,
-  readPromptFile,
-} from '@/prompts/load';
+import { DEFAULT_CHARACTER_ID, loadCharacter, loadJobPrompt, readPromptFile } from '@/prompts/load';
 import { describe, expect, it } from 'vitest';
 
 describe('prompts/load', () => {
@@ -36,19 +30,13 @@ describe('prompts/load', () => {
     expect(socrates.profile).toBe('name: {{name}}\ngender: male');
   });
 
-  it('loadExtractPrompt(lilia) 含核心规则与弱模型约束', () => {
-    const prompt = loadExtractPrompt('lilia');
-    expect(prompt.length).toBeGreaterThan(100);
-    expect(prompt).toContain('finished_memories');
-    expect(prompt).toContain('弱模型额外约束');
-    expect(prompt).toContain('莉莉娅');
-  });
-
-  it('loadExtractPrompt 未知角色 fallback 到全局默认', () => {
-    const prompt = loadExtractPrompt('nonexistent');
-    expect(prompt.length).toBeGreaterThan(100);
-    expect(prompt).toContain('finished_memories');
-    expect(prompt).not.toContain('专属提取重点');
+  it('每个角色都有 extract.md', () => {
+    const extractCore = readPromptFile('jobs', 'extract-core.md');
+    expect(extractCore).toContain('finished_memories');
+    expect(extractCore).not.toContain('<extract_rules>');
+    for (const slug of ['lilia', 'einstein', 'socrates'] as const) {
+      expect(readPromptFile('characters', slug, 'extract.md').length).toBeGreaterThan(0);
+    }
   });
 
   it('loadJobPrompt(maintain|profile) 非空', () => {

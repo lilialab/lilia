@@ -6,7 +6,8 @@ import { interpolate } from '@/prompts/interpolate';
 import { loadCharacter, readPromptFile } from '@/prompts/load';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
-import { formatHistoricalContexts, formatRuntimeContextInner, xmlBlock } from './format.utils';
+import { xmlBlock } from '@/utils/xml-block';
+import { formatHistoricalContexts, formatRuntimeContextInner } from './format.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */

@@ -2,7 +2,6 @@ import {
   formatHistoricalContexts,
   formatRuntimeContextInner,
   formatUtcIso,
-  xmlBlock,
 } from '@/services/chat/format.utils';
 import { describe, expect, it } from 'vitest';
 
@@ -94,12 +93,6 @@ describe('formatHistoricalContexts', () => {
 
   it('无片段时写占位句', () => {
     expect(formatHistoricalContexts([], TIME_ZONE)).toBe('暂无相关历史记忆。');
-  });
-});
-
-describe('xmlBlock', () => {
-  it('写出开闭标签', () => {
-    expect(xmlBlock('persona', 'hello')).toBe('<persona>\nhello\n</persona>');
   });
 });
 

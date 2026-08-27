@@ -38,11 +38,6 @@ export function formatHistoricalContexts(
     .join('\n');
 }
 
-/** 用 XML 标签包一层正文；开闭标签由调用处写出。 */
-export function xmlBlock(tag: string, body: string): string {
-  return `<${tag}>\n${body}\n</${tag}>`;
-}
-
 /** 运行时上下文正文（不含标签；由组装处包 `<runtime_context>`）。 */
 export function formatRuntimeContextInner(now: Date, timeZone: string): string {
   const localNow = formatLocalDateTime(now, timeZone);

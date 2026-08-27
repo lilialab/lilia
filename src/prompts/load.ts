@@ -63,20 +63,3 @@ export function loadJobPrompt(job: JobPromptId): string {
   }
   return loader();
 }
-
-/** 加载默认 extract prompt（core + guardrails）。 */
-function loadDefaultExtractPrompt(): string {
-  const core = readPromptFile('jobs', 'extract-core.md');
-  const guardrails = readPromptFile('jobs', 'extract-local-guardrails.md');
-  return `${core}\n\n${guardrails}`;
-}
-
-/** 按角色加载 extract prompt。默认规则始终包含；角色目录下 extract.md 存在时追加角色专属的提取重点。 */
-export function loadExtractPrompt(characterId: string): string {
-  const base = loadDefaultExtractPrompt();
-  const charPath = path.join(PROMPTS_ROOT, 'characters', characterId, 'extract.md');
-  if (!existsSync(charPath)) return base;
-
-  const charFocus = readPromptFile('characters', characterId, 'extract.md');
-  return `${base}\n\n${charFocus}`;
-}
