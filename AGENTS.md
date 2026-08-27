@@ -121,8 +121,8 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 
 | 任务 | 先读 |
 |------|------|
-| 聊天 / system prompt | `prompt-builder.service.ts`；`src/prompts/` |
-| 群聊 | `group-chat` / `group-message` / `group-prompt`；@ 见 [`docs/groups/mention-turn-cue.md`](docs/groups/mention-turn-cue.md) |
+| 聊天 / system prompt | `chat/prompt.service.ts`；`src/prompts/` |
+| 群聊 | `group/chat` / `group/message` / `group/prompt`；@ 见 [`docs/groups/mention-turn-cue.md`](docs/groups/mention-turn-cue.md) |
 | 记忆整理 | `consolidation.service.ts` + `consolidation.utils.ts` |
 | 记忆检索 / 衰减 | `vector` + `decay.utils` + `metadata.utils` |
 | 用户画像 | `user-profile.service.ts` |

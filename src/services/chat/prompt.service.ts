@@ -1,16 +1,19 @@
+import { tCharacter } from '@/i18n/characters';
+import { type Locale, parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { loadCharacter, loadPlatformSafety } from '@/prompts/load';
+import { interpolate } from '@/prompts/interpolate';
+import { loadCharacter, readPromptFile } from '@/prompts/load';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
-import { buildRuntimeContextBlock, formatMemoryFragmentLine } from './prompt-format.utils';
+import { formatHistoricalContexts, formatRuntimeContextInner, xmlBlock } from './format.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
 export interface SystemPromptMeta {
-  memoryFragments: string[];
+  memoryFragments: string;
   userProfile: string;
 }
 
@@ -23,16 +26,18 @@ export interface SystemPromptResult {
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-/** 从会话解析 userId 与角色。 */
+/** 从会话解析 userId、角色与用户语言。 */
 export async function resolveSessionContext(sessionId: string): Promise<{
   userId: string;
   characterId: string;
   characterSlug: string;
+  locale: Locale;
 }> {
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
     select: {
       userId: true,
+      user: { select: { locale: true } },
       character: { select: { id: true, slug: true } },
     },
   });
@@ -43,12 +48,8 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     userId: session.userId,
     characterId: session.character.id,
     characterSlug: session.character.slug,
+    locale: parseLocale(session.user?.locale),
   };
-}
-
-/** 获取该角色下的用户画像文本。 */
-async function fetchUserProfile(userId: string, characterId: string): Promise<string> {
-  return getUserProfileText(userId, characterId);
 }
 
 export interface BuildSystemPromptOptions {
@@ -69,57 +70,37 @@ export async function buildSystemPrompt(
   options: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
   const { timeZone } = options;
-  const { userId, characterId, characterSlug } = await resolveSessionContext(sessionId);
+  const { userId, characterId, characterSlug, locale } = await resolveSessionContext(sessionId);
   const now = new Date();
+
   const character = loadCharacter(characterSlug);
-  const platformSafety = loadPlatformSafety();
+  const displayName = tCharacter(characterSlug, 'displayName', locale);
+  const vars = { name: displayName, slug: characterSlug };
+  const persona = interpolate(character.persona, vars);
+  const characterProfile = interpolate(character.profile, vars);
 
   const [userProfile, memoryFragments] = await Promise.all([
-    fetchUserProfile(userId, characterId),
+    getUserProfileText(userId, characterId),
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 
-  const memoryFragmentLines = memoryFragments.map((fragment, index) =>
-    formatMemoryFragmentLine(index + 1, fragment, timeZone)
-  );
+  const historicalContexts = formatHistoricalContexts(memoryFragments, timeZone);
+  const runtimeContext = formatRuntimeContextInner(now, timeZone);
+  const replyRules = readPromptFile('reply-rules.md');
 
-  const contextStr = memoryFragmentLines.length > 0
-    ? memoryFragmentLines.join('\n')
-    : '暂无相关历史记忆。';
-
-  const runtimeContext = buildRuntimeContextBlock(now, timeZone);
-
-  const systemPrompt = `
-    # 【第一层：核心宪法】(开发者定义，最高权重)
-    <platform_safety>
-    ${platformSafety}
-    </platform_safety>
-
-    <system_mandate>
-    ${character.persona}
-    </system_mandate>
-
-    # 【第二层：动态画像与记忆】(由 AI 持续观察并维护)
-    <user_profile>
-    ${userProfile}
-    </user_profile>
-
-    # 【运行时上下文】
-    ${runtimeContext}
-
-    <historical_contexts>
-    以下是与当前话题相关的历史记忆片段：
-    ${contextStr}
-    </historical_contexts>
-
-    # 【执行约束】
-    请结合“第一层”的灵魂人设与“第二层”的用户记忆回应用户。回复语言须与用户当前消息一致；勿因系统提示或记忆片段的语言而切换。向用户提及时间时一律使用用户本地时区与自然口语；不要向用户播报 UTC 或 ISO。记忆「记录于/最近活跃于」或 event 的「系统收录于/最近召回于」是系统元数据；event 类日程以正文中的日期时刻为准。
-  `.trim();
+  const systemPrompt = [
+    xmlBlock('system_mandate', persona),
+    xmlBlock('character_profile', characterProfile),
+    xmlBlock('user_profile', userProfile),
+    xmlBlock('historical_contexts', historicalContexts),
+    xmlBlock('runtime_context', runtimeContext),
+    xmlBlock('reply_rules', replyRules),
+  ].join('\n\n');
 
   return {
     systemPrompt,
     meta: {
-      memoryFragments: memoryFragmentLines,
+      memoryFragments: historicalContexts,
       userProfile,
     },
   };

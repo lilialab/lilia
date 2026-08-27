@@ -3,7 +3,7 @@ import { parseJsonBody, parseRouteParams } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
 import { groupChatPostBodySchema } from '@/schemas/api/groups/chat-post';
 import { groupParamsSchema } from '@/schemas/api/groups/params';
-import { streamGroupChatFlow } from '@/services/group/group-chat.service';
+import { streamGroupChatFlow } from '@/services/group/chat.service';
 import { assertGroupOwnedByUser } from '@/services/group/groups.service';
 import { createUIMessageStreamResponse, toUIMessageStream } from 'ai';
 import { type NextRequest } from 'next/server';

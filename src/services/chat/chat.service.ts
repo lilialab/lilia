@@ -3,8 +3,8 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
-import { assertChatDailyTurnQuota } from '@/services/chat/chat-quota.service';
-import { resolveChatLlm } from '@/services/chat/resolve-chat-llm';
+import { assertChatDailyTurnQuota } from '@/services/chat/quota.service';
+import { resolveChatLlm } from '@/services/chat/resolve-llm';
 import { scheduleMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
@@ -22,7 +22,7 @@ import {
   type UIDataTypes,
 } from 'ai';
 import { getContextMessages, saveAssistantResponse } from './message.service';
-import { buildSystemPrompt, resolveSessionContext } from './prompt-builder.service';
+import { buildSystemPrompt, resolveSessionContext } from './prompt.service';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */

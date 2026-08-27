@@ -2,7 +2,7 @@ import {
   extractLatestContextTextForRag,
   stripLeadingSpeakerLabels,
   withGroupSpeakerLabelsForModel,
-} from '@/services/group/group-message.utils';
+} from '@/services/group/message.utils';
 import { describe, expect, it } from 'vitest';
 
 describe('stripLeadingSpeakerLabels', () => {

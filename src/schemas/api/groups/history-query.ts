@@ -1,4 +1,4 @@
-import { PAGE_SIZE } from '@/services/group/group-message.service';
+import { PAGE_SIZE } from '@/services/group/message.service';
 import { z } from 'zod';
 
 export const groupHistoryQuerySchema = z.object({

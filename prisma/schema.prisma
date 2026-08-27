@@ -207,13 +207,12 @@ model UserMemory {
 }
 
 /**
- * 用户×角色画像摘要（maintain→profile 产物）；按 userId + characterId 私有
+ * 用户×角色画像（maintain→profile 产物）；按 userId + characterId 私有
  */
 model UserProfile {
   userId        String    @map("user_id")
   characterId   String    @map("character_id")
-  summary       String?   @db.Text
-  facets        Json?
+  text          String?   @db.Text
   sourceVersion Int       @default(0) @map("source_version")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")

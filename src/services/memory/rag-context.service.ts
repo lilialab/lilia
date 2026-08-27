@@ -1,6 +1,6 @@
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import type { MemoryFragment } from '@/services/chat/prompt-format.utils';
+import type { MemoryFragment } from '@/services/chat/format.utils';
 import { VectorService } from '@/services/memory/vector.service';
 
 const vectorService = new VectorService();

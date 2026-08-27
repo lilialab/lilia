@@ -77,8 +77,8 @@ sequenceDiagram
 | 单测 | `tests/app/groups/GroupChatScreen.utils.test.ts` |
 | metadata / 展示过滤 | `src/types/message-kind.ts`（`MESSAGE_KIND_TURN_CUE`、`isDisplayMessage`） |
 | API body | `src/schemas/api/groups/chat-post.ts` |
-| 选角 + 流 | `src/services/group/group-chat.service.ts`（`streamGroupChatFlow`） |
-| 落库 / 历史与上下文排除 cue / 说话人前缀与 RAG 句 | `group-message.service` + `group-message.utils` |
+| 选角 + 流 | `src/services/group/chat.service.ts`（`streamGroupChatFlow`） |
+| 落库 / 历史与上下文排除 cue / 说话人前缀与 RAG 句 | `group/message.service` + `group/message.utils` |
 
 ## 注意
 

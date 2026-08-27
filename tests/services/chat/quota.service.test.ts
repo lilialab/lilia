@@ -12,7 +12,7 @@ vi.mock('@/lib/server/rate-limit', () => ({
 import {
   assertChatDailyTurnQuota,
   CHAT_DAILY_TURN_LIMIT_MESSAGE,
-} from '@/services/chat/chat-quota.service';
+} from '@/services/chat/quota.service';
 
 describe('assertChatDailyTurnQuota', () => {
   beforeEach(() => {

@@ -4,7 +4,7 @@ import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kin
 import { extractTextFromParts } from '@/utils/message-parts';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
-import { stripLeadingSpeakerLabels } from './group-message.utils';
+import { stripLeadingSpeakerLabels } from './message.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Constants                                                                  */

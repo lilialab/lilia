@@ -3,8 +3,8 @@ import { parseRouteParams, parseSearchParams } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
 import { groupHistoryQuerySchema } from '@/schemas/api/groups/history-query';
 import { groupParamsSchema } from '@/schemas/api/groups/params';
-import { getGroupHistoryPage } from '@/services/group/group-message.service';
 import { assertGroupOwnedByUser } from '@/services/group/groups.service';
+import { getGroupHistoryPage } from '@/services/group/message.service';
 import { type NextRequest } from 'next/server';
 
 export const GET = withApiHandler(

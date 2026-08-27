@@ -1,10 +1,11 @@
+import { DEFAULT_LOCALE } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadCharacter } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
-import { assertChatDailyTurnQuota } from '@/services/chat/chat-quota.service';
-import { resolveChatLlm, type ResolvedChatLlm } from '@/services/chat/resolve-chat-llm';
+import { assertChatDailyTurnQuota } from '@/services/chat/quota.service';
+import { resolveChatLlm, type ResolvedChatLlm } from '@/services/chat/resolve-llm';
 import { scheduleGroupMemoryExtract } from '@/services/memory/extract-queue.service';
 import { scheduleMaintainPipeline } from '@/services/memory/maintain-queue.service';
 import {
@@ -27,12 +28,9 @@ import {
   createGroupUserMessage,
   getGroupContextMessages,
   saveGroupAssistantResponse,
-} from './group-message.service';
-import {
-  extractLatestContextTextForRag,
-  withGroupSpeakerLabelsForModel,
-} from './group-message.utils';
-import { buildGroupSystemPrompt } from './group-prompt.service';
+} from './message.service';
+import { extractLatestContextTextForRag, withGroupSpeakerLabelsForModel } from './message.utils';
+import { buildGroupSystemPrompt } from './prompt.service';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -128,6 +126,7 @@ export async function streamGroupAssistantReply({
     memberSlugs: members.map((m) => m.character.slug),
     lastUserContent: ragQueryText,
     timeZone,
+    locale: user?.locale ?? DEFAULT_LOCALE,
   });
 
   logger.info({

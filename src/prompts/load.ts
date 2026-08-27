@@ -8,6 +8,8 @@ export type JobPromptId = 'maintain' | 'profile';
 export interface CharacterPrompt {
   id: string;
   persona: string;
+  /** 角色基础档案 KV 正文（含 `{{name}}` 等占位符）。 */
+  profile: string;
   /** 角色可用的 skill id 列表（如 searchChatHistory）。 */
   skills: string[];
 }
@@ -15,7 +17,8 @@ export interface CharacterPrompt {
 const PROMPTS_ROOT = path.join(process.cwd(), 'src/prompts');
 const cache = new Map<string, string>();
 
-function readPromptFile(...segments: string[]): string {
+/** 读取 `src/prompts/` 下的文本（带缓存）。 */
+export function readPromptFile(...segments: string[]): string {
   const rel = path.join(...segments);
   const cached = cache.get(rel);
   if (cached !== undefined) return cached;
@@ -32,23 +35,17 @@ function loadCharacterSkills(slug: string): string[] {
   return Array.isArray(parsed.skills) ? parsed.skills : [];
 }
 
-/** 加载平台共用安全约束。 */
-export function loadPlatformSafety(): string {
-  return readPromptFile('platform', 'safety.md');
-}
-
-/** 加载角色人设（skills.json + persona）；slug 对齐 characters/{slug}/ 目录。 */
+/** 加载角色人设（persona.md + profile.md + skills.json）；slug 对齐 characters/{slug}/ 目录。 */
 export function loadCharacter(slug: string): CharacterPrompt {
   const personaPath = path.join(PROMPTS_ROOT, 'characters', slug, 'persona.md');
   if (!existsSync(personaPath)) {
     throw new Error(`未知角色 prompt: ${slug}`);
   }
 
-  const persona = readPromptFile('characters', slug, 'persona.md');
-
   return {
     id: slug,
-    persona,
+    persona: readPromptFile('characters', slug, 'persona.md'),
+    profile: readPromptFile('characters', slug, 'profile.md'),
     skills: loadCharacterSkills(slug),
   };
 }

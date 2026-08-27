@@ -7,19 +7,17 @@ flowchart TD
   API["POST memory/profile?characterId="] --> Entry[触发画像 job]
   Pipeline["maintain→profile 管线"] --> Entry
   Entry --> Core[画像 rollup 主流程]
-  Core --> LoadStats[统计该角色记忆分布]
   Core --> LoadProfile[并行加载该角色画像与非 event 参考记忆]
-  LoadStats --> Prompt[拼装 LLM prompt]
-  LoadProfile --> Prompt
-  Prompt --> LlmGen["LLM 生成 summary / facets"]
-  LlmGen --> Upsert["upsert UserProfile userId+characterId"]
+  LoadProfile --> Prompt[拼装 LLM prompt]
+  Prompt --> LlmGen["LLM 生成 nickname / communication_style / avoid_topics 文本"]
+  LlmGen --> Upsert["upsert UserProfile.text"]
 ```
 
 ## 说明
 
 ### 目的
 
-按 **userId + characterId** 私有：只用该角色下的长期记忆 rollup 出 summary / facets，供该角色单聊 / 群聊发言时注入 prompt。
+按 **userId + characterId** 私有：从该角色下的长期记忆 rollup 出用户画像（称呼、说话方式、回避话题），供该角色单聊 / 群聊每次注入 prompt。职业、日程、兴趣等生平不写入画像，由 RAG 按需检索。
 
 ### 何时触发
 
@@ -39,7 +37,6 @@ flowchart TD
 |------|------|
 | 画像 job 入口 | `runProfileRefresh` |
 | 加载数据并调用 LLM rollup | `refreshUserProfile` |
-| 记忆库 type 统计 | `loadMemoryStats` |
 | 拼装刷新 prompt | `buildProfileRefreshPrompt` |
 | 读画像注入 prompt | `getUserProfileText` |
-| 结构化 LLM 调用 | `generateText` |
+| LLM 调用 | `generateText` |

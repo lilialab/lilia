@@ -12,7 +12,7 @@ export function formatUtcIso(date: Date): string {
   return date.toISOString();
 }
 
-export function formatMemoryFragmentLine(
+function formatMemoryFragmentLine(
   index: number,
   fragment: MemoryFragment,
   timeZone: string,
@@ -27,10 +27,27 @@ export function formatMemoryFragmentLine(
   return `[记忆片段 ${index} · 记录于 ${recordedAt} · 最近活跃于 ${lastActiveAt}]: ${fragment.text}`;
 }
 
-export function buildRuntimeContextBlock(now: Date, timeZone: string): string {
+/** 将检索记忆格式化为 prompt 正文；无片段时写占位句。 */
+export function formatHistoricalContexts(
+  fragments: MemoryFragment[],
+  timeZone: string,
+): string {
+  if (fragments.length === 0) return '暂无相关历史记忆。';
+  return fragments
+    .map((fragment, index) => formatMemoryFragmentLine(index + 1, fragment, timeZone))
+    .join('\n');
+}
+
+/** 用 XML 标签包一层正文；开闭标签由调用处写出。 */
+export function xmlBlock(tag: string, body: string): string {
+  return `<${tag}>\n${body}\n</${tag}>`;
+}
+
+/** 运行时上下文正文（不含标签；由组装处包 `<runtime_context>`）。 */
+export function formatRuntimeContextInner(now: Date, timeZone: string): string {
   const localNow = formatLocalDateTime(now, timeZone);
-  return `<runtime_context>
-用户时区：${timeZone}
-当前时间（用户本地）：${localNow}
-</runtime_context>`;
+  return [
+    `用户时区：${timeZone}`,
+    `当前时间（用户本地）：${localNow}`,
+  ].join('\n');
 }

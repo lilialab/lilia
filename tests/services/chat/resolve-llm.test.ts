@@ -16,7 +16,7 @@ vi.mock('@/services/user/llm-config.service', () => ({
 }));
 
 import { getChatModel, getChatModelForUserEndpoint } from '@/lib/server/llm';
-import { resolveChatLlm } from '@/services/chat/resolve-chat-llm';
+import { resolveChatLlm } from '@/services/chat/resolve-llm';
 import { getEnabledUserLlmEndpoint } from '@/services/user/llm-config.service';
 
 describe('resolveChatLlm', () => {
