@@ -60,4 +60,11 @@ describe('prompts/load', () => {
     expect(replyRules).not.toContain('自伤');
     expect(replyRules).not.toContain('<reply_rules>');
   });
+
+  it('group-chat-rules.md 含 slug 占位符，不含外层标签', () => {
+    const rules = readPromptFile('group-chat-rules.md');
+    expect(rules).toContain('{{slug}}');
+    expect(rules).toContain('@{{slug}}');
+    expect(rules).not.toContain('<group_chat_rules>');
+  });
 });

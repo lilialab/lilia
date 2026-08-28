@@ -116,7 +116,7 @@ async function prepareChatTurn(
     userMessageId,
     userContent: lastUserContent,
     contextMessageCount: contextMessages.length,
-    memoryFragments: meta.memoryFragments,
+    memories: meta.memories,
     userProfile: meta.userProfile,
     skills: character.skills,
   });

@@ -27,8 +27,8 @@ function formatMemoryFragmentLine(
   return `[记忆片段 ${index} · 记录于 ${recordedAt} · 最近活跃于 ${lastActiveAt}]: ${fragment.text}`;
 }
 
-/** 将检索记忆格式化为 prompt 正文；无片段时写占位句。 */
-export function formatHistoricalContexts(
+/** 将检索记忆格式化为 prompt 正文（不含标签；由组装处包 `<memories>`）。 */
+export function formatMemories(
   fragments: MemoryFragment[],
   timeZone: string,
 ): string {
@@ -39,7 +39,7 @@ export function formatHistoricalContexts(
 }
 
 /** 运行时上下文正文（不含标签；由组装处包 `<runtime_context>`）。 */
-export function formatRuntimeContextInner(now: Date, timeZone: string): string {
+export function formatRuntimeContext(now: Date, timeZone: string): string {
   const localNow = formatLocalDateTime(now, timeZone);
   return [
     `用户时区：${timeZone}`,

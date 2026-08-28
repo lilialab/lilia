@@ -7,14 +7,14 @@ import { loadCharacter, readPromptFile } from '@/prompts/load';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
 import { xmlBlock } from '@/utils/xml-block';
-import { formatHistoricalContexts, formatRuntimeContextInner } from './format.utils';
+import { formatMemories, formatRuntimeContext } from './format.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
 export interface SystemPromptMeta {
-  memoryFragments: string;
+  memories: string;
   userProfile: string;
 }
 
@@ -85,23 +85,23 @@ export async function buildSystemPrompt(
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 
-  const historicalContexts = formatHistoricalContexts(memoryFragments, timeZone);
-  const runtimeContext = formatRuntimeContextInner(now, timeZone);
+  const memories = formatMemories(memoryFragments, timeZone);
+  const runtimeContext = formatRuntimeContext(now, timeZone);
   const replyRules = readPromptFile('reply-rules.md');
 
   const systemPrompt = [
-    xmlBlock('system_mandate', persona),
     xmlBlock('character_profile', characterProfile),
-    xmlBlock('user_profile', userProfile),
-    xmlBlock('historical_contexts', historicalContexts),
-    xmlBlock('runtime_context', runtimeContext),
+    xmlBlock('persona', persona),
     xmlBlock('reply_rules', replyRules),
+    xmlBlock('user_profile', userProfile),
+    xmlBlock('memories', memories),
+    xmlBlock('runtime_context', runtimeContext),
   ].join('\n\n');
 
   return {
     systemPrompt,
     meta: {
-      memoryFragments: historicalContexts,
+      memories,
       userProfile,
     },
   };

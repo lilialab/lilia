@@ -1,8 +1,4 @@
-import {
-  formatHistoricalContexts,
-  formatRuntimeContextInner,
-  formatUtcIso,
-} from '@/services/chat/format.utils';
+import { formatMemories, formatRuntimeContext, formatUtcIso } from '@/services/chat/format.utils';
 import { describe, expect, it } from 'vitest';
 
 const TIME_ZONE = 'Asia/Shanghai';
@@ -15,9 +11,9 @@ describe('formatUtcIso', () => {
   });
 });
 
-describe('formatHistoricalContexts', () => {
+describe('formatMemories', () => {
   it('非 event 包含序号、记录于、最近活跃于与本地时间', () => {
-    const text = formatHistoricalContexts(
+    const text = formatMemories(
       [
         {
           text: '用户偏好短句交流',
@@ -34,7 +30,7 @@ describe('formatHistoricalContexts', () => {
   });
 
   it('event 使用系统收录于与最近召回于标签', () => {
-    const text = formatHistoricalContexts(
+    const text = formatMemories(
       [
         {
           text: '用户于 2026 年 1 月 1 日 19:00 有重要聚会',
@@ -52,7 +48,7 @@ describe('formatHistoricalContexts', () => {
 
   it('记录于与最近活跃于相同时仍输出两个标签', () => {
     const at = new Date('2026-03-10T06:00:00.000Z');
-    const text = formatHistoricalContexts(
+    const text = formatMemories(
       [
         {
           text: '用户偏好短句交流',
@@ -69,7 +65,7 @@ describe('formatHistoricalContexts', () => {
   });
 
   it('多片段换行拼接', () => {
-    const text = formatHistoricalContexts(
+    const text = formatMemories(
       [
         {
           text: 'a',
@@ -92,13 +88,13 @@ describe('formatHistoricalContexts', () => {
   });
 
   it('无片段时写占位句', () => {
-    expect(formatHistoricalContexts([], TIME_ZONE)).toBe('暂无相关历史记忆。');
+    expect(formatMemories([], TIME_ZONE)).toBe('暂无相关历史记忆。');
   });
 });
 
-describe('formatRuntimeContextInner', () => {
+describe('formatRuntimeContext', () => {
   it('包含用户时区与当前本地时间，不含标签', () => {
-    const body = formatRuntimeContextInner(new Date('2026-06-26T08:30:00.000Z'), TIME_ZONE);
+    const body = formatRuntimeContext(new Date('2026-06-26T08:30:00.000Z'), TIME_ZONE);
     expect(body).toContain('用户时区：Asia/Shanghai');
     expect(body).toContain('当前时间（用户本地）：2026-06-26 16:30:00');
     expect(body).not.toContain('<runtime_context>');

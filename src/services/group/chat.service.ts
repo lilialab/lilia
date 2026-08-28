@@ -138,7 +138,7 @@ export async function streamGroupAssistantReply({
     userContent: ragQueryText,
     ephemeralUserText: ephemeralUserText ?? null,
     contextMessageCount: contextMessages.length,
-    memoryFragments: meta.memoryFragments,
+    memories: meta.memories,
     userProfile: meta.userProfile,
     groupChatRules: meta.groupChatRules,
     rosterBlock: meta.rosterBlock,

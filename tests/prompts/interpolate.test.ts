@@ -1,6 +1,6 @@
 import { tCharacter } from '@/i18n/characters';
 import { interpolate } from '@/prompts/interpolate';
-import { loadCharacter } from '@/prompts/load';
+import { loadCharacter, readPromptFile } from '@/prompts/load';
 import { describe, expect, it } from 'vitest';
 
 describe('interpolate', () => {
@@ -34,5 +34,12 @@ describe('interpolate', () => {
       expect(en).not.toContain('{{name}}');
       if (slug === 'lilia') expect(en).not.toContain('莉莉娅');
     }
+  });
+
+  it('群聊规则按 slug 插值', () => {
+    const body = interpolate(readPromptFile('group-chat-rules.md'), { slug: 'lilia' });
+    expect(body).toContain('@lilia');
+    expect(body).toContain('slug：lilia');
+    expect(body).not.toContain('{{slug}}');
   });
 });

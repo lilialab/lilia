@@ -2,18 +2,18 @@ import { tCharacter } from '@/i18n/characters';
 import type { Locale } from '@/i18n/config';
 import { interpolate } from '@/prompts/interpolate';
 import { loadCharacter, readPromptFile } from '@/prompts/load';
-import { formatHistoricalContexts, formatRuntimeContextInner } from '@/services/chat/format.utils';
+import { formatMemories, formatRuntimeContext } from '@/services/chat/format.utils';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
 import { xmlBlock } from '@/utils/xml-block';
-import { formatGroupChatRulesInner, formatGroupRosterInner } from './prompt.utils';
+import { formatGroupRoster } from './prompt.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
 export interface GroupSystemPromptMeta {
-  memoryFragments: string;
+  memories: string;
   userProfile: string;
   groupChatRules: string;
   rosterBlock: string;
@@ -58,8 +58,8 @@ export async function buildGroupSystemPrompt({
   const vars = { name: displayName, slug: characterSlug };
   const persona = interpolate(character.persona, vars);
   const characterProfile = interpolate(character.profile, vars);
-  const groupChatRulesInner = formatGroupChatRulesInner(characterSlug);
-  const rosterInner = formatGroupRosterInner({
+  const groupChatRules = interpolate(readPromptFile('group-chat-rules.md'), vars);
+  const roster = formatGroupRoster({
     userDisplayName,
     currentSlug: characterSlug,
     memberSlugs,
@@ -70,30 +70,28 @@ export async function buildGroupSystemPrompt({
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 
-  const historicalContexts = formatHistoricalContexts(memoryFragments, timeZone);
-  const runtimeContext = formatRuntimeContextInner(now, timeZone);
+  const memories = formatMemories(memoryFragments, timeZone);
+  const runtimeContext = formatRuntimeContext(now, timeZone);
   const replyRules = readPromptFile('reply-rules.md');
-  const groupChatRules = xmlBlock('group_chat_rules', groupChatRulesInner);
-  const rosterBlock = xmlBlock('group_roster', rosterInner);
 
   const systemPrompt = [
-    xmlBlock('system_mandate', persona),
     xmlBlock('character_profile', characterProfile),
-    groupChatRules,
-    rosterBlock,
-    xmlBlock('user_profile', userProfile),
-    xmlBlock('runtime_context', runtimeContext),
-    xmlBlock('historical_contexts', historicalContexts),
+    xmlBlock('persona', persona),
+    xmlBlock('group_chat_rules', groupChatRules),
+    xmlBlock('group_roster', roster),
     xmlBlock('reply_rules', replyRules),
+    xmlBlock('user_profile', userProfile),
+    xmlBlock('memories', memories),
+    xmlBlock('runtime_context', runtimeContext),
   ].join('\n\n');
 
   return {
     systemPrompt,
     meta: {
-      memoryFragments: historicalContexts,
+      memories,
       userProfile,
       groupChatRules,
-      rosterBlock,
+      rosterBlock: roster,
     },
   };
 }
