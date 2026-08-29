@@ -6,18 +6,18 @@
 flowchart TD
   API["POST memory/profile?characterId="] --> Entry[触发画像 job]
   Pipeline["maintain→profile 管线"] --> Entry
-  Entry --> Core[画像 rollup 主流程]
+  Entry --> Core[画像全量快照]
   Core --> LoadProfile[并行加载该角色画像与非 event 参考记忆]
   LoadProfile --> Prompt[拼装 LLM prompt]
-  Prompt --> LlmGen["LLM 生成 nickname / communication_style / avoid_topics 文本"]
-  LlmGen --> Upsert["upsert UserProfile.text"]
+  Prompt --> LlmGen["LLM 生成完整画像 JSON"]
+  LlmGen --> Upsert["upsert UserProfile.data"]
 ```
 
 ## 说明
 
 ### 目的
 
-按 **userId + characterId** 私有：从该角色下的长期记忆 rollup 出用户画像（称呼、说话方式、回避话题），供该角色单聊 / 群聊每次注入 prompt。职业、日程、兴趣等生平不写入画像，由 RAG 按需检索。
+按 **userId + characterId** 私有：从该角色下的长期记忆维护用户画像（只锁回复方式，非生平摘要），以 JSON 存 `UserProfile.data`，单聊 / 群聊注入 prompt 时转为 YAML。字段闭集：`communication_style`、`avoid_topics`。称呼用账号 `displayName`（注入 `display_name`），不进画像。职业、日程、兴趣等细节由 RAG 按需检索。
 
 ### 何时触发
 
@@ -36,7 +36,7 @@ flowchart TD
 | 功能 | 函数 |
 |------|------|
 | 画像 job 入口 | `runProfileRefresh` |
-| 加载数据并调用 LLM rollup | `refreshUserProfile` |
+| 加载数据并调用 LLM 全量快照 | `refreshUserProfile` |
 | 拼装刷新 prompt | `buildProfileRefreshPrompt` |
-| 读画像注入 prompt | `getUserProfileText` |
-| LLM 调用 | `generateText` |
+| 读画像注入 prompt | `getUserProfileText`（账号 `displayName` + `jsonToYaml`） |
+| LLM 调用 | `generateText` + `Output.object` |

@@ -1,29 +1,13 @@
-/*
- * JSON ↔ YAML 文本转换。
- *
- * 用途：画像源是 JSON（现在是文件，以后入库），塞进 LLM prompt 时收成 YAML，少括号噪音。
- * 不是通用 YAML 库，也不 parse 任意 YAML。
- *
- * 生产只用 jsonToYaml（chat/group prompt）。yamlToJson 只覆盖本文件写出的子集，
- * 目前给单测往返用，业务路径没有调用。
- *
- * jsonToYaml 比当前角色卡多出来的能力（删留时可对照）：
- * - omitEmpty：空对象 / 空数组 / null 不输出（避免 prompt 里出现 habits: {}）
- * - 任意深度嵌套，不只两层
- * - 数组元素可以是对象（friends: [{ name, age }]），角色画像暂时没有
- * - 按 YAML 规则给 key/字符串加引号（{{name}}、看起来像 true/15 的字）
- */
-
 export type JsonObject = { [key: string]: JsonValue };
 export type JsonValue = string | number | boolean | null | JsonValue[] | JsonObject;
 
 const INDENT = '  ';
 
 /* -------------------------------------------------------------------------- */
-/* JSON → YAML（生产：prompt 注入） */
+/* JSON → YAML */
 /* -------------------------------------------------------------------------- */
 
-/** 把 JSON 写成 2 空格缩进的 YAML；空容器与 null 省略。非 JSON 值先 JSON 克隆丢掉。 */
+/** 写成 2 空格缩进的 YAML；空容器与 null 省略。非 JSON 值先克隆丢掉。 */
 export function jsonToYaml(value: unknown): string {
   if (value === undefined || value === null) return '';
   const json = JSON.parse(JSON.stringify(value)) as JsonValue;
@@ -121,7 +105,7 @@ function needsQuotes(value: string): boolean {
 }
 
 /* -------------------------------------------------------------------------- */
-/* YAML → JSON（非生产：只认 jsonToYaml 写出的子集，供往返测试） */
+/* YAML → JSON */
 /* -------------------------------------------------------------------------- */
 
 interface YamlLine {
@@ -129,10 +113,7 @@ interface YamlLine {
   content: string;
 }
 
-/**
- * 把本模块写出的 YAML 解析回 JSON。空文本 → `{}`。
- * 不支持注释以外的 YAML 特性（锚点、多文档、字面块等）；乱格式会抛错。
- */
+/** 解析本模块写出的 YAML 子集。空文本为 `{}`；无法解析时抛错。 */
 export function yamlToJson(text: string): JsonValue {
   const lines = toYamlLines(text);
   if (lines.length === 0) return {};

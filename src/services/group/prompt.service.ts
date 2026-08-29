@@ -65,7 +65,7 @@ export async function buildGroupSystemPrompt({
   });
 
   const [userProfile, memoryFragments] = await Promise.all([
-    getUserProfileText(userId, characterId),
+    getUserProfileText(userId, characterId, userDisplayName),
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 

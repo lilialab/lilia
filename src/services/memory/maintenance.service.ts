@@ -28,8 +28,6 @@ const vectorService = new VectorService();
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const MEMORY_MAINTENANCE_PROMPT = loadJobPrompt('maintain');
-
 const maintenanceOutputSchema = z.object({
   memories: z.array(
     z.object({
@@ -251,7 +249,7 @@ async function decideMaintenanceRewrite(
     const { output, text } = await generateText({
       model: getChatModel(),
       output: Output.object({ schema: maintenanceOutputSchema }),
-      instructions: MEMORY_MAINTENANCE_PROMPT,
+      instructions: loadJobPrompt('maintain'),
       prompt: userPrompt,
       maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });

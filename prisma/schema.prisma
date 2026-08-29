@@ -212,7 +212,7 @@ model UserMemory {
 model UserProfile {
   userId        String    @map("user_id")
   characterId   String    @map("character_id")
-  text          String?   @db.Text
+  data          Json?
   sourceVersion Int       @default(0) @map("source_version")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")

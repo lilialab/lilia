@@ -31,6 +31,7 @@ export interface SystemPromptResult {
 /** 从会话解析 userId、角色与用户语言。 */
 export async function resolveSessionContext(sessionId: string): Promise<{
   userId: string;
+  userDisplayName: string;
   characterId: string;
   characterSlug: string;
   locale: Locale;
@@ -39,18 +40,19 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     where: { id: sessionId },
     select: {
       userId: true,
-      user: { select: { locale: true } },
+      user: { select: { locale: true, displayName: true } },
       character: { select: { id: true, slug: true } },
     },
   });
-  if (!session?.userId) {
+  if (!session) {
     throw AppError.notFound('会话不存在');
   }
   return {
     userId: session.userId,
+    userDisplayName: session.user.displayName,
     characterId: session.character.id,
     characterSlug: session.character.slug,
-    locale: parseLocale(session.user?.locale),
+    locale: parseLocale(session.user.locale),
   };
 }
 
@@ -72,7 +74,13 @@ export async function buildSystemPrompt(
   options: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
   const { timeZone } = options;
-  const { userId, characterId, characterSlug, locale } = await resolveSessionContext(sessionId);
+  const {
+    userId,
+    userDisplayName,
+    characterId,
+    characterSlug,
+    locale,
+  } = await resolveSessionContext(sessionId);
   const now = new Date();
 
   const displayName = tCharacter(characterSlug, 'displayName', locale);
@@ -80,7 +88,7 @@ export async function buildSystemPrompt(
   const characterProfile = interpolate(jsonToYaml(loadCharacterProfile(characterSlug)), vars);
 
   const [userProfile, memoryFragments] = await Promise.all([
-    getUserProfileText(userId, characterId),
+    getUserProfileText(userId, characterId, userDisplayName),
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 

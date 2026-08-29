@@ -4,16 +4,15 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { loadJobPrompt } from '@/prompts/load';
 import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
-import { generateText } from 'ai';
+import { generateText, Output } from 'ai';
+import { isDeepStrictEqual } from 'node:util';
 import { updateConsolidationJob } from './job.service';
-
-/* -------------------------------------------------------------------------- */
-/* Types & constants                                                          */
-/* -------------------------------------------------------------------------- */
-
-const EMPTY_PROFILE_TEXT = '目前暂无特殊偏好记录。';
-
-const PROFILE_REFRESH_PROMPT = loadJobPrompt('profile');
+import {
+  formatUserProfileForPrompt,
+  parseUserProfileData,
+  type ProfileSnapshot,
+  profileSnapshotSchema,
+} from './user-profile.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -31,12 +30,12 @@ function formatMemoryList(memories: { text: string; type: string; confidence: nu
 
 /** 组装画像刷新 prompt 正文（纯函数，便于单测）。 */
 export function buildProfileRefreshPrompt(input: {
-  existingText: string | null | undefined;
+  existing: ProfileSnapshot;
   referenceMemories: { text: string; type: string; confidence: number }[];
 }): string {
   return [
     '【现有画像】',
-    input.existingText?.trim() || '（无）',
+    JSON.stringify(input.existing, null, 2),
     '',
     '【参考记忆（高置信度与活跃度优先）】',
     formatMemoryList(input.referenceMemories),
@@ -47,17 +46,21 @@ export function buildProfileRefreshPrompt(input: {
 /* Profile refresh                                                            */
 /* -------------------------------------------------------------------------- */
 
-/** 读取该用户×角色画像；空则占位句。 */
-export async function getUserProfileText(userId: string, characterId: string): Promise<string> {
+/** 读取该用户×角色画像并格式化为 prompt 正文。 */
+export async function getUserProfileText(
+  userId: string,
+  characterId: string,
+  displayName: string,
+): Promise<string> {
   const profile = await prisma.userProfile.findUnique({
     where: { userId_characterId: { userId, characterId } },
-    select: { text: true },
+    select: { data: true },
   });
 
-  return profile?.text?.trim() || EMPTY_PROFILE_TEXT;
+  return formatUserProfileForPrompt(profile?.data, displayName);
 }
 
-/** 用 LLM rollup 更新该用户×角色的 UserProfile。 */
+/** 用 LLM 全量快照更新该用户×角色的 UserProfile。 */
 export async function refreshUserProfile(
   userId: string,
   characterId: string,
@@ -75,8 +78,9 @@ export async function refreshUserProfile(
     }),
   ]);
 
+  const existingData = parseUserProfileData(existingProfile?.data);
   const userPrompt = buildProfileRefreshPrompt({
-    existingText: existingProfile?.text,
+    existing: existingData,
     referenceMemories,
   });
 
@@ -89,9 +93,10 @@ export async function refreshUserProfile(
     prompt: userPrompt,
   });
 
-  const { text } = await generateText({
+  const { output, text } = await generateText({
     model: getChatModel(),
-    instructions: PROFILE_REFRESH_PROMPT,
+    output: Output.object({ schema: profileSnapshotSchema }),
+    instructions: loadJobPrompt('profile'),
     prompt: userPrompt,
     maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
   });
@@ -102,20 +107,29 @@ export async function refreshUserProfile(
     characterId,
     model: env.LLM_MODEL,
     response: text,
+    output,
   });
 
-  const profileText = text.trim() || null;
+  if (!output) {
+    throw new Error('模型输出格式无效，无法解析');
+  }
+
+  const unchanged = isDeepStrictEqual(existingData, output);
+
+  if (unchanged) {
+    return { sourceVersion: existingProfile?.sourceVersion ?? 0 };
+  }
 
   const profile = await prisma.userProfile.upsert({
     where: { userId_characterId: { userId, characterId } },
     create: {
       userId,
       characterId,
-      text: profileText,
+      data: output,
       sourceVersion: 1,
     },
     update: {
-      text: profileText,
+      data: output,
       sourceVersion: { increment: 1 },
     },
   });

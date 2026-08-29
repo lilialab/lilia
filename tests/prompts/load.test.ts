@@ -63,7 +63,7 @@ describe('prompts/load', () => {
   it('loadJobPrompt(maintain|profile) 非空', () => {
     expect(loadJobPrompt('maintain')).toContain('记忆库维护专家');
     expect(loadJobPrompt('profile')).toContain('用户画像维护专家');
-    expect(loadJobPrompt('profile')).toContain('nickname:');
+    expect(loadJobPrompt('profile')).toContain('完整画像快照');
   });
 
   it('loadJobPrompt 未知 id 抛错', () => {
