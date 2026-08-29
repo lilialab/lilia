@@ -2,7 +2,7 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadJobPrompt } from '@/prompts/load';
+import { readJobPrompt } from '@/prompts/load';
 import type {
   ConsolidationJob,
   MaintenanceJobResult,
@@ -249,7 +249,7 @@ async function decideMaintenanceRewrite(
     const { output, text } = await generateText({
       model: getChatModel(),
       output: Output.object({ schema: maintenanceOutputSchema }),
-      instructions: loadJobPrompt('maintain'),
+      instructions: readJobPrompt('maintain'),
       prompt: userPrompt,
       maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
     });

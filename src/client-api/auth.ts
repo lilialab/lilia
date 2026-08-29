@@ -8,7 +8,7 @@ import type { RegisterBody } from '@/schemas/api/auth/register';
 export interface AuthUser {
   id: string;
   username: string;
-  displayName: string;
+  nickname: string;
   locale: Locale;
   createdAt: string;
   updatedAt: string;
@@ -73,12 +73,12 @@ export async function updateUserLocale(locale: Locale): Promise<AuthUser> {
   return data.user;
 }
 
-/** 更新当前用户的展示昵称。 */
-export async function updateUserDisplayName(displayName: string): Promise<AuthUser> {
+/** 更新当前用户的昵称。 */
+export async function updateUserNickname(nickname: string): Promise<AuthUser> {
   const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ displayName }),
+    body: JSON.stringify({ nickname }),
   });
   return data.user;
 }

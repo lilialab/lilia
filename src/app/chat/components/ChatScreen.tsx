@@ -228,7 +228,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void loadMore()}
-          userDisplayName={user?.displayName ?? tCommon('userFallback')}
+          userNickname={user?.nickname ?? tCommon('userFallback')}
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={sessionQuery.isGenerating && !isStreaming} />

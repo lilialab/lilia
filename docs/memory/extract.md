@@ -51,7 +51,7 @@ flowchart TD
 - 每条 `<message>` 含 `speaker` 属性（`consolidationSpeaker`）：`user` 或角色 **slug**；正文为纯对话（单聊 / 群聊一致）
 - utils **无内置默认**；assistant 须显式带 `assistantSlug`
 - LLM 须按对话先后理解话题边界（含 A→B→A 分段）
-- system prompt：`<extract_rules>` + `<character_extract_focus>`（`characters/{slug}/extract.md`，每个角色必有）
+- system prompt：`<extract_rules>` + `<character_extract_focus>`（`jobs/extract.md` + `characters/{slug}/jobs/extract.md`，每个角色必有）
 - user prompt：`<conversation>` 包 transcript
 
 ### LLM 产出与进度标记

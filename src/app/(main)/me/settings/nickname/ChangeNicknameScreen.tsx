@@ -1,6 +1,6 @@
 'use client';
 
-import { updateUserDisplayName } from '@/client-api/auth';
+import { updateUserNickname } from '@/client-api/auth';
 import { AuthField } from '@/components/auth';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -13,28 +13,28 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export function ChangeDisplayNameScreen() {
+export function ChangeNicknameScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const t = useTranslations('changeDisplayName');
-  const [draftDisplayName, setDraftDisplayName] = useState<string | null>(null);
-  const displayName = draftDisplayName ?? user?.displayName ?? '';
+  const t = useTranslations('changeNickname');
+  const [draftNickname, setDraftNickname] = useState<string | null>(null);
+  const nickname = draftNickname ?? user?.nickname ?? '';
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!displayName.trim()) return;
+    if (!nickname.trim()) return;
 
     setIsSubmitting(true);
     try {
-      await updateUserDisplayName(displayName.trim());
+      await updateUserNickname(nickname.trim());
       await queryClient.invalidateQueries({ queryKey: queryKeys.authMe });
-      showSuccessToast(t('success'), 'change-display-name');
+      showSuccessToast(t('success'), 'change-nickname');
       router.push('/me/settings', { transitionTypes: ['nav-back'] });
       router.refresh();
     } catch (err) {
-      showErrorToast(translateApiError(err), 'change-display-name');
+      showErrorToast(translateApiError(err), 'change-nickname');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,10 +50,10 @@ export function ChangeDisplayNameScreen() {
       <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
         <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
           <AuthField
-            id="displayName"
-            label={t('displayName')}
-            value={displayName}
-            onChange={setDraftDisplayName}
+            id="nickname"
+            label={t('nickname')}
+            value={nickname}
+            onChange={setDraftNickname}
             autoComplete="nickname"
           />
           <button

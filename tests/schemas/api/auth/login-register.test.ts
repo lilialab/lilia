@@ -34,7 +34,7 @@ describe('registerBodySchema', () => {
   it('合法注册 body 通过校验', () => {
     const result = registerBodySchema.safeParse({
       username: 'tom_user',
-      displayName: 'Tom',
+      nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
       turnstileToken: 'turnstile-token',
@@ -46,7 +46,7 @@ describe('registerBodySchema', () => {
   it('缺少 turnstileToken 为 TURNSTILE_TOKEN_REQUIRED', () => {
     const result = registerBodySchema.safeParse({
       username: 'tom_user',
-      displayName: 'Tom',
+      nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
       locale: 'en',
@@ -59,7 +59,7 @@ describe('registerBodySchema', () => {
   it('两次密码不一致解析失败', () => {
     const result = registerBodySchema.safeParse({
       username: 'tom_user',
-      displayName: 'Tom',
+      nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password456',
       turnstileToken: 'turnstile-token',

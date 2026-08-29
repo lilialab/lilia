@@ -20,7 +20,7 @@ interface MessageListProps {
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
   /** 用户消息显示名；缺省时用 common.userFallback */
-  userDisplayName?: string;
+  userNickname?: string;
 }
 
 export function MessageList({
@@ -30,7 +30,7 @@ export function MessageList({
   hasMore = false,
   isLoadingMore = false,
   onLoadMore,
-  userDisplayName,
+  userNickname,
 }: MessageListProps) {
   /* -------------------------------------------------------------------------- */
   /* State & data                                                               */
@@ -39,7 +39,7 @@ export function MessageList({
   const tCharacter = useTCharacter();
   const tCommon = useTranslations('common');
   const tDate = useTranslations('chatDate');
-  const resolvedUserDisplayName = userDisplayName ?? tCommon('userFallback');
+  const resolvedUserNickname = userNickname ?? tCommon('userFallback');
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPinnedRef = useRef(true);
   const pendingScrollHeightRef = useRef<number | null>(null);
@@ -167,7 +167,7 @@ export function MessageList({
             <MessageBubble
               key={message.id}
               message={message}
-              userDisplayName={resolvedUserDisplayName}
+              userNickname={resolvedUserNickname}
             />
           );
         })}

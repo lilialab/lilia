@@ -2,7 +2,7 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { readPromptFile } from '@/prompts/load';
+import { readCharacterJobPrompt, readPromptFile } from '@/prompts/load';
 import type { ConsolidationJob, ExtractedMemory } from '@/types/consolidation-job';
 import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
@@ -186,7 +186,7 @@ async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptR
   };
 }
 
-/** 读取群当前成员（job 执行时快照；id 落库，slug 读 extract.md）。 */
+/** 读取群当前成员（job 执行时快照；id 落库，slug 读角色 jobs/extract.md）。 */
 async function loadGroupMemberCharacters(groupSessionId: string): Promise<ExtractTarget[]> {
   const members = await prisma.groupMember.findMany({
     where: { groupSessionId },
@@ -224,8 +224,8 @@ async function extractMemoriesFromTranscript(
   characterSlug: string,
 ): Promise<{ parsed: ConsolidationParseResult } | { error: string }> {
   const systemPrompt = [
-    xmlBlock('extract_rules', readPromptFile('jobs', 'extract-core.md')),
-    xmlBlock('character_extract_focus', readPromptFile('characters', characterSlug, 'extract.md')),
+    xmlBlock('extract_rules', readPromptFile('jobs', 'extract.md')),
+    xmlBlock('character_extract_focus', readCharacterJobPrompt(characterSlug, 'extract')),
   ].join('\n\n');
 
   const userPrompt = xmlBlock('conversation', transcript);

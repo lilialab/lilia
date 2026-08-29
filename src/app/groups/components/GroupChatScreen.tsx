@@ -301,7 +301,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void handleLoadMore()}
-          userDisplayName={user?.displayName ?? tCommon('userFallback')}
+          userNickname={user?.nickname ?? tCommon('userFallback')}
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={groupQuery.isGenerating && !isStreaming} />

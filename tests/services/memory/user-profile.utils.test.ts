@@ -13,10 +13,10 @@ describe('parseUserProfileData', () => {
     expect(parseUserProfileData({ communication_style: 1 })).toEqual({});
   });
 
-  it('丢掉未知键（含旧 nickname），空值保留', () => {
+  it('丢掉未知键，空值保留', () => {
     expect(
       parseUserProfileData({
-        nickname: '阿Tom',
+        extra: '阿Tom',
         communication_style: '',
         avoid_topics: ['前任', ''],
         occupation: '工程师',
@@ -26,9 +26,9 @@ describe('parseUserProfileData', () => {
 });
 
 describe('formatUserProfileForPrompt', () => {
-  it('始终注入账号展示名，不采用库里的 nickname', () => {
-    expect(formatUserProfileForPrompt({}, 'Tom')).toBe('display_name: Tom');
-    expect(formatUserProfileForPrompt({ nickname: '阿Tom' }, 'Tom')).toBe('display_name: Tom');
+  it('始终注入账号昵称', () => {
+    expect(formatUserProfileForPrompt({}, 'Tom')).toBe('nickname: Tom');
+    expect(formatUserProfileForPrompt({ extra: '阿Tom' }, 'Tom')).toBe('nickname: Tom');
   });
 
   it('对象转 YAML', () => {
@@ -42,7 +42,7 @@ describe('formatUserProfileForPrompt', () => {
       ),
     ).toBe(
       [
-        'display_name: Tom',
+        'nickname: Tom',
         'communication_style: 短句，别说教',
         'avoid_topics:',
         '  - 前任',

@@ -114,15 +114,15 @@ export const zh = {
   },
   settings: {
     title: '设置',
-    changeDisplayName: '修改昵称',
+    changeNickname: '修改昵称',
     changePassword: '修改密码',
     llmConfig: 'LLM API',
     language: '语言',
     deleteAccount: '删除账号',
   },
-  changeDisplayName: {
+  changeNickname: {
     title: '修改昵称',
-    displayName: '昵称',
+    nickname: '昵称',
     submit: '保存',
     submitting: '保存中...',
     success: '昵称已更新',
@@ -189,8 +189,8 @@ export const zh = {
     USERNAME_TOO_SHORT: '账号至少 3 个字符',
     USERNAME_TOO_LONG: '账号最多 32 个字符',
     USERNAME_INVALID: '账号仅支持字母、数字与下划线',
-    DISPLAY_NAME_REQUIRED: '请输入昵称',
-    DISPLAY_NAME_TOO_LONG: '昵称最多 64 个字符',
+    NICKNAME_REQUIRED: '请输入昵称',
+    NICKNAME_TOO_LONG: '昵称最多 64 个字符',
     PASSWORD_REQUIRED: '请输入密码',
     PASSWORD_TOO_SHORT: '密码至少 8 位',
     PASSWORD_MISMATCH: '两次输入的密码不一致',
@@ -210,7 +210,7 @@ export const zh = {
   },
   register: {
     title: '注册账号',
-    displayName: '昵称',
+    nickname: '昵称',
     confirmPassword: '确认密码',
     hasAccount: '已有账号？',
     goLogin: '去登录',

@@ -18,7 +18,7 @@ export function MeScreen() {
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 bg-background px-4 py-4')}>
           <p className={cn('text-base font-medium text-foreground')}>
-            {user?.displayName ?? '...'}
+            {user?.nickname ?? '...'}
           </p>
           {user?.username && (
             <p className={cn('mt-1 text-sm text-muted-foreground')}>@{user.username}</p>

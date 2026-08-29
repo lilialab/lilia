@@ -24,14 +24,14 @@ export function SettingsScreen() {
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 bg-background')}>
           <Link
-            href="/me/settings/display-name"
+            href="/me/settings/nickname"
             transitionTypes={['nav-forward']}
             className={cn(
               'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm text-foreground',
               'hover:bg-surface',
             )}
           >
-            <span>{t('changeDisplayName')}</span>
+            <span>{t('changeNickname')}</span>
             <ChevronRight className={cn('h-4 w-4 text-muted-foreground')} aria-hidden />
           </Link>
           <Link

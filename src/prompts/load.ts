@@ -4,7 +4,9 @@ import path from 'node:path';
 
 export const DEFAULT_CHARACTER_ID = 'lilia';
 
-export type JobPromptId = 'maintain' | 'profile';
+export type JobPromptId = 'maintain' | 'user-profile';
+
+export type CharacterJobPromptId = 'extract' | 'user-profile';
 
 const PROMPTS_ROOT = path.join(process.cwd(), 'src/prompts');
 const cache = new Map<string, string>();
@@ -21,8 +23,8 @@ export function readPromptFile(...segments: string[]): string {
   return text;
 }
 
-function assertCharacterFile(slug: string, filename: string): void {
-  const absolute = path.join(PROMPTS_ROOT, 'characters', slug, filename);
+function assertCharacterFile(slug: string, ...segments: string[]): void {
+  const absolute = path.join(PROMPTS_ROOT, 'characters', slug, ...segments);
   if (!existsSync(absolute)) {
     throw new Error(`未知角色 prompt: ${slug}`);
   }
@@ -47,16 +49,22 @@ export function loadCharacterSkills(slug: string): string[] {
   return Array.isArray(parsed.skills) ? parsed.skills : [];
 }
 
-const JOB_PROMPT_LOADERS: Record<JobPromptId, () => string> = {
+/** 加载角色对某条流水线 job 的补充提示（`characters/{slug}/jobs/{job}.md`）。 */
+export function readCharacterJobPrompt(slug: string, job: CharacterJobPromptId): string {
+  assertCharacterFile(slug, 'jobs', `${job}.md`);
+  return readPromptFile('characters', slug, 'jobs', `${job}.md`);
+}
+
+const JOB_PROMPT_READERS: Record<JobPromptId, () => string> = {
   maintain: () => readPromptFile('jobs', 'maintain.md'),
-  profile: () => readPromptFile('jobs', 'profile.md'),
+  'user-profile': () => readPromptFile('jobs', 'user-profile.md'),
 };
 
-/** 加载流水线 job 的 system prompt（不含 extract）。 */
-export function loadJobPrompt(job: JobPromptId): string {
-  const loader = JOB_PROMPT_LOADERS[job];
-  if (!loader) {
+/** 读取流水线 job 的通用 system prompt（不含 extract；extract 在调用处与角色层拼接）。 */
+export function readJobPrompt(job: JobPromptId): string {
+  const reader = JOB_PROMPT_READERS[job];
+  if (!reader) {
     throw new Error(`未知 job prompt: ${String(job)}`);
   }
-  return loader();
+  return reader();
 }

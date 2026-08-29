@@ -5,17 +5,17 @@ import { MessagePartRenderer } from './MessagePartRenderer';
 
 interface MessageBubbleProps {
   message: HistoryMessage;
-  userDisplayName?: string;
+  userNickname?: string;
 }
 
-export function MessageBubble({ message, userDisplayName }: MessageBubbleProps) {
+export function MessageBubble({ message, userNickname }: MessageBubbleProps) {
   const tCharacter = useTCharacter();
   const isUser = message.role === 'user';
   const slug = message.metadata?.slug;
 
   let speakerName: string | undefined;
   if (isUser) {
-    speakerName = userDisplayName;
+    speakerName = userNickname;
   } else if (slug) {
     speakerName = tCharacter(slug);
   }

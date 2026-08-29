@@ -17,7 +17,9 @@ flowchart TD
 
 ### 目的
 
-按 **userId + characterId** 私有：从该角色下的长期记忆维护用户画像（只锁回复方式，非生平摘要），以 JSON 存 `UserProfile.data`，单聊 / 群聊注入 prompt 时转为 YAML。字段闭集：`communication_style`、`avoid_topics`。称呼用账号 `displayName`（注入 `display_name`），不进画像。职业、日程、兴趣等细节由 RAG 按需检索。
+按 **userId + characterId** 私有：从该角色下的长期记忆维护用户画像（只锁回复方式，非生平摘要），以 JSON 存 `UserProfile.data`，单聊 / 群聊注入 prompt 时转为 YAML。字段闭集：`communication_style`、`avoid_topics`。称呼用账号 `nickname`（注入时写入 YAML，不进画像）。职业、日程、兴趣等细节由 RAG 按需检索。
+
+system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）+ `<character_user_profile_focus>`（`characters/{slug}/jobs/user-profile.md`）。
 
 ### 何时触发
 
@@ -38,5 +40,5 @@ flowchart TD
 | 画像 job 入口 | `runProfileRefresh` |
 | 加载数据并调用 LLM 全量快照 | `refreshUserProfile` |
 | 拼装刷新 prompt | `buildProfileRefreshPrompt` |
-| 读画像注入 prompt | `getUserProfileText`（账号 `displayName` + `jsonToYaml`） |
+| 读画像注入 prompt | `getUserProfileText`（账号 `nickname` + `jsonToYaml`） |
 | LLM 调用 | `generateText` + `Output.object` |

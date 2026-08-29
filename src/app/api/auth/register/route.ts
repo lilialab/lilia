@@ -9,12 +9,12 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
   await assertRegisterRateLimit(req);
-  const { username, displayName, password, locale, turnstileToken } = await parseJsonBody(
+  const { username, nickname, password, locale, turnstileToken } = await parseJsonBody(
     registerBodySchema,
     req,
   );
   await verifyTurnstileToken(turnstileToken);
-  const { id } = await registerUser({ username, displayName, password, locale });
+  const { id } = await registerUser({ username, nickname, password, locale });
 
   const token = await createAuthSession(id);
   const response = NextResponse.json({ success: true, data: {} });

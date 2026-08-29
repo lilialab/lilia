@@ -118,18 +118,18 @@ export const en = {
   },
   settings: {
     title: 'Settings',
-    changeDisplayName: 'Change display name',
+    changeNickname: 'Change nickname',
     changePassword: 'Change password',
     llmConfig: 'LLM API',
     language: 'Language',
     deleteAccount: 'Delete account',
   },
-  changeDisplayName: {
-    title: 'Change display name',
-    displayName: 'Display name',
+  changeNickname: {
+    title: 'Change nickname',
+    nickname: 'Nickname',
     submit: 'Save',
     submitting: 'Saving...',
-    success: 'Display name updated',
+    success: 'Nickname updated',
   },
   changePassword: {
     title: 'Change password',
@@ -194,8 +194,8 @@ export const en = {
     USERNAME_TOO_SHORT: 'Username must be at least 3 characters',
     USERNAME_TOO_LONG: 'Username must be at most 32 characters',
     USERNAME_INVALID: 'Username can only contain letters, numbers, and underscores',
-    DISPLAY_NAME_REQUIRED: 'Display name is required',
-    DISPLAY_NAME_TOO_LONG: 'Display name must be at most 64 characters',
+    NICKNAME_REQUIRED: 'Nickname is required',
+    NICKNAME_TOO_LONG: 'Nickname must be at most 64 characters',
     PASSWORD_REQUIRED: 'Password is required',
     PASSWORD_TOO_SHORT: 'Password must be at least 8 characters',
     PASSWORD_MISMATCH: 'Passwords do not match',
@@ -215,7 +215,7 @@ export const en = {
   } satisfies Record<ApiErrorCode | 'fallback', string>,
   register: {
     title: 'Create an account',
-    displayName: 'Display name',
+    nickname: 'Nickname',
     confirmPassword: 'Confirm password',
     hasAccount: 'Already have an account?',
     goLogin: 'Log in',

@@ -9,31 +9,31 @@ vi.mock('@/lib/server/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/server/prisma';
-import { updateUserDisplayName } from '@/services/user/users.service';
+import { updateUserNickname } from '@/services/user/users.service';
 
-describe('updateUserDisplayName', () => {
+describe('updateUserNickname', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('更新 displayName 并返回公开用户字段', async () => {
+  it('更新 nickname 并返回公开用户字段', async () => {
     vi.mocked(prisma.user.update).mockResolvedValue({
       id: 'user-1',
       username: 'tom',
-      displayName: '新昵称',
+      nickname: '新昵称',
       locale: 'zh',
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-02'),
     } as never);
 
-    const user = await updateUserDisplayName('user-1', '新昵称');
+    const user = await updateUserNickname('user-1', '新昵称');
 
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
-      data: { displayName: '新昵称' },
-      select: expect.objectContaining({ displayName: true }),
+      data: { nickname: '新昵称' },
+      select: expect.objectContaining({ nickname: true }),
     });
-    expect(user.displayName).toBe('新昵称');
+    expect(user.nickname).toBe('新昵称');
     expect(user.locale).toBe('zh');
   });
 });

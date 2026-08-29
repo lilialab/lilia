@@ -27,7 +27,7 @@ export interface GroupSystemPromptResult {
 
 export interface BuildGroupSystemPromptOptions {
   userId: string;
-  userDisplayName: string;
+  userNickname: string;
   characterId: string;
   characterSlug: string;
   memberSlugs: readonly string[];
@@ -45,7 +45,7 @@ export interface BuildGroupSystemPromptOptions {
  */
 export async function buildGroupSystemPrompt({
   userId,
-  userDisplayName,
+  userNickname,
   characterId,
   characterSlug,
   memberSlugs,
@@ -59,13 +59,13 @@ export async function buildGroupSystemPrompt({
   const characterProfile = interpolate(jsonToYaml(loadCharacterProfile(characterSlug)), vars);
   const groupChatRules = interpolate(readPromptFile('group-chat-rules.md'), vars);
   const roster = formatGroupRoster({
-    userDisplayName,
+    userNickname,
     currentSlug: characterSlug,
     memberSlugs,
   });
 
   const [userProfile, memoryFragments] = await Promise.all([
-    getUserProfileText(userId, characterId, userDisplayName),
+    getUserProfileText(userId, characterId, userNickname),
     fetchMemoryFragmentsForPrompt(lastUserContent, userId, characterId),
   ]);
 

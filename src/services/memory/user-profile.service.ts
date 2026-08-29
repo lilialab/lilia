@@ -2,8 +2,9 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadJobPrompt } from '@/prompts/load';
+import { readCharacterJobPrompt, readJobPrompt } from '@/prompts/load';
 import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
+import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
 import { isDeepStrictEqual } from 'node:util';
 import { updateConsolidationJob } from './job.service';
@@ -50,14 +51,14 @@ export function buildProfileRefreshPrompt(input: {
 export async function getUserProfileText(
   userId: string,
   characterId: string,
-  displayName: string,
+  nickname: string,
 ): Promise<string> {
   const profile = await prisma.userProfile.findUnique({
     where: { userId_characterId: { userId, characterId } },
     select: { data: true },
   });
 
-  return formatUserProfileForPrompt(profile?.data, displayName);
+  return formatUserProfileForPrompt(profile?.data, nickname);
 }
 
 /** 用 LLM 全量快照更新该用户×角色的 UserProfile。 */
@@ -65,7 +66,7 @@ export async function refreshUserProfile(
   userId: string,
   characterId: string,
 ): Promise<{ sourceVersion: number }> {
-  const [existingProfile, referenceMemories] = await Promise.all([
+  const [existingProfile, referenceMemories, character] = await Promise.all([
     prisma.userProfile.findUnique({
       where: { userId_characterId: { userId, characterId } },
     }),
@@ -76,7 +77,15 @@ export async function refreshUserProfile(
       take: env.MEMORY_PROFILE_REFERENCE_LIMIT,
       select: { text: true, type: true, confidence: true },
     }),
+    prisma.character.findUnique({
+      where: { id: characterId },
+      select: { slug: true },
+    }),
   ]);
+
+  if (!character) {
+    throw new Error(`角色不存在: ${characterId}`);
+  }
 
   const existingData = parseUserProfileData(existingProfile?.data);
   const userPrompt = buildProfileRefreshPrompt({
@@ -96,7 +105,13 @@ export async function refreshUserProfile(
   const { output, text } = await generateText({
     model: getChatModel(),
     output: Output.object({ schema: profileSnapshotSchema }),
-    instructions: loadJobPrompt('profile'),
+    instructions: [
+      xmlBlock('user_profile_rules', readJobPrompt('user-profile')),
+      xmlBlock(
+        'character_user_profile_focus',
+        readCharacterJobPrompt(character.slug, 'user-profile'),
+      ),
+    ].join('\n\n'),
     prompt: userPrompt,
     maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
   });

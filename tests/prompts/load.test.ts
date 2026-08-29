@@ -2,7 +2,8 @@ import {
   DEFAULT_CHARACTER_ID,
   loadCharacterProfile,
   loadCharacterSkills,
-  loadJobPrompt,
+  readCharacterJobPrompt,
+  readJobPrompt,
   readPromptFile,
 } from '@/prompts/load';
 import { describe, expect, it } from 'vitest';
@@ -51,28 +52,32 @@ describe('prompts/load', () => {
     });
   });
 
-  it('每个角色都有 extract.md', () => {
-    const extractCore = readPromptFile('jobs', 'extract-core.md');
+  it('每个角色都有 jobs/extract.md 与 jobs/user-profile.md', () => {
+    const extractCore = readPromptFile('jobs', 'extract.md');
     expect(extractCore).toContain('finished_memories');
     expect(extractCore).not.toContain('<extract_rules>');
+    const userProfileCore = readPromptFile('jobs', 'user-profile.md');
+    expect(userProfileCore).toContain('完整画像快照');
     for (const slug of ['lilia', 'einstein', 'socrates'] as const) {
-      expect(readPromptFile('characters', slug, 'extract.md').length).toBeGreaterThan(0);
+      expect(readCharacterJobPrompt(slug, 'extract').length).toBeGreaterThan(0);
+      expect(readCharacterJobPrompt(slug, 'user-profile').length).toBeGreaterThan(0);
     }
   });
 
-  it('loadJobPrompt(maintain|profile) 非空', () => {
-    expect(loadJobPrompt('maintain')).toContain('记忆库维护专家');
-    expect(loadJobPrompt('profile')).toContain('用户画像维护专家');
-    expect(loadJobPrompt('profile')).toContain('完整画像快照');
+  it('readJobPrompt(maintain|user-profile) 非空', () => {
+    expect(readJobPrompt('maintain')).toContain('记忆库维护专家');
+    expect(readJobPrompt('user-profile')).toContain('用户画像维护专家');
+    expect(readJobPrompt('user-profile')).toContain('完整画像快照');
   });
 
-  it('loadJobPrompt 未知 id 抛错', () => {
-    expect(() => loadJobPrompt('unknown' as never)).toThrow(/未知 job prompt/);
+  it('readJobPrompt 未知 id 抛错', () => {
+    expect(() => readJobPrompt('unknown' as never)).toThrow(/未知 job prompt/);
   });
 
   it('未知 slug 抛错', () => {
     expect(() => loadCharacterProfile('nonexistent')).toThrow(/未知角色 prompt/);
     expect(() => loadCharacterSkills('nonexistent')).toThrow(/未知角色 prompt/);
+    expect(() => readCharacterJobPrompt('nonexistent', 'extract')).toThrow(/未知角色 prompt/);
   });
 
   it('reply-rules.md 含产品约束，不含厂商已覆盖的危机条款', () => {

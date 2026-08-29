@@ -26,7 +26,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
   const tAuth = useTranslations('auth');
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const [username, setUsername] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -38,7 +38,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!username.trim() || !displayName.trim() || !password) return;
+    if (!username.trim() || !nickname.trim() || !password) return;
 
     if (!turnstileToken) {
       showErrorToast(t('completeVerification'), 'auth-register');
@@ -49,7 +49,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
     try {
       await register({
         username: username.trim(),
-        displayName: displayName.trim(),
+        nickname: nickname.trim(),
         password,
         confirmPassword,
         turnstileToken,
@@ -87,10 +87,10 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
           autoComplete="username"
         />
         <AuthField
-          id="displayName"
-          label={t('displayName')}
-          value={displayName}
-          onChange={setDisplayName}
+          id="nickname"
+          label={t('nickname')}
+          value={nickname}
+          onChange={setNickname}
           autoComplete="nickname"
         />
         <AuthField

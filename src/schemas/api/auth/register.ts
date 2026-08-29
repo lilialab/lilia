@@ -1,5 +1,5 @@
-import { displayNameSchema } from '@/schemas/shared/display-name';
 import { localeSchema } from '@/schemas/shared/locale';
+import { nicknameSchema } from '@/schemas/shared/nickname';
 import { passwordSchema } from '@/schemas/shared/password';
 import { usernameSchema } from '@/schemas/shared/username';
 import { API_ERROR_CODE } from '@/types/api-error';
@@ -8,7 +8,7 @@ import { z } from 'zod';
 export const registerBodySchema = z
   .object({
     username: usernameSchema,
-    displayName: displayNameSchema,
+    nickname: nicknameSchema,
     password: passwordSchema,
     confirmPassword: passwordSchema,
     turnstileToken: z

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 describe('formatGroupRoster', () => {
   it('含人类用户与成员 slug；当前发言标你；不含外层标签', () => {
     const body = formatGroupRoster({
-      userDisplayName: '小明',
+      userNickname: '小明',
       currentSlug: 'einstein',
       memberSlugs: ['lilia', 'einstein'],
     });

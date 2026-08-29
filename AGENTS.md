@@ -129,6 +129,6 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 会话 / 历史 | `sessions.service.ts` + `message.service.ts` |
 | 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/记忆/`；`api/memory/?username=`；memory workers |
 | 登录 / 注册 | `session` + `request-user`；`api/auth/`；`client-api/auth`；`login/`、`register/` |
-| 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / `delete-account`；`/me/settings` |
+| 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / nickname / `delete-account`；`/me/settings` |
 | 聊天 UI / 流 | `ChatScreen.tsx` + `api/chat` |
 | 通讯录 | `contacts.service.ts`；`/contacts`、`/chat/add`、`/chat/[characterId]` |

@@ -8,7 +8,7 @@
   - **用户主动发送**：左侧单选展示当前成员 **displayName**（`localStorage` 按群 sticky）；发送时正文前拼 `@slug `，`metadata.slug` **由单选直接写入**（不解析用户正文）。
   - **助手续聊**：仍从助手正文解析第一个 `@slug`，发 `turn_cue`。
 - **后端**：只读最后一条 user 的 `metadata.kind` / `metadata.slug`；普通用户消息**必须**带有效群内 slug（**无默认 speaker**）；校验成员后选 speaker。
-- **被召唤角色** system 含 **`<group_roster>`**（人类用户 displayName + AI 成员展示名/slug/`shortBio`）。
+- **被召唤角色** system 含 **`<group_roster>`**（人类用户 nickname + AI 成员展示名/slug/`shortBio`）。
 - **turn_cue**：特殊用户消息（`kind: 'turn_cue'`），正文是系统触发语，**不进气泡列表**（`isDisplayMessage`）；**不进**历史分页（`getGroupHistoryPage`）与上下文窗口（`getGroupContextMessages`）；**本次召唤**仍把 cue 正文作为 ephemeral user 回合注入 LLM（否则对话以 assistant 结尾易空回复）；RAG 取上下文末条干净正文（用户句或上一助手句，见 `extractLatestContextTextForRag`）；进模型前再经 `withGroupSpeakerLabelsForModel` 加 `(slug):`。
 
 ### 助手正文 @slug 规则（turn_cue）

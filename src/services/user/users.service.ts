@@ -14,7 +14,7 @@ import { API_ERROR_CODE } from '@/types/api-error';
 export interface PublicUser {
   id: string;
   username: string;
-  displayName: string;
+  nickname: string;
   locale: Locale;
   createdAt: Date;
   updatedAt: Date;
@@ -27,7 +27,7 @@ export interface PublicUser {
 const publicUserSelect = {
   id: true,
   username: true,
-  displayName: true,
+  nickname: true,
   locale: true,
   createdAt: true,
   updatedAt: true,
@@ -94,7 +94,7 @@ export async function authenticateUser(
 /** 注册新用户。 */
 export async function registerUser(input: {
   username: string;
-  displayName: string;
+  nickname: string;
   password: string;
   locale: Locale;
 }): Promise<{ id: string }> {
@@ -112,7 +112,7 @@ export async function registerUser(input: {
   const user = await prisma.user.create({
     data: {
       username: input.username,
-      displayName: input.displayName,
+      nickname: input.nickname,
       passwordHash,
       locale: input.locale,
     },
@@ -133,14 +133,14 @@ export async function updateUserLocale(userId: string, locale: Locale): Promise<
   return { ...row, locale: parseLocale(row.locale) };
 }
 
-/** 更新用户展示昵称。 */
-export async function updateUserDisplayName(
+/** 更新用户昵称。 */
+export async function updateUserNickname(
   userId: string,
-  displayName: string,
+  nickname: string,
 ): Promise<PublicUser> {
   const row = await prisma.user.update({
     where: { id: userId },
-    data: { displayName },
+    data: { nickname },
     select: publicUserSelect,
   });
   return { ...row, locale: parseLocale(row.locale) };

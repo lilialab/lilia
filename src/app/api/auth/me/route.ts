@@ -4,8 +4,8 @@ import { resolveRequestUserId } from '@/lib/server/request-user';
 import { patchMeBodySchema } from '@/schemas/api/auth/patch-me';
 import {
   requireUserById,
-  updateUserDisplayName,
   updateUserLocale,
+  updateUserNickname,
 } from '@/services/user/users.service';
 import { type NextRequest } from 'next/server';
 
@@ -19,8 +19,8 @@ export const PATCH = withApiHandler(async (req: NextRequest) => {
   const userId = await resolveRequestUserId(req);
   const body = await parseJsonBody(patchMeBodySchema, req);
 
-  if ('displayName' in body) {
-    const user = await updateUserDisplayName(userId, body.displayName);
+  if ('nickname' in body) {
+    const user = await updateUserNickname(userId, body.nickname);
     return successResponse({ user });
   }
 

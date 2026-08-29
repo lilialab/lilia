@@ -4,7 +4,7 @@ import { registerUser } from '../src/services/user/users.service';
 
 const SEED_USER = {
   username: 'tom',
-  displayName: 'Tom',
+  nickname: 'Tom',
   password: '123123123',
   locale: 'zh',
 } as const;

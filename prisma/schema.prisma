@@ -14,7 +14,7 @@ model User {
   id              String   @id @default(uuid())
   username        String   @unique
   passwordHash    String   @map("password_hash")
-  displayName     String   @map("display_name")
+  nickname        String   @map("nickname")
   /// UI 语言偏好（en | zh）；注册时由客户端 body 写入
   locale          String   @default("zh")
   /// 用户自备 OpenAI 兼容对话接口；三项齐全才视为启用。密钥只存密文。
