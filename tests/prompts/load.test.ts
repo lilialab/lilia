@@ -1,33 +1,54 @@
-import { DEFAULT_CHARACTER_ID, loadCharacter, loadJobPrompt, readPromptFile } from '@/prompts/load';
+import {
+  DEFAULT_CHARACTER_ID,
+  loadCharacterProfile,
+  loadCharacterSkills,
+  loadJobPrompt,
+  readPromptFile,
+} from '@/prompts/load';
 import { describe, expect, it } from 'vitest';
 
 describe('prompts/load', () => {
   it('默认角色为 lilia', () => {
     expect(DEFAULT_CHARACTER_ID).toBe('lilia');
-    const character = loadCharacter(DEFAULT_CHARACTER_ID);
-    expect(character.id).toBe('lilia');
-    expect(character.persona).toContain('{{name}}');
-    expect(character.persona).not.toContain('莉莉娅');
-    expect(character.skills).toEqual(['searchChatHistory']);
-    expect(character.profile).toBe(
-      'name: {{name}}\nage: 15\ngender: female\nheight: 147cm\nhobbies: reading',
-    );
+    expect(loadCharacterSkills(DEFAULT_CHARACTER_ID)).toEqual(['searchChatHistory']);
+    expect(loadCharacterProfile(DEFAULT_CHARACTER_ID)).toEqual({
+      identity: {
+        name: '{{name}}',
+        age: 15,
+        gender: 'female',
+        height: '147cm',
+        relation: '最好的朋友',
+      },
+      interests: {
+        hobbies: ['reading'],
+      },
+    });
   });
 
   it('可加载占位角色 einstein / socrates', () => {
-    const einstein = loadCharacter('einstein');
-    expect(einstein.id).toBe('einstein');
-    expect(einstein.persona).toContain('{{name}}');
-    expect(einstein.persona).not.toContain('爱因斯坦');
-    expect(einstein.skills).toEqual([]);
-    expect(einstein.profile).toBe('name: {{name}}\ngender: male');
+    expect(loadCharacterSkills('einstein')).toEqual([]);
+    expect(loadCharacterProfile('einstein')).toEqual({
+      identity: {
+        name: '{{name}}',
+        gender: 'male',
+        role: '测试用占位助理',
+      },
+      personality: {
+        traits: ['沉稳', '简洁', '偏理性'],
+      },
+    });
 
-    const socrates = loadCharacter('socrates');
-    expect(socrates.id).toBe('socrates');
-    expect(socrates.persona).toContain('{{name}}');
-    expect(socrates.persona).not.toContain('苏格拉底');
-    expect(socrates.skills).toEqual([]);
-    expect(socrates.profile).toBe('name: {{name}}\ngender: male');
+    expect(loadCharacterSkills('socrates')).toEqual([]);
+    expect(loadCharacterProfile('socrates')).toEqual({
+      identity: {
+        name: '{{name}}',
+        gender: 'male',
+        role: '测试用占位助理',
+      },
+      personality: {
+        traits: ['简短', '爱追问', '偏思辨'],
+      },
+    });
   });
 
   it('每个角色都有 extract.md', () => {
@@ -49,8 +70,9 @@ describe('prompts/load', () => {
     expect(() => loadJobPrompt('unknown' as never)).toThrow(/未知 job prompt/);
   });
 
-  it('loadCharacter 未知 slug 抛错', () => {
-    expect(() => loadCharacter('nonexistent')).toThrow(/未知角色 prompt/);
+  it('未知 slug 抛错', () => {
+    expect(() => loadCharacterProfile('nonexistent')).toThrow(/未知角色 prompt/);
+    expect(() => loadCharacterSkills('nonexistent')).toThrow(/未知角色 prompt/);
   });
 
   it('reply-rules.md 含产品约束，不含厂商已覆盖的危机条款', () => {

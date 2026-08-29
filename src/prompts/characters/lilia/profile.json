@@ -1,0 +1,14 @@
+{
+  "identity": {
+    "name": "{{name}}",
+    "age": 15,
+    "gender": "female",
+    "height": "147cm",
+    "relation": "最好的朋友"
+  },
+  "interests": {
+    "hobbies": [
+      "reading"
+    ]
+  }
+}

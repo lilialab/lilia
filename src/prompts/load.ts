@@ -1,18 +1,10 @@
+import { type JsonObject } from '@/utils/json-yaml';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 export const DEFAULT_CHARACTER_ID = 'lilia';
 
 export type JobPromptId = 'maintain' | 'profile';
-
-export interface CharacterPrompt {
-  id: string;
-  persona: string;
-  /** 角色基础档案 KV 正文（含 `{{name}}` 等占位符）。 */
-  profile: string;
-  /** 角色可用的 skill id 列表（如 searchChatHistory）。 */
-  skills: string[];
-}
 
 const PROMPTS_ROOT = path.join(process.cwd(), 'src/prompts');
 const cache = new Map<string, string>();
@@ -29,25 +21,30 @@ export function readPromptFile(...segments: string[]): string {
   return text;
 }
 
-function loadCharacterSkills(slug: string): string[] {
-  const raw = readPromptFile('characters', slug, 'skills.json');
-  const parsed = JSON.parse(raw) as { skills?: string[] };
-  return Array.isArray(parsed.skills) ? parsed.skills : [];
-}
-
-/** 加载角色人设（persona.md + profile.md + skills.json）；slug 对齐 characters/{slug}/ 目录。 */
-export function loadCharacter(slug: string): CharacterPrompt {
-  const personaPath = path.join(PROMPTS_ROOT, 'characters', slug, 'persona.md');
-  if (!existsSync(personaPath)) {
+function assertCharacterFile(slug: string, filename: string): void {
+  const absolute = path.join(PROMPTS_ROOT, 'characters', slug, filename);
+  if (!existsSync(absolute)) {
     throw new Error(`未知角色 prompt: ${slug}`);
   }
+}
 
-  return {
-    id: slug,
-    persona: readPromptFile('characters', slug, 'persona.md'),
-    profile: readPromptFile('characters', slug, 'profile.md'),
-    skills: loadCharacterSkills(slug),
+/** 加载角色画像 JSON（字符串值可含 `{{name}}` 等占位符）。 */
+export function loadCharacterProfile(slug: string): JsonObject {
+  assertCharacterFile(slug, 'profile.json');
+  const parsed: unknown = JSON.parse(readPromptFile('characters', slug, 'profile.json'));
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`角色画像须为 JSON 对象: ${slug}`);
+  }
+  return parsed as JsonObject;
+}
+
+/** 加载角色可用的 skill id 列表（如 searchChatHistory）。 */
+export function loadCharacterSkills(slug: string): string[] {
+  assertCharacterFile(slug, 'skills.json');
+  const parsed = JSON.parse(readPromptFile('characters', slug, 'skills.json')) as {
+    skills?: string[];
   };
+  return Array.isArray(parsed.skills) ? parsed.skills : [];
 }
 
 const JOB_PROMPT_LOADERS: Record<JobPromptId, () => string> = {

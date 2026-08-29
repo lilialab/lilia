@@ -3,9 +3,10 @@ import { type Locale, parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { interpolate } from '@/prompts/interpolate';
-import { loadCharacter, readPromptFile } from '@/prompts/load';
+import { loadCharacterProfile, readPromptFile } from '@/prompts/load';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
+import { jsonToYaml } from '@/utils/json-yaml';
 import { xmlBlock } from '@/utils/xml-block';
 import { formatMemories, formatRuntimeContext } from './format.utils';
 
@@ -74,11 +75,9 @@ export async function buildSystemPrompt(
   const { userId, characterId, characterSlug, locale } = await resolveSessionContext(sessionId);
   const now = new Date();
 
-  const character = loadCharacter(characterSlug);
   const displayName = tCharacter(characterSlug, 'displayName', locale);
   const vars = { name: displayName, slug: characterSlug };
-  const persona = interpolate(character.persona, vars);
-  const characterProfile = interpolate(character.profile, vars);
+  const characterProfile = interpolate(jsonToYaml(loadCharacterProfile(characterSlug)), vars);
 
   const [userProfile, memoryFragments] = await Promise.all([
     getUserProfileText(userId, characterId),
@@ -91,7 +90,6 @@ export async function buildSystemPrompt(
 
   const systemPrompt = [
     xmlBlock('character_profile', characterProfile),
-    xmlBlock('persona', persona),
     xmlBlock('reply_rules', replyRules),
     xmlBlock('user_profile', userProfile),
     xmlBlock('memories', memories),

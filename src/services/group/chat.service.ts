@@ -2,7 +2,7 @@ import { DEFAULT_LOCALE } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadCharacter } from '@/prompts/load';
+import { loadCharacterSkills } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
 import { assertChatDailyTurnQuota } from '@/services/chat/quota.service';
 import { resolveChatLlm, type ResolvedChatLlm } from '@/services/chat/resolve-llm';
@@ -102,8 +102,8 @@ export async function streamGroupAssistantReply({
   timeZone,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
   const user = await getUserById(userId);
-  const character = loadCharacter(speaker.slug);
-  const tools = resolveToolsForCharacter(character.skills, {
+  const skills = loadCharacterSkills(speaker.slug);
+  const tools = resolveToolsForCharacter(skills, {
     userId,
     characterSlug: speaker.slug,
   });
@@ -142,7 +142,7 @@ export async function streamGroupAssistantReply({
     userProfile: meta.userProfile,
     groupChatRules: meta.groupChatRules,
     rosterBlock: meta.rosterBlock,
-    skills: character.skills,
+    skills,
   });
 
   const startedAt = Date.now();

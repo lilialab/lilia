@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadCharacter } from '@/prompts/load';
+import { loadCharacterSkills } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
 import { assertChatDailyTurnQuota } from '@/services/chat/quota.service';
 import { resolveChatLlm } from '@/services/chat/resolve-llm';
@@ -105,8 +105,8 @@ async function prepareChatTurn(
 
   const contextMessages = await getContextMessages(sessionId);
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
-  const character = loadCharacter(characterSlug);
-  const tools = resolveToolsForCharacter(character.skills, { userId, characterSlug });
+  const skills = loadCharacterSkills(characterSlug);
+  const tools = resolveToolsForCharacter(skills, { userId, characterSlug });
   const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, { timeZone });
 
   logger.info({
@@ -118,7 +118,7 @@ async function prepareChatTurn(
     contextMessageCount: contextMessages.length,
     memories: meta.memories,
     userProfile: meta.userProfile,
-    skills: character.skills,
+    skills,
   });
 
   return {
