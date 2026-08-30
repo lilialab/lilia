@@ -1,5 +1,6 @@
+import { env } from '@/lib/server/env';
 import { type JsonObject } from '@/utils/json-yaml';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 export const DEFAULT_CHARACTER_ID = 'lilia';
@@ -11,16 +12,29 @@ export type CharacterJobPromptId = 'extract' | 'user-profile';
 const PROMPTS_ROOT = path.join(process.cwd(), 'src/prompts');
 const cache = new Map<string, string>();
 
-/** 读取 `src/prompts/` 下的文本（带缓存）。 */
+/** 读取 `src/prompts/` 下的文本。非 development 带缓存；本地改 md 可立刻生效。 */
 export function readPromptFile(...segments: string[]): string {
   const rel = path.join(...segments);
-  const cached = cache.get(rel);
-  if (cached !== undefined) return cached;
+  const useCache = env.NODE_ENV !== 'development';
+  if (useCache) {
+    const cached = cache.get(rel);
+    if (cached !== undefined) return cached;
+  }
 
   const absolute = path.join(PROMPTS_ROOT, rel);
   const text = readFileSync(absolute, 'utf8').trim();
-  cache.set(rel, text);
+  if (useCache) cache.set(rel, text);
   return text;
+}
+
+/** 列出含 extract job 的角色 slug（目录名）。 */
+export function listCharacterSlugs(): string[] {
+  const dir = path.join(PROMPTS_ROOT, 'characters');
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .toSorted()
+    .filter((slug) => existsSync(path.join(dir, slug, 'jobs', 'extract.md')));
 }
 
 function assertCharacterFile(slug: string, ...segments: string[]): void {

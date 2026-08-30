@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/server/prisma';
 import { randomUUID } from 'node:crypto';
-import { prepareConsolidationJob } from './job.service';
-import { runMaintenance } from './maintenance.service';
+import { prepareMemoryJob } from './job.service';
+import { runMaintain } from './maintain.service';
 import { runProfileRefresh } from './user-profile.service';
 
 /** 读取该用户×角色上次 maintain→profile 管线全部成功的时刻；从未成功则为 null。 */
@@ -36,10 +36,10 @@ export async function runMaintainPipelineForUserCharacter(
   userId: string,
   characterId: string,
 ): Promise<void> {
-  const maintainJob = await prepareConsolidationJob(randomUUID(), 'maintain');
-  await runMaintenance(maintainJob, userId, characterId);
+  const maintainJob = await prepareMemoryJob(randomUUID(), 'maintain');
+  await runMaintain(maintainJob, userId, characterId);
 
-  const profileJob = await prepareConsolidationJob(randomUUID(), 'profile');
+  const profileJob = await prepareMemoryJob(randomUUID(), 'profile');
   await runProfileRefresh(profileJob, userId, characterId);
 
   await updateLastMemoryPipelineAt(userId, characterId, new Date());

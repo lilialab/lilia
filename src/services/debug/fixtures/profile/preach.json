@@ -1,0 +1,16 @@
+{
+  "label": "别说教应写入 communication_style",
+  "existing": {},
+  "referenceMemories": [
+    {
+      "text": "用户反感被说教、被当小孩",
+      "type": "preference",
+      "confidence": 0.92
+    },
+    {
+      "text": "用户明确说过别再教他做事",
+      "type": "fact",
+      "confidence": 0.88
+    }
+  ]
+}

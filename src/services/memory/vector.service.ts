@@ -194,7 +194,7 @@ export class VectorService {
   /** 按文本查询语义近邻记忆（用于维护阶段相似聚类）。 */
   async findMemoryNeighbors(
     queryText: string,
-    limit = env.MEMORY_MAINTENANCE_NEIGHBOR_LIMIT,
+    limit = env.MEMORY_MAINTAIN_NEIGHBOR_LIMIT,
     options: FindMemoryNeighborsOptions,
   ): Promise<MemoryNeighbor[]> {
     const collection = await this.getCollection(this.memoryCollectionName);

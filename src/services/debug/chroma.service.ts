@@ -1,4 +1,4 @@
-// app/api/debug-chroma/service.ts
+// chroma 调试集合读写
 import { chromaClient, getEmbeddingFunction } from '@/lib/server/chroma';
 import { randomUUID } from 'crypto';
 

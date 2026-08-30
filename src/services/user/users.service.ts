@@ -179,7 +179,7 @@ export async function changeUserPassword(
 
 const vectorService = new VectorService();
 
-/** 永久删除用户账号及其关联数据（不含 ConsolidationJob）。 */
+/** 永久删除用户账号及其关联数据（不含 MemoryJob）。 */
 export async function deleteUserAccount(userId: string, currentPassword: string): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: userId },

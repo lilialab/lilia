@@ -44,7 +44,7 @@ vi.mock('@/services/memory/vector.service', () => ({
 }));
 
 import {
-  applyMaintenanceMerge,
+  applyMaintainMerge,
   createUserMemories,
   markMemoryMaintained,
   softDeleteMemories,
@@ -164,7 +164,7 @@ describe('createUserMemories', () => {
   });
 });
 
-describe('applyMaintenanceMerge', () => {
+describe('applyMaintainMerge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockTransactionUpdateMany.mockResolvedValue({ count: 2 });
@@ -182,7 +182,7 @@ describe('applyMaintenanceMerge', () => {
   });
 
   it('soft-deletes and creates in one mysql transaction, then syncs chroma', async () => {
-    const result = await applyMaintenanceMerge({
+    const result = await applyMaintainMerge({
       deleteIds: ['old-1', 'old-2'],
       newMemories: [
         {
@@ -229,7 +229,7 @@ describe('applyMaintenanceMerge', () => {
   it('creates multiple maintained memories in one transaction', async () => {
     mockTransactionCreateMany.mockResolvedValue({ count: 2 });
 
-    const result = await applyMaintenanceMerge({
+    const result = await applyMaintainMerge({
       deleteIds: ['old-1', 'old-2', 'old-3'],
       newMemories: [
         {

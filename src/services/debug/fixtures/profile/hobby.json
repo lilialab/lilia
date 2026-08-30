@@ -1,0 +1,16 @@
+{
+  "label": "兴趣不应写入画像",
+  "existing": {},
+  "referenceMemories": [
+    {
+      "text": "用户喜欢跑步",
+      "type": "preference",
+      "confidence": 0.95
+    },
+    {
+      "text": "用户常点美式咖啡",
+      "type": "preference",
+      "confidence": 0.9
+    }
+  ]
+}

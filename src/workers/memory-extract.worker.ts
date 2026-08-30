@@ -1,12 +1,12 @@
 import { env } from '@/lib/server/env';
 import { logger } from '@/lib/server/logger';
 import { asBullMqConnection } from '@/lib/server/redis';
-import { runConsolidation } from '@/services/memory/consolidation.service';
 import {
   MEMORY_EXTRACT_QUEUE,
   type MemoryExtractJobData,
 } from '@/services/memory/extract-queue.service';
-import { prepareConsolidationJob } from '@/services/memory/job.service';
+import { runExtract } from '@/services/memory/extract.service';
+import { prepareMemoryJob } from '@/services/memory/job.service';
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { randomUUID } from 'node:crypto';
@@ -19,7 +19,7 @@ const worker = new Worker<MemoryExtractJobData>(
   MEMORY_EXTRACT_QUEUE,
   async (bullJob) => {
     const { sessionId, groupSessionId, userId } = bullJob.data;
-    const consolidationJob = await prepareConsolidationJob(randomUUID(), 'extract');
+    const extractJob = await prepareMemoryJob(randomUUID(), 'extract');
     logger.info(
       {
         event: 'memory.extract.worker.start',
@@ -27,11 +27,11 @@ const worker = new Worker<MemoryExtractJobData>(
         sessionId,
         groupSessionId,
         userId,
-        jobId: consolidationJob.id,
+        jobId: extractJob.id,
       },
-      '[Worker] 开始记忆整理',
+      '[Worker] 开始记忆提取',
     );
-    await runConsolidation(consolidationJob, { sessionId, groupSessionId, userId });
+    await runExtract(extractJob, { sessionId, groupSessionId, userId });
   },
   {
     connection: asBullMqConnection(connection),
@@ -48,7 +48,7 @@ worker.on('completed', (bullJob) => {
       groupSessionId: bullJob.data.groupSessionId,
       userId: bullJob.data.userId,
     },
-    '[Worker] 记忆整理队列任务完成',
+    '[Worker] 记忆提取队列任务完成',
   );
 });
 
@@ -62,7 +62,7 @@ worker.on('failed', (bullJob, err) => {
       userId: bullJob?.data.userId,
       err,
     },
-    '[Worker] 记忆整理队列任务失败',
+    '[Worker] 记忆提取队列任务失败',
   );
 });
 

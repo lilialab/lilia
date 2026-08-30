@@ -1,0 +1,21 @@
+{
+  "label": "边界：别说教",
+  "messages": [
+    {
+      "speaker": "user",
+      "text": "别再教我做事，我不是小孩。"
+    },
+    {
+      "speaker": "assistant",
+      "text": "好。"
+    },
+    {
+      "speaker": "user",
+      "text": "以后也别提我前任。"
+    },
+    {
+      "speaker": "assistant",
+      "text": "记下了。"
+    }
+  ]
+}

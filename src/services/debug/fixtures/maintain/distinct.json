@@ -1,0 +1,16 @@
+{
+  "label": "无关近邻应分开留",
+  "cursor": {
+    "text": "用户下周要去上海出差",
+    "type": "event",
+    "confidence": 0.88
+  },
+  "neighbors": [
+    {
+      "text": "用户养了一只橘猫",
+      "type": "fact",
+      "confidence": 0.9,
+      "distance": 0.45
+    }
+  ]
+}

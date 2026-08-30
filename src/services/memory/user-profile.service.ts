@@ -3,11 +3,11 @@ import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { readCharacterJobPrompt, readJobPrompt } from '@/prompts/load';
-import type { ConsolidationJob, ProfileJobResult } from '@/types/consolidation-job';
+import type { MemoryJob, ProfileJobResult } from '@/types/memory-job';
 import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
 import { isDeepStrictEqual } from 'node:util';
-import { updateConsolidationJob } from './job.service';
+import { updateMemoryJob } from './job.service';
 import {
   formatUserProfileForPrompt,
   parseUserProfileData,
@@ -29,6 +29,16 @@ function formatMemoryList(memories: { text: string; type: string; confidence: nu
     .join('\n');
 }
 
+function buildProfileSystemPrompt(characterSlug: string): string {
+  return [
+    xmlBlock('user_profile_rules', readJobPrompt('user-profile')),
+    xmlBlock(
+      'character_user_profile_focus',
+      readCharacterJobPrompt(characterSlug, 'user-profile'),
+    ),
+  ].join('\n\n');
+}
+
 /** 组装画像刷新 prompt 正文（纯函数，便于单测）。 */
 export function buildProfileRefreshPrompt(input: {
   existing: ProfileSnapshot;
@@ -41,6 +51,55 @@ export function buildProfileRefreshPrompt(input: {
     '【参考记忆（高置信度与活跃度优先）】',
     formatMemoryList(input.referenceMemories),
   ].join('\n');
+}
+
+export interface ProfileModelResult {
+  systemPrompt: string;
+  userPrompt: string;
+  output: ProfileSnapshot | undefined;
+  text: string;
+  error: string | undefined;
+}
+
+/** 按全局规则 + 角色焦点调用画像模型；失败时 error 有值，不抛。 */
+export async function generateProfileModelOutput(
+  characterSlug: string,
+  existing: ProfileSnapshot,
+  referenceMemories: { text: string; type: string; confidence: number }[],
+): Promise<ProfileModelResult> {
+  const systemPrompt = buildProfileSystemPrompt(characterSlug);
+  const userPrompt = buildProfileRefreshPrompt({ existing, referenceMemories });
+
+  try {
+    const { output, text } = await generateText({
+      model: getChatModel(),
+      output: Output.object({ schema: profileSnapshotSchema }),
+      instructions: systemPrompt,
+      prompt: userPrompt,
+      maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
+    });
+
+    if (!output) {
+      return {
+        systemPrompt,
+        userPrompt,
+        output: undefined,
+        text,
+        error: '画像模型输出格式无效',
+      };
+    }
+
+    return { systemPrompt, userPrompt, output, text, error: undefined };
+  } catch (err) {
+    logger.warn({ event: 'llm.profile.failed', err, characterSlug }, '画像结构化输出生成失败');
+    return {
+      systemPrompt,
+      userPrompt,
+      output: undefined,
+      text: '',
+      error: '画像模型输出格式无效',
+    };
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -88,10 +147,6 @@ export async function refreshUserProfile(
   }
 
   const existingData = parseUserProfileData(existingProfile?.data);
-  const userPrompt = buildProfileRefreshPrompt({
-    existing: existingData,
-    referenceMemories,
-  });
 
   logger.info({
     event: 'llm.profile.request',
@@ -99,22 +154,17 @@ export async function refreshUserProfile(
     characterId,
     model: env.LLM_MODEL,
     referenceMemoryCount: referenceMemories.length,
-    prompt: userPrompt,
+    prompt: buildProfileRefreshPrompt({
+      existing: existingData,
+      referenceMemories,
+    }),
   });
 
-  const { output, text } = await generateText({
-    model: getChatModel(),
-    output: Output.object({ schema: profileSnapshotSchema }),
-    instructions: [
-      xmlBlock('user_profile_rules', readJobPrompt('user-profile')),
-      xmlBlock(
-        'character_user_profile_focus',
-        readCharacterJobPrompt(character.slug, 'user-profile'),
-      ),
-    ].join('\n\n'),
-    prompt: userPrompt,
-    maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
-  });
+  const { output, text, error } = await generateProfileModelOutput(
+    character.slug,
+    existingData,
+    referenceMemories,
+  );
 
   logger.info({
     event: 'llm.profile.response',
@@ -125,8 +175,8 @@ export async function refreshUserProfile(
     output,
   });
 
-  if (!output) {
-    throw new Error('模型输出格式无效，无法解析');
+  if (error || !output) {
+    throw new Error(error ?? '模型输出格式无效，无法解析');
   }
 
   const unchanged = isDeepStrictEqual(existingData, output);
@@ -158,18 +208,18 @@ export async function refreshUserProfile(
 
 /** 用户×角色画像刷新主流程，由 API / 管线以 fire-and-forget 或 await 调用。 */
 export async function runProfileRefresh(
-  job: ConsolidationJob,
+  job: MemoryJob,
   userId: string,
   characterId: string,
 ): Promise<void> {
-  await updateConsolidationJob(job.id, {
+  await updateMemoryJob(job.id, {
     status: 'running',
     progress: '正在加载记忆与现有画像...',
     snapshot: { userId, characterId },
   });
 
   try {
-    await updateConsolidationJob(job.id, { progress: '正在调用模型更新用户画像...' });
+    await updateMemoryJob(job.id, { progress: '正在调用模型更新用户画像...' });
 
     const { sourceVersion } = await refreshUserProfile(userId, characterId);
 
@@ -183,7 +233,7 @@ export async function runProfileRefresh(
       sourceVersion,
     });
 
-    await updateConsolidationJob(job.id, {
+    await updateMemoryJob(job.id, {
       status: 'completed',
       completedAt: Date.now(),
       progress: `画像更新完成（sourceVersion=${sourceVersion}）。`,
@@ -192,7 +242,7 @@ export async function runProfileRefresh(
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '未知错误';
     logger.error({ err, jobId: job.id, userId, characterId }, '[ProfileRefresh] 用户画像更新失败');
-    await updateConsolidationJob(job.id, {
+    await updateMemoryJob(job.id, {
       status: 'failed',
       completedAt: Date.now(),
       progress: '用户画像更新失败，可稍后重试。',

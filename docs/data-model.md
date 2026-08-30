@@ -95,7 +95,7 @@ erDiagram
 | `Message` | `messages` | 单聊/群聊共用；见下方约束 |
 | `UserMemory` | `user_memories` | 长期记忆（按 `userId + characterId` 私有） |
 | `UserProfile` | `user_profiles` | 用户×角色画像（按 `userId + characterId` 私有） |
-| `ConsolidationJob` | `consolidation_jobs` | extract / maintain / profile 任务记录 |
+| `MemoryJob` | `memory_jobs` | extract / maintain / profile 任务记录 |
 
 ## Message 约束
 

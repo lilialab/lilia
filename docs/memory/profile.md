@@ -41,4 +41,5 @@ system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）+ `<character_
 | 加载数据并调用 LLM 全量快照 | `refreshUserProfile` |
 | 拼装刷新 prompt | `buildProfileRefreshPrompt` |
 | 读画像注入 prompt | `getUserProfileText`（账号 `nickname` + `jsonToYaml`） |
-| LLM 调用 | `generateText` + `Output.object` |
+| LLM 调用 | `generateProfileModelOutput`（`generateText` + `Output.object`） |
+| 调试 dry-run | `/debug/profile`、`generateProfileModelOutput`（不写 UserProfile） |

@@ -3,7 +3,7 @@ import { logger } from '@/lib/server/logger';
 import { parseSearchParams } from '@/lib/server/parse-schema';
 import { memoryProfileQuerySchema } from '@/schemas/api/memory/profile';
 import { assertIsContact } from '@/services/character/contacts.service';
-import { prepareConsolidationJob } from '@/services/memory/job.service';
+import { prepareMemoryJob } from '@/services/memory/job.service';
 import { runProfileRefresh } from '@/services/memory/user-profile.service';
 import { resolveUserIdByUsername } from '@/services/user/users.service';
 import { randomUUID } from 'crypto';
@@ -18,7 +18,7 @@ export const POST = withApiHandler(async (req: NextRequest) => {
   await assertIsContact(userId, characterId);
 
   const jobId = randomUUID();
-  const job = await prepareConsolidationJob(jobId, 'profile');
+  const job = await prepareMemoryJob(jobId, 'profile');
 
   runProfileRefresh(job, userId, characterId).catch((err) => {
     logger.error(

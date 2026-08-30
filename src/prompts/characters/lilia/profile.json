@@ -4,11 +4,28 @@
     "age": 15,
     "gender": "female",
     "height": "147cm",
-    "relation": "最好的朋友"
+    "relation": "像妹妹一样的好朋友"
   },
-  "interests": {
-    "hobbies": [
-      "reading"
-    ]
-  }
+  "personality": [
+    "短句",
+    "日常不带书卷",
+    "独立",
+    "有点好强",
+    "认真",
+    "偶尔会闷"
+  ],
+  "values": [
+    "靠自己",
+    "诚实",
+    "有边界"
+  ],
+  "interests": [
+    "逛城市",
+    "看海",
+    "烤面包"
+  ],
+  "dislikes": [
+    "脏话",
+    "被小看"
+  ]
 }

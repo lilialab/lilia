@@ -2,7 +2,7 @@
 
 文中 **RAG** 指聊天时按当前输入从 `UserMemory` 向量检索相关记忆并注入 prompt，**不是**文档知识库上传。
 
-- [对话记忆整理 extract](./extract.md)（行为说明见文档内 **「说明」**）
+- [对话记忆提取 extract](./extract.md)（行为说明见文档内 **「说明」**）
 - [记忆维护 maintain](./maintain.md)（行为说明见文档内 **「说明」**）
 - [画像维护 profile](./profile.md)
 
@@ -24,13 +24,13 @@ flowchart TB
   end
 
   subgraph jobs [离线 Job]
-    ScheduleExtract --> WorkerExtract["Worker runConsolidation 按 session 或 group"]
+    ScheduleExtract --> WorkerExtract["Worker runExtract 按 session 或 group"]
     ScheduleGroupExtract --> WorkerExtract
-    ManualExtract["POST memory/consolidate"] --> RunExtract["本进程 runConsolidation"]
+    ManualExtract["POST memory/extract"] --> RunExtract["本进程 runExtract"]
     WorkerExtract --> WriteMemory["写入 UserMemory；群聊全员扇出 + Chroma"]
     RunExtract --> WriteMemory
     ScheduleMaintain --> WorkerMaintain["Worker：间隔到期"]
-    WorkerMaintain --> RunMaintain["runMaintenance（该角色）"]
+    WorkerMaintain --> RunMaintain["runMaintain（该角色）"]
     RunMaintain --> RunProfile["runProfileRefresh（该角色）"]
     ManualMaintain["POST memory/maintain?characterId="] --> RunMaintain
     ManualProfile["POST memory/profile?characterId="] --> RunProfile
@@ -54,8 +54,8 @@ flowchart TB
 | extract 入队（群聊按 groupSession；**不**入 maintain） | `scheduleGroupMemoryExtract` |
 | maintain→profile 入队（按 user×character 滑动窗口；delay = max(闲置, min_interval - 距上次)，全部在 schedule 阶段计算） | `scheduleMaintainPipeline` |
 | 串行 maintain→profile；都成功后写 `UserCharacter.lastMemoryPipelineAt` | `runMaintainPipelineForUserCharacter` |
-| 对话记忆整理 job | `runConsolidation`（详见 [extract](./extract.md)） |
-| 记忆维护 job | `runMaintenance`（详见 [maintain](./maintain.md)） |
+| 对话记忆提取 job | `runExtract`（详见 [extract](./extract.md)） |
+| 记忆维护 job | `runMaintain`（详见 [maintain](./maintain.md)） |
 | 画像 rollup job | `runProfileRefresh`（详见 [profile](./profile.md)） |
 
 开发需另开：`pnpm worker:memory-extract`、`pnpm worker:memory-maintain`（Redis 已起）。

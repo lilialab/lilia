@@ -163,9 +163,9 @@ model Message {
   role               String
   kind               String?  @map("kind")
   parts              Json
-  isConsolidated     Boolean  @default(false) @map("is_consolidated")
+  isExtracted        Boolean  @default(false) @map("is_extracted")
   isDeleted          Boolean  @default(false) @map("is_deleted")
-  consolidationJobId String?  @map("consolidation_job_id")
+  extractJobId       String?  @map("extract_job_id")
   createdAt          DateTime @default(now()) @map("created_at")
 
   session          ChatSession?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -174,11 +174,11 @@ model Message {
 
   @@index([sessionId])
   @@index([groupSessionId])
-  @@index([sessionId, isConsolidated])
-  @@index([groupSessionId, isConsolidated])
+  @@index([sessionId, isExtracted])
+  @@index([groupSessionId, isExtracted])
   @@index([sessionId, isDeleted])
   @@index([groupSessionId, isDeleted])
-  @@index([consolidationJobId])
+  @@index([extractJobId])
   @@map("messages")
 }
 
@@ -226,17 +226,17 @@ model UserProfile {
 /**
  * 记忆流水线任务记录（extract / maintain / profile），与具体会话无 FK
  */
-model ConsolidationJob {
+model MemoryJob {
   id          String    @id @default(uuid())
   kind        String    @default("extract") // extract | maintain | profile
   status      String    @default("pending") // pending | running | completed | failed
   progress    String    @default("等待开始...")
   error       String?   @db.Text
   result      Json?
-  snapshot    Json? // 任务上下文 + 记忆整理大模型对话 rawPayload
+  snapshot    Json? // 任务上下文 + 提取大模型对话 rawPayload
   startedAt   DateTime  @default(now()) @map("started_at")
   completedAt DateTime? @map("completed_at")
 
   @@index([startedAt])
-  @@map("consolidation_jobs")
+  @@map("memory_jobs")
 }

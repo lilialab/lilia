@@ -8,4 +8,7 @@ export const queryKeys = {
   groups: ['groups'] as const,
   group: (groupSessionId: string) => ['groups', groupSessionId] as const,
   groupMessageHistory: (groupSessionId: string) => ['groups', groupSessionId, 'messages'] as const,
+  debugExtractMeta: ['debug', 'extract', 'meta'] as const,
+  debugMaintainMeta: ['debug', 'maintain', 'meta'] as const,
+  debugProfileMeta: ['debug', 'profile', 'meta'] as const,
 };

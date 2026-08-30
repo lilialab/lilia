@@ -16,7 +16,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 |------|------|
 | HTTP 入口 | `src/app/api/`：改 API 先读对应 `route.ts`，再进 service |
 | 业务逻辑 | `src/services/{domain}/`（域见下表） |
-| 共享类型 | `src/types/`（如 `memory.ts`、`consolidation-job.ts`） |
+| 共享类型 | `src/types/`（如 `memory.ts`、`memory-job.ts`） |
 | 服务端基础设施 | `src/lib/server/`（env、prisma、chroma、embeddings、llm、logger） |
 | 浏览器 HTTP 封装 | `src/client-api/`（auth、sessions、groups…） |
 | 客户端基础设施 | `src/lib/client/`（`api-fetch`、`query-keys`、cn、toast） |
@@ -32,10 +32,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 |------|------|
 | `chat/` | 单聊流、prompt、消息 |
 | `group/` | 群聊流、群消息、群 prompt |
-| `memory/` | 记忆整理、向量检索、衰减、metadata、用户画像、job |
+| `memory/` | 记忆提取、向量检索、衰减、metadata、用户画像、job |
 | `session/` | 会话 |
 | `character/` | AI 角色、通讯录、联系人 session |
-| `debug/` | Chroma 调试 |
+| `debug/` | 本地调试（Chroma、提取/维护/画像试运行） |
 | `user/` | 注册登录、账号资料（改密/昵称/删号）、`resolveUserIdByUsername` |
 
 - 同域 import：`./`；跨域：`@/services/{domain}/...`。**不要**恢复 `src/services/` 根目录平铺旧路径。
@@ -123,7 +123,8 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 |------|------|
 | 聊天 / system prompt | `chat/prompt.service.ts`；`src/prompts/` |
 | 群聊 | `group/chat` / `group/message` / `group/prompt`；@ 见 [`docs/groups/mention-turn-cue.md`](docs/groups/mention-turn-cue.md) |
-| 记忆整理 | `consolidation.service.ts` + `consolidation.utils.ts` |
+| 记忆提取 | `extract.service.ts` + `extract.utils.ts` |
+| 记忆维护 | `maintain.service.ts` + `maintain.utils.ts` |
 | 记忆检索 / 衰减 | `vector` + `decay.utils` + `metadata.utils` |
 | 用户画像 | `user-profile.service.ts` |
 | 会话 / 历史 | `sessions.service.ts` + `message.service.ts` |

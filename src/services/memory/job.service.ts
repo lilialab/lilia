@@ -1,12 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
-import type {
-  ConsolidationJob,
-  ConsolidationJobSnapshot,
-  JobKind,
-  JobStatus,
-} from '@/types/consolidation-job';
+import type { JobKind, JobStatus, MemoryJob, MemoryJobSnapshot } from '@/types/memory-job';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 
 /* -------------------------------------------------------------------------- */
@@ -18,8 +13,8 @@ function toInputJsonValue(value: unknown): InputJsonValue {
   return value as InputJsonValue;
 }
 
-/** 将数据库行映射为 ConsolidationJob 领域对象。 */
-function toConsolidationJob(row: {
+/** 将数据库行映射为 MemoryJob 领域对象。 */
+function toMemoryJob(row: {
   id: string;
   kind: string;
   status: string;
@@ -29,7 +24,7 @@ function toConsolidationJob(row: {
   snapshot: unknown;
   startedAt: Date;
   completedAt: Date | null;
-}): ConsolidationJob {
+}): MemoryJob {
   return {
     id: row.id,
     kind: row.kind as JobKind,
@@ -38,8 +33,8 @@ function toConsolidationJob(row: {
     completedAt: row.completedAt?.getTime(),
     progress: row.progress,
     error: row.error ?? undefined,
-    result: (row.result as ConsolidationJob['result']) ?? undefined,
-    snapshot: (row.snapshot as ConsolidationJobSnapshot) ?? undefined,
+    result: (row.result as MemoryJob['result']) ?? undefined,
+    snapshot: (row.snapshot as MemoryJobSnapshot) ?? undefined,
   };
 }
 
@@ -48,11 +43,11 @@ function toConsolidationJob(row: {
 /* -------------------------------------------------------------------------- */
 
 /** 创建 pending 状态的记忆任务。 */
-export async function createConsolidationJob(
+export async function createMemoryJob(
   id: string,
   kind: JobKind = 'extract',
-): Promise<ConsolidationJob> {
-  const row = await prisma.consolidationJob.create({
+): Promise<MemoryJob> {
+  const row = await prisma.memoryJob.create({
     data: {
       id,
       kind,
@@ -61,18 +56,18 @@ export async function createConsolidationJob(
     },
   });
 
-  return toConsolidationJob(row);
+  return toMemoryJob(row);
 }
 
 /** 按 id 查询任务，不存在时返回 undefined。 */
-export async function getConsolidationJob(id: string): Promise<ConsolidationJob | undefined> {
-  const row = await prisma.consolidationJob.findUnique({ where: { id } });
-  return row ? toConsolidationJob(row) : undefined;
+export async function getMemoryJob(id: string): Promise<MemoryJob | undefined> {
+  const row = await prisma.memoryJob.findUnique({ where: { id } });
+  return row ? toMemoryJob(row) : undefined;
 }
 
 /** 按 id 查询任务；不存在时 404。 */
-export async function getConsolidationJobOrThrow(id: string): Promise<ConsolidationJob> {
-  const job = await getConsolidationJob(id);
+export async function getMemoryJobOrThrow(id: string): Promise<MemoryJob> {
+  const job = await getMemoryJob(id);
   if (!job) {
     throw AppError.notFound('找不到对应的任务，可能已过期');
   }
@@ -80,11 +75,11 @@ export async function getConsolidationJobOrThrow(id: string): Promise<Consolidat
 }
 
 /** 部分更新任务字段；任务不存在时静默跳过。 */
-export async function updateConsolidationJob(
+export async function updateMemoryJob(
   id: string,
-  patch: Partial<ConsolidationJob>,
+  patch: Partial<MemoryJob>,
 ): Promise<void> {
-  const existing = await prisma.consolidationJob.findUnique({ where: { id } });
+  const existing = await prisma.memoryJob.findUnique({ where: { id } });
   if (!existing) return;
 
   const data: {
@@ -108,7 +103,7 @@ export async function updateConsolidationJob(
     data.completedAt = patch.completedAt ? new Date(patch.completedAt) : null;
   }
   if (patch.snapshot !== undefined) {
-    const previous = (existing.snapshot ?? {}) as ConsolidationJobSnapshot;
+    const previous = (existing.snapshot ?? {}) as MemoryJobSnapshot;
     const definedEntries = Object.entries(patch.snapshot).filter(([, value]) =>
       value !== undefined
     );
@@ -118,30 +113,30 @@ export async function updateConsolidationJob(
     });
   }
 
-  await prisma.consolidationJob.update({ where: { id }, data });
+  await prisma.memoryJob.update({ where: { id }, data });
 }
 
-/** 保留最近 CONSOLIDATION_JOB_MAX_HISTORY 条记录，防止无限增长 */
-export async function pruneConsolidationJobs(): Promise<void> {
-  const staleJobs = await prisma.consolidationJob.findMany({
+/** 保留最近 MEMORY_JOB_MAX_HISTORY 条记录，防止无限增长 */
+export async function pruneMemoryJobs(): Promise<void> {
+  const staleJobs = await prisma.memoryJob.findMany({
     orderBy: { startedAt: 'desc' },
     select: { id: true },
-    skip: env.CONSOLIDATION_JOB_MAX_HISTORY,
+    skip: env.MEMORY_JOB_MAX_HISTORY,
   });
 
   if (staleJobs.length === 0) return;
 
-  await prisma.consolidationJob.deleteMany({
+  await prisma.memoryJob.deleteMany({
     where: { id: { in: staleJobs.map((job) => job.id) } },
   });
 }
 
 /** 创建任务并清理过期记录 */
-export async function prepareConsolidationJob(
+export async function prepareMemoryJob(
   id: string,
   kind: JobKind = 'extract',
-): Promise<ConsolidationJob> {
-  const job = await createConsolidationJob(id, kind);
-  await pruneConsolidationJobs();
+): Promise<MemoryJob> {
+  const job = await createMemoryJob(id, kind);
+  await pruneMemoryJobs();
   return job;
 }

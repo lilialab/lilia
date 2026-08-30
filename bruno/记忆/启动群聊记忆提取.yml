@@ -1,0 +1,22 @@
+info:
+  name: 启动群聊记忆提取
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:3000/api/memory/extract?username=tom&groupSessionId=
+  params:
+    - name: username
+      value: tom
+      type: query
+    - name: groupSessionId
+      value: ""
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

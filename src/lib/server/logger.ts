@@ -25,11 +25,12 @@ export const logger = buildLogger();
 export type LlmLogEvent =
   | 'llm.chat.request'
   | 'llm.chat.response'
-  | 'llm.consolidation.request'
-  | 'llm.consolidation.response'
-  | 'llm.consolidation.complete'
-  | 'llm.consolidation.failed'
-  | 'llm.consolidation.mark';
+  | 'llm.extract.request'
+  | 'llm.extract.response'
+  | 'llm.extract.complete'
+  | 'llm.extract.failed'
+  | 'llm.extract.mark'
+  | 'llm.extract.character.failed';
 
 export function logLlmEvent(event: LlmLogEvent, fields: Record<string, unknown>): void {
   logger.info({ event, ...fields });

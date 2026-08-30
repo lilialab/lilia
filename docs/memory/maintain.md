@@ -43,9 +43,9 @@ flowchart TD
 
 | 阶段 | 规则 |
 |------|------|
-| Chroma | 按游标 `text` 语义距离，且 `user_id`+`character_id` 过滤，取 top `MEMORY_MAINTENANCE_NEIGHBOR_LIMIT`（默认 10） |
+| Chroma | 按游标 `text` 语义距离，且 `user_id`+`character_id` 过滤，取 top `MEMORY_MAINTAIN_NEIGHBOR_LIMIT`（默认 10） |
 | MySQL | 仅同角色且 `isDeleted = false`（软删为 MySQL + Chroma 双写且非原子，此处做防御性过滤，与聊天 RAG 一致） |
-| 衰减 | `decay(lastActiveAt) < MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY` 的近邻**硬丢弃**，不进 LLM 簇 |
+| 衰减 | `decay(lastActiveAt) < MEMORY_MAINTAIN_NEIGHBOR_MIN_DECAY` 的近邻**硬丢弃**，不进 LLM 簇 |
 
 近邻**不要求** `isMaintained = false`：已维护过的老记忆仍可能因语义相近被卷入合并簇。
 
@@ -60,7 +60,7 @@ flowchart TD
 ### 分支行为
 
 - 衰减过滤后**无近邻**：1→1 touch（删旧建新、内容不变），不调 LLM，刷新 `isMaintained`
-- **有近邻**：LLM 整理簇 → `applyMaintenanceMerge` 删除游标 + 近邻、写入合并后的新条
+- **有近邻**：LLM 整理簇 → `applyMaintainMerge` 删除游标 + 近邻、写入合并后的新条
 - LLM 输出失败：`markMemoryMaintained` 标记已消费，避免同一条游标无限重试
 
 ### 相关 env
@@ -70,21 +70,21 @@ flowchart TD
 | 变量 | 用途 |
 |------|------|
 | `MEMORY_HALF_LIFE_*_DAYS` | 各类型半衰期，用于近邻 `decay(lastActiveAt)` 计算 |
-| `MEMORY_MAINTENANCE_NEIGHBOR_LIMIT` | 每条游标最多召回的语义近邻数 |
-| `MEMORY_MAINTENANCE_NEIGHBOR_MIN_DECAY` | 近邻最低衰减权重，低于此值不进入 LLM 簇 |
+| `MEMORY_MAINTAIN_NEIGHBOR_LIMIT` | 每条游标最多召回的语义近邻数 |
+| `MEMORY_MAINTAIN_NEIGHBOR_MIN_DECAY` | 近邻最低衰减权重，低于此值不进入 LLM 簇 |
 | `LLM_STRUCTURED_MAX_RETRIES` | 维护 LLM 结构化输出失败重试次数 |
 
 ## 功能与代码对应
 
 | 功能 | 函数 |
 |------|------|
-| 维护 job 主流程 | `runMaintenance`, `completeMaintenanceJob` |
-| 串行消费游标队列 | `runMaintenanceLoop`, `findNextUnmaintainedMemory` |
+| 维护 job 主流程 | `runMaintain`, `completeMaintainJob` |
+| 串行消费游标队列 | `runMaintainLoop`, `findNextUnmaintainedMemory` |
 | 单条游标维护编排 | `maintainOneMemory` |
 | 语义近邻召回与详情加载 | `findMemoryNeighbors`, `loadActiveMemoriesByIds` |
 | 无近邻 touch（不调 LLM） | `buildCursorTouchMemories` |
-| 有近邻时 LLM 整理 | `decideMaintenanceRewrite`, `buildMaintenancePrompt` |
-| 解析 / 校验维护输出 | `mapMaintenanceRewriteOutput`, `validateMaintenanceRewriteOutput` |
-| 确定删除范围（游标+近邻） | `buildMaintenanceClusterDeleteIds` |
-| 删旧建新 | `applyClusterRewrite`, `applyMaintenanceMerge` |
+| 有近邻时 LLM 整理 | `generateMaintainModelOutput`, `decideMaintainRewrite`, `buildMaintainPrompt` |
+| 解析 / 校验维护输出 | `mapMaintainRewriteOutput`, `validateMaintainRewriteOutput` |
+| 确定删除范围（游标+近邻） | `buildMaintainClusterDeleteIds` |
+| 删旧建新 | `applyClusterRewrite`, `applyMaintainMerge` |
 | LLM 失败防重试 | `markMemoryMaintained` |

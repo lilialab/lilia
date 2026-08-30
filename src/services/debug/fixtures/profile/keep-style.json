@@ -1,0 +1,18 @@
+{
+  "label": "保留现有风格并追加回避话题",
+  "existing": {
+    "communication_style": "短句，不要说教"
+  },
+  "referenceMemories": [
+    {
+      "text": "用户反感被说教、被当小孩",
+      "type": "preference",
+      "confidence": 0.9
+    },
+    {
+      "text": "用户明确要求以后不要提前任",
+      "type": "fact",
+      "confidence": 0.93
+    }
+  ]
+}

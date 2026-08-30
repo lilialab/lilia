@@ -73,13 +73,13 @@ docker compose up -d
 - 聊天请求（记忆片段等）：`{app="lilia", event="llm.chat.request"}`
 - 聊天回复：`{app="lilia", event="llm.chat.response"}`
 - 按消息过滤：`{app="lilia"} | json | userMessageId="<uuid>"` 或 `assistantMessageId`
-- 记忆整理：`{app="lilia", event=~"llm.consolidation.*"}`
-- 整理结果摘要：`{app="lilia", event="llm.consolidation.complete"}`
-- globalMax 前缀标记：`{app="lilia", event="llm.consolidation.mark"}`
+- 记忆提取：`{app="lilia", event=~"llm.extract.*"}`
+- 提取结果摘要：`{app="lilia", event="llm.extract.complete"}`
+- globalMax 前缀标记：`{app="lilia", event="llm.extract.mark"}`
 - 按 job 过滤：`{app="lilia"} | json | jobId="<uuid>"`
 - 设 `LOG_TO_LOKI=false` 时不记录日志（终端也不会有输出）
 
-`consolidation_jobs.snapshot` 仅保留 `messageIds` / `userId`；LLM 输入输出在 Loki 中查询。
+`memory_jobs.snapshot` 仅保留 `messageIds` / `userId`；LLM 输入输出在 Loki 中查询。
 
 ### 4. 初始化数据库
 

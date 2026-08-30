@@ -59,7 +59,7 @@ export interface MemoryMergeUpdate {
   confidence: number;
 }
 
-export interface ApplyMaintenanceMergeInput {
+export interface ApplyMaintainMergeInput {
   deleteIds: string[];
   newMemories: CreateMaintainedMemoryInput[];
 }
@@ -209,7 +209,7 @@ export async function applyMemoryMerge(input: MemoryMergeUpdate): Promise<void> 
 }
 
 /* -------------------------------------------------------------------------- */
-/* Maintenance lifecycle                                                      */
+/* Maintain lifecycle                                                      */
 /* -------------------------------------------------------------------------- */
 
 /** 标记单条记忆已完成维护（无合并或作为游标已消费）。 */
@@ -236,14 +236,14 @@ export async function createMaintainedMemory(
  * 维护整理：输入簇全删 + 批量新建。
  * MySQL 软删与 createMany 同事务；Chroma 在事务提交后同步，与 extract 路径一致。
  */
-export async function applyMaintenanceMerge(
-  input: ApplyMaintenanceMergeInput,
+export async function applyMaintainMerge(
+  input: ApplyMaintainMergeInput,
 ): Promise<{ ids: string[] }> {
   const uniqueDeleteIds = [...new Set(input.deleteIds)];
   const prepared = prepareUserMemoryWrite(input.newMemories, { isMaintained: true });
 
   if (prepared.mysqlRows.length === 0) {
-    throw new Error('applyMaintenanceMerge requires at least one new memory');
+    throw new Error('applyMaintainMerge requires at least one new memory');
   }
 
   await prisma.$transaction(async (tx) => {

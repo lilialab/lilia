@@ -3,8 +3,8 @@ import { logger } from '@/lib/server/logger';
 import { parseSearchParams } from '@/lib/server/parse-schema';
 import { memoryMaintainQuerySchema } from '@/schemas/api/memory/maintain';
 import { assertIsContact } from '@/services/character/contacts.service';
-import { prepareConsolidationJob } from '@/services/memory/job.service';
-import { runMaintenance } from '@/services/memory/maintenance.service';
+import { prepareMemoryJob } from '@/services/memory/job.service';
+import { runMaintain } from '@/services/memory/maintain.service';
 import { resolveUserIdByUsername } from '@/services/user/users.service';
 import { randomUUID } from 'crypto';
 import { type NextRequest } from 'next/server';
@@ -18,12 +18,12 @@ export const POST = withApiHandler(async (req: NextRequest) => {
   await assertIsContact(userId, characterId);
 
   const jobId = randomUUID();
-  const job = await prepareConsolidationJob(jobId, 'maintain');
+  const job = await prepareMemoryJob(jobId, 'maintain');
 
-  runMaintenance(job, userId, characterId).catch((err) => {
+  runMaintain(job, userId, characterId).catch((err) => {
     logger.error(
       { jobId, userId, characterId, username, err },
-      '[API] runMaintenance uncaught error',
+      '[API] runMaintain uncaught error',
     );
   });
 

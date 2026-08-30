@@ -1,0 +1,22 @@
+{
+  "label": "近义偏好应合并",
+  "cursor": {
+    "text": "用户喜欢喝美式咖啡",
+    "type": "preference",
+    "confidence": 0.92
+  },
+  "neighbors": [
+    {
+      "text": "用户常点美式",
+      "type": "preference",
+      "confidence": 0.8,
+      "distance": 0.12
+    },
+    {
+      "text": "用户不喜欢太甜的咖啡",
+      "type": "preference",
+      "confidence": 0.85,
+      "distance": 0.28
+    }
+  ]
+}
