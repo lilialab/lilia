@@ -2,7 +2,7 @@ import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { DEFAULT_CHARACTER_ID, listCharacterSlugs } from '@/prompts/load';
 import { generateProfileModelOutput } from '@/services/memory/user-profile.service';
-import type { ProfileSnapshot } from '@/services/memory/user-profile.utils';
+import { type ProfileSnapshot, profileSnapshotSchema } from '@/services/memory/user-profile.utils';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -12,16 +12,13 @@ const FIXTURES_DIR = path.join(process.cwd(), 'src/services/debug/fixtures/profi
 
 const profileReferenceMemorySchema = z.object({
   text: z.string().trim().min(1),
-  type: z.enum(['fact']),
+  type: z.enum(['event', 'fact']),
   confidence: z.number().min(0).max(1),
 });
 
 const profileFixtureSchema = z.object({
   label: z.string().min(1),
-  existing: z.object({
-    communication_style: z.string().optional(),
-    avoid_topics: z.array(z.string()).optional(),
-  }),
+  existing: profileSnapshotSchema,
   referenceMemories: z.array(profileReferenceMemorySchema),
 });
 
@@ -29,7 +26,7 @@ export interface ProfileDebugFixture {
   id: string;
   label: string;
   existing: ProfileSnapshot;
-  referenceMemories: { text: string; type: 'fact'; confidence: number }[];
+  referenceMemories: { text: string; type: 'event' | 'fact'; confidence: number }[];
 }
 
 export interface ProfilePreviewResult {

@@ -3,11 +3,12 @@ import { z } from 'zod';
 const profileSnapshotBodySchema = z.object({
   communication_style: z.string().optional(),
   avoid_topics: z.array(z.string()).optional(),
+  now: z.string().optional(),
 });
 
 const profileReferenceMemorySchema = z.object({
   text: z.string().trim().min(1),
-  type: z.enum(['fact']),
+  type: z.enum(['event', 'fact']),
   confidence: z.number().min(0).max(1),
 });
 

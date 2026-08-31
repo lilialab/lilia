@@ -1,0 +1,45 @@
+{
+  "label": "修改三项",
+  "existing": {
+    "communication_style": "可以开玩笑，详细展开也没关系",
+    "avoid_topics": ["政治", "前任"],
+    "now": "正在赶一款 AI 朋友 App 上线，因此焦虑"
+  },
+  "referenceMemories": [
+    {
+      "text": "用户现在明确要求短句，不要讲大道理、不要说教",
+      "type": "fact",
+      "confidence": 0.95
+    },
+    {
+      "text": "用户说前任的事已经无所谓了，可以聊",
+      "type": "fact",
+      "confidence": 0.93
+    },
+    {
+      "text": "用户明确回避被问收入和加班",
+      "type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "text": "用户仍不愿谈论政治",
+      "type": "fact",
+      "confidence": 0.88
+    },
+    {
+      "text": "用户的 App 已经上线，最近在找下一份工作，心情还行",
+      "type": "event",
+      "confidence": 0.92
+    },
+    {
+      "text": "用户喜欢跑步",
+      "type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "text": "用户下周三上午去体检",
+      "type": "event",
+      "confidence": 0.85
+    }
+  ]
+}

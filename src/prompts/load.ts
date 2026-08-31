@@ -63,10 +63,21 @@ export function loadCharacterSkills(slug: string): string[] {
   return Array.isArray(parsed.skills) ? parsed.skills : [];
 }
 
-/** 加载角色对某条流水线 job 的补充提示（`characters/{slug}/jobs/{job}.md`）。 */
+/** 加载角色对某条流水线 job 的补充提示（`characters/{slug}/jobs/{job}.md`）。extract 必有。 */
 export function readCharacterJobPrompt(slug: string, job: CharacterJobPromptId): string {
   assertCharacterFile(slug, 'jobs', `${job}.md`);
   return readPromptFile('characters', slug, 'jobs', `${job}.md`);
+}
+
+/** 可选角色 job 补充；文件不存在或 trim 后为空则 undefined。 */
+export function tryReadCharacterJobPrompt(
+  slug: string,
+  job: CharacterJobPromptId,
+): string | undefined {
+  const absolute = path.join(PROMPTS_ROOT, 'characters', slug, 'jobs', `${job}.md`);
+  if (!existsSync(absolute)) return undefined;
+  const text = readPromptFile('characters', slug, 'jobs', `${job}.md`);
+  return text.length > 0 ? text : undefined;
 }
 
 const JOB_PROMPT_READERS: Record<JobPromptId, () => string> = {

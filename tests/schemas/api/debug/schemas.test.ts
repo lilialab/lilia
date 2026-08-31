@@ -116,14 +116,14 @@ describe('debugProfilePostBodySchema', () => {
     ).toBe(true);
   });
 
-  it('event 类型失败', () => {
+  it('event 与 fact 均可通过', () => {
     expect(
       debugProfilePostBodySchema.safeParse({
         characterSlug: 'lilia',
         existing: {},
-        referenceMemories: [{ text: '明天开会', type: 'event', confidence: 0.9 }],
+        referenceMemories: [{ text: '用户正在赶着上线一款 App', type: 'event', confidence: 0.9 }],
       }).success,
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('合法 body 通过', () => {

@@ -2,7 +2,7 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { readCharacterJobPrompt, readJobPrompt } from '@/prompts/load';
+import { readJobPrompt, tryReadCharacterJobPrompt } from '@/prompts/load';
 import type { MemoryJob, ProfileJobResult } from '@/types/memory-job';
 import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
@@ -11,8 +11,9 @@ import { updateMemoryJob } from './job.service';
 import {
   formatUserProfileForPrompt,
   parseUserProfileData,
+  profileLlmOutputSchema,
   type ProfileSnapshot,
-  profileSnapshotSchema,
+  snapshotFromLlmOutput,
 } from './user-profile.utils';
 
 /* -------------------------------------------------------------------------- */
@@ -29,14 +30,14 @@ function formatMemoryList(memories: { text: string; type: string; confidence: nu
     .join('\n');
 }
 
-function buildProfileSystemPrompt(characterSlug: string): string {
-  return [
-    xmlBlock('user_profile_rules', readJobPrompt('user-profile')),
-    xmlBlock(
-      'character_user_profile_focus',
-      readCharacterJobPrompt(characterSlug, 'user-profile'),
-    ),
-  ].join('\n\n');
+/** 组装画像 system prompt：全局规则 + 可选角色焦点。 */
+export function buildProfileSystemPrompt(characterSlug: string): string {
+  const blocks = [xmlBlock('user_profile_rules', readJobPrompt('user-profile'))];
+  const focus = tryReadCharacterJobPrompt(characterSlug, 'user-profile');
+  if (focus) {
+    blocks.push(xmlBlock('character_user_profile_focus', focus));
+  }
+  return blocks.join('\n\n');
 }
 
 /** 组装画像刷新 prompt 正文（纯函数，便于单测）。 */
@@ -73,7 +74,7 @@ export async function generateProfileModelOutput(
   try {
     const { output, text } = await generateText({
       model: getChatModel(),
-      output: Output.object({ schema: profileSnapshotSchema }),
+      output: Output.object({ schema: profileLlmOutputSchema }),
       instructions: systemPrompt,
       prompt: userPrompt,
       maxRetries: env.LLM_STRUCTURED_MAX_RETRIES,
@@ -89,7 +90,13 @@ export async function generateProfileModelOutput(
       };
     }
 
-    return { systemPrompt, userPrompt, output, text, error: undefined };
+    return {
+      systemPrompt,
+      userPrompt,
+      output: snapshotFromLlmOutput(output),
+      text,
+      error: undefined,
+    };
   } catch (err) {
     logger.warn({ event: 'llm.profile.failed', err, characterSlug }, '画像结构化输出生成失败');
     return {
@@ -129,9 +136,9 @@ export async function refreshUserProfile(
     prisma.userProfile.findUnique({
       where: { userId_characterId: { userId, characterId } },
     }),
-    // 参考记忆仅供长期画像 rollup，不含 event（一次性日程由 RAG 处理）
+    // 含 event：一次性日程由提示词排除；进行中的状态可压进 now
     prisma.userMemory.findMany({
-      where: { userId, characterId, isDeleted: false, type: { not: 'event' } },
+      where: { userId, characterId, isDeleted: false },
       orderBy: [{ confidence: 'desc' }, { lastActiveAt: 'desc' }],
       take: env.MEMORY_PROFILE_REFERENCE_LIMIT,
       select: { text: true, type: true, confidence: true },

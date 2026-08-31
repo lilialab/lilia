@@ -1,4 +1,7 @@
-import { buildProfileRefreshPrompt } from '@/services/memory/user-profile.service';
+import {
+  buildProfileRefreshPrompt,
+  buildProfileSystemPrompt,
+} from '@/services/memory/user-profile.service';
 import { describe, expect, it } from 'vitest';
 
 describe('buildProfileRefreshPrompt', () => {
@@ -26,5 +29,13 @@ describe('buildProfileRefreshPrompt', () => {
     expect(prompt).toContain('{}');
     expect(prompt).toContain('【现有画像】');
     expect(prompt).toContain('【参考记忆（高置信度与活跃度优先）】');
+  });
+});
+
+describe('buildProfileSystemPrompt', () => {
+  it('无角色 overlay 时只拼全局规则', () => {
+    const prompt = buildProfileSystemPrompt('nonexistent');
+    expect(prompt).toContain('<user_profile_rules>');
+    expect(prompt).not.toContain('character_user_profile_focus');
   });
 });

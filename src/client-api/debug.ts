@@ -90,8 +90,8 @@ export function previewMaintain(input: {
 export interface ProfileDebugFixture {
   id: string;
   label: string;
-  existing: { communication_style?: string; avoid_topics?: string[] };
-  referenceMemories: { text: string; type: 'fact'; confidence: number }[];
+  existing: { communication_style?: string; avoid_topics?: string[]; now?: string };
+  referenceMemories: { text: string; type: 'event' | 'fact'; confidence: number }[];
 }
 
 export interface ProfileDebugMeta {
@@ -106,7 +106,7 @@ export interface ProfilePreviewResult {
   userPrompt: string;
   rawText: string;
   error: string | undefined;
-  snapshot: { communication_style?: string; avoid_topics?: string[] } | undefined;
+  snapshot: { communication_style?: string; avoid_topics?: string[]; now?: string } | undefined;
   unchanged: boolean;
 }
 

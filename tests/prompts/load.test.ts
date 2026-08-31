@@ -6,6 +6,7 @@ import {
   readCharacterJobPrompt,
   readJobPrompt,
   readPromptFile,
+  tryReadCharacterJobPrompt,
 } from '@/prompts/load';
 import { describe, expect, it } from 'vitest';
 
@@ -26,11 +27,14 @@ describe('prompts/load', () => {
     }
   });
 
-  it('已知角色可加载 job 补充提示', () => {
+  it('已知角色可加载 extract 补充提示', () => {
     for (const slug of listCharacterSlugs()) {
       expect(readCharacterJobPrompt(slug, 'extract').length).toBeGreaterThan(0);
-      expect(readCharacterJobPrompt(slug, 'user-profile').length).toBeGreaterThan(0);
     }
+  });
+
+  it('画像角色 overlay 缺失时不抛', () => {
+    expect(tryReadCharacterJobPrompt('nonexistent', 'user-profile')).toBeUndefined();
   });
 
   it('共享 prompt 文件可读', () => {

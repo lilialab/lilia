@@ -7,7 +7,7 @@ flowchart TD
   API["POST memory/profile?characterId="] --> Entry[触发画像 job]
   Pipeline["maintain→profile 管线"] --> Entry
   Entry --> Core[画像全量快照]
-  Core --> LoadProfile[并行加载该角色画像与非 event 参考记忆]
+  Core --> LoadProfile[并行加载该角色画像与参考记忆]
   LoadProfile --> Prompt[拼装 LLM prompt]
   Prompt --> LlmGen["LLM 生成完整画像 JSON"]
   LlmGen --> Upsert["upsert UserProfile.data"]
@@ -17,9 +17,9 @@ flowchart TD
 
 ### 目的
 
-按 **userId + characterId** 私有：从该角色下的长期记忆维护用户画像（只锁回复方式，非生平摘要），以 JSON 存 `UserProfile.data`，单聊 / 群聊注入 prompt 时转为 YAML。字段闭集：`communication_style`、`avoid_topics`。称呼用账号 `nickname`（注入时写入 YAML，不进画像）。职业、日程、兴趣等细节由 RAG 按需检索。
+按 **userId + characterId** 私有：从该角色下的长期记忆维护用户画像（每轮注入，只收束怎么回，不是生平摘要），以 JSON 存 `UserProfile.data`，单聊 / 群聊注入 prompt 时转为 YAML。字段闭集：`communication_style`、`avoid_topics`、`now`。称呼用账号 `nickname`（注入时写入 YAML，不进画像）。爱好、职业细节、一次性日程由 RAG 按需检索；进行中的身份或心情可压进 `now`。
 
-system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）+ `<character_user_profile_focus>`（`characters/{slug}/jobs/user-profile.md`）。
+system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）。角色 overlay 可选：有 `characters/{slug}/jobs/user-profile.md` 且非空时才拼 `<character_user_profile_focus>`。
 
 ### 何时触发
 
@@ -28,7 +28,7 @@ system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）+ `<character_
 
 ### 参考记忆
 
-- 仅该角色 `isDeleted=false` 且 `type != event` 的记忆
+- 该角色 `isDeleted=false` 的记忆（含 event）；一次性日程由提示词排除，不写入画像
 - 按 confidence / lastActiveAt 取 top `MEMORY_PROFILE_REFERENCE_LIMIT`
 
 删通讯录**不删**画像（与记忆一致，加回好友可继续用）。

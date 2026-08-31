@@ -1,0 +1,49 @@
+{
+  "label": "多重信息",
+  "existing": {
+    "communication_style": "可以开玩笑",
+    "avoid_topics": ["政治"]
+  },
+  "referenceMemories": [
+    {
+      "text": "用户反感被说教、被当小孩",
+      "type": "fact",
+      "confidence": 0.95
+    },
+    {
+      "text": "用户明确说过不要提前任",
+      "type": "fact",
+      "confidence": 0.92
+    },
+    {
+      "text": "用户回避家庭矛盾相关话题",
+      "type": "fact",
+      "confidence": 0.88
+    },
+    {
+      "text": "用户偏好短句，不喜欢长篇大论",
+      "type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "text": "用户正在开发并准备上线一款主打AI记忆功能的AI朋友类App，近期因此感到焦虑，担心上线后无人使用。",
+      "type": "event",
+      "confidence": 0.9
+    },
+    {
+      "text": "用户喜欢跑步",
+      "type": "fact",
+      "confidence": 0.95
+    },
+    {
+      "text": "用户常点美式咖啡",
+      "type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "text": "用户明天下午三点出差去北京",
+      "type": "event",
+      "confidence": 0.85
+    }
+  ]
+}
