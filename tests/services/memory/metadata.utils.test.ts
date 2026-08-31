@@ -2,25 +2,10 @@ import {
   parseConfidence,
   parseLastActiveAt,
   parseMemoryMetadata,
-  parseMemoryType,
 } from '@/services/memory/metadata.utils';
 import { describe, expect, it } from 'vitest';
 
 const FALLBACK_MS = 1_700_000_000_000;
-
-describe('parseMemoryType', () => {
-  it('returns valid memory types', () => {
-    expect(parseMemoryType('preference')).toBe('preference');
-    expect(parseMemoryType('event')).toBe('event');
-    expect(parseMemoryType('fact')).toBe('fact');
-  });
-
-  it('returns undefined for invalid values', () => {
-    expect(parseMemoryType('invalid')).toBeUndefined();
-    expect(parseMemoryType(123)).toBeUndefined();
-    expect(parseMemoryType(null)).toBeUndefined();
-  });
-});
 
 describe('parseConfidence', () => {
   it('returns valid confidence', () => {
@@ -55,7 +40,7 @@ describe('parseMemoryMetadata', () => {
   it('parses complete metadata', () => {
     const result = parseMemoryMetadata(
       {
-        type: 'preference',
+        type: 'fact',
         confidence: 0.9,
         last_active_at: 100,
         timestamp: 50,
@@ -64,7 +49,7 @@ describe('parseMemoryMetadata', () => {
     );
 
     expect(result).toEqual({
-      type: 'preference',
+      type: 'fact',
       confidence: 0.9,
       lastActiveAt: 100,
     });

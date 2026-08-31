@@ -12,7 +12,7 @@ const FIXTURES_DIR = path.join(process.cwd(), 'src/services/debug/fixtures/profi
 
 const profileReferenceMemorySchema = z.object({
   text: z.string().trim().min(1),
-  type: z.enum(['preference', 'fact']),
+  type: z.enum(['fact']),
   confidence: z.number().min(0).max(1),
 });
 
@@ -29,7 +29,7 @@ export interface ProfileDebugFixture {
   id: string;
   label: string;
   existing: ProfileSnapshot;
-  referenceMemories: { text: string; type: 'preference' | 'fact'; confidence: number }[];
+  referenceMemories: { text: string; type: 'fact'; confidence: number }[];
 }
 
 export interface ProfilePreviewResult {

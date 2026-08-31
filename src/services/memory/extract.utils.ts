@@ -68,10 +68,11 @@ export function formatExtractMessageXml(
   seq: number,
   speaker: string,
   text: string,
+  localTime: string,
 ): string | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
-  return `<message id="${id}" seq="${seq}" speaker="${speaker}">${trimmed}</message>`;
+  return `<message id="${id}" seq="${seq}" speaker="${speaker}" local_time="${localTime}">${trimmed}</message>`;
 }
 
 /** 从未知值解析非空字符串数组，非法输入返回空数组。 */
@@ -97,14 +98,13 @@ export function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
 
   const record = item as Record<string, unknown>;
   const text = typeof record.text === 'string' ? record.text.trim() : '';
-  const type = record.type;
+  const type = isMemoryType(record.type) ? record.type : undefined;
   const sourceMessageIds = parseStringArray(record.source_message_ids);
   const confidence = parseConfidence(record.confidence);
 
   if (
     !text
-    || typeof type !== 'string'
-    || !isMemoryType(type)
+    || type === undefined
     || sourceMessageIds.length === 0
     || confidence === null
   ) {

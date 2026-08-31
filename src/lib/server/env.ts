@@ -123,7 +123,6 @@ export const env = {
 
   // 记忆 / 聊天调参：说明见 .env.example
   MEMORY_HALF_LIFE_EVENT_DAYS: requirePositiveNumberEnv('MEMORY_HALF_LIFE_EVENT_DAYS'),
-  MEMORY_HALF_LIFE_PREFERENCE_DAYS: requirePositiveNumberEnv('MEMORY_HALF_LIFE_PREFERENCE_DAYS'),
   MEMORY_HALF_LIFE_FACT_DAYS: requirePositiveNumberEnv('MEMORY_HALF_LIFE_FACT_DAYS'),
   MEMORY_MAINTAIN_NEIGHBOR_MIN_DECAY: requireUnitIntervalEnv(
     'MEMORY_MAINTAIN_NEIGHBOR_MIN_DECAY',

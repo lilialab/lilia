@@ -16,7 +16,10 @@ export const GET = withApiHandler(async () => {
 /** 提取 dry-run，不写库。 */
 export const POST = withApiHandler(async (req: NextRequest) => {
   assertDevelopmentDebug();
-  const { characterSlug, messages } = await parseJsonBody(debugExtractPostBodySchema, req);
-  const result = await previewExtract(characterSlug, messages);
+  const { characterSlug, timeZone, messages } = await parseJsonBody(
+    debugExtractPostBodySchema,
+    req,
+  );
+  const result = await previewExtract(characterSlug, timeZone, messages);
   return successResponse(result);
 });

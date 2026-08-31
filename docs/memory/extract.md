@@ -47,17 +47,20 @@ flowchart TD
 ### transcript 构建
 
 - 按消息 `createdAt` **正序**拼接
-- 每条消息格式为 `<message id="..." seq="..." speaker="...">正文</message>`；`seq` 为从 0 起的相对序号，**不带**绝对时间给 LLM
+- 每条消息格式为 `<message id="..." seq="..." speaker="..." local_time="...">正文</message>`；`seq` 为从 0 起的相对序号；`local_time` 为该条 `createdAt` 按用户 IANA 时区格式化的本地墙钟（`yyyy-MM-dd HH:mm:ss`）
 - 每条 `<message>` 含 `speaker` 属性（`extractSpeaker`）：`user` 或角色 **slug**；正文为纯对话（单聊 / 群聊一致）
 - utils **无内置默认**；assistant 须显式带 `assistantSlug`
 - LLM 须按对话先后理解话题边界（含 A→B→A 分段）
 - system prompt：`<extract_rules>` + `<character_extract_focus>`（`jobs/extract.md` + `characters/{slug}/jobs/extract.md`，每个角色必有）
 - user prompt：`<conversation>` 包 transcript
+- 「明天」「今晚」相对**该条** `local_time` 换算，不用 extract 任务运行时刻
+- 用户 `timeZone`：注册写入，每次聊天请求覆盖
 
 ### LLM 产出与进度标记
 
 - 输出 `finished_memories`：每条含 `text`、`type`、`confidence`、`source_message_ids`
 - 只有**已聊完、有持久价值**的话题块才产出记忆；末尾聊到一半的话题不得写入
+- **同一话题块可产出多条**原子记忆（一条一个可检索事实，共用该块 `source_message_ids`），不要把整段压成一条纪要
 - **`globalMax` 前缀标记**：取所有已完结话题中，时间顺序最后一条记忆所覆盖的消息下标；`messageIds[0..globalMax]` 标为 `isExtracted=true`，其余 `deferredIds` 留待下次 job
 - 群聊消息进度**只标一次**（不按角色重复推进）
 

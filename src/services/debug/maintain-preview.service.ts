@@ -16,13 +16,13 @@ const maintainFixtureSchema = z.object({
   label: z.string().min(1),
   cursor: z.object({
     text: z.string().trim().min(1),
-    type: z.enum(['preference', 'event', 'fact']),
+    type: z.enum(['event', 'fact']),
     confidence: z.number().min(0).max(1),
   }),
   neighbors: z.array(
     z.object({
       text: z.string().trim().min(1),
-      type: z.enum(['preference', 'event', 'fact']),
+      type: z.enum(['event', 'fact']),
       confidence: z.number().min(0).max(1),
       distance: z.number(),
     }),

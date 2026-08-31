@@ -19,12 +19,12 @@ describe('parseMaintainMemoryItem', () => {
     expect(
       parseMaintainMemoryItem({
         text: '用户喜欢跑步',
-        type: 'preference',
+        type: 'fact',
         confidence: 0.9,
       }),
     ).toEqual({
       text: '用户喜欢跑步',
-      type: 'preference',
+      type: 'fact',
       confidence: 0.9,
     });
   });
@@ -45,11 +45,11 @@ describe('mapMaintainRewriteOutput', () => {
     expect(
       mapMaintainRewriteOutput({
         memories: [
-          { text: '用户喜欢跑步', type: 'preference', confidence: 0.9 },
+          { text: '用户喜欢跑步', type: 'fact', confidence: 0.9 },
           { text: '', type: 'fact', confidence: 0.8 },
         ],
       }),
-    ).toEqual([{ text: '用户喜欢跑步', type: 'preference', confidence: 0.9 }]);
+    ).toEqual([{ text: '用户喜欢跑步', type: 'fact', confidence: 0.9 }]);
   });
 });
 
@@ -73,7 +73,7 @@ describe('validateMaintainRewriteOutput', () => {
   it('accepts valid output within input count', () => {
     expect(
       validateMaintainRewriteOutput(
-        [{ text: '用户喜欢咖啡', type: 'preference', confidence: 0.9 }],
+        [{ text: '用户喜欢咖啡', type: 'fact', confidence: 0.9 }],
         3,
       ),
     ).toEqual({ ok: true });
@@ -121,21 +121,21 @@ describe('isMaintainNeighborActive', () => {
     expect(isMaintainNeighborActive(BASE, justBelow, 'event')).toBe(false);
   });
 
-  it('returns false for long-idle preference', () => {
+  it('returns false for long-idle fact', () => {
     const now = BASE + 400 * DAY_MS;
-    expect(isMaintainNeighborActive(BASE, now, 'preference')).toBe(false);
+    expect(isMaintainNeighborActive(BASE, now, 'fact')).toBe(false);
   });
 });
 
 describe('buildMaintainPrompt', () => {
   it('序号 1 为游标，近邻带 distance', () => {
     const prompt = buildMaintainPrompt(
-      { text: '用户喜欢咖啡', type: 'preference', confidence: 0.9 },
-      [{ text: '用户常点美式', type: 'preference', confidence: 0.8, distance: 0.12 }],
+      { text: '用户喜欢咖啡', type: 'fact', confidence: 0.9 },
+      [{ text: '用户常点美式', type: 'fact', confidence: 0.8, distance: 0.12 }],
     );
-    expect(prompt).toContain('1. [cursor, preference, confidence=0.90] 用户喜欢咖啡');
+    expect(prompt).toContain('1. [cursor, fact, confidence=0.90] 用户喜欢咖啡');
     expect(prompt).toContain(
-      '2. [neighbor, distance=0.120, preference, confidence=0.80] 用户常点美式',
+      '2. [neighbor, distance=0.120, fact, confidence=0.80] 用户常点美式',
     );
   });
 });

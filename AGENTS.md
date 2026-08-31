@@ -49,6 +49,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 生产同机联调：先 `pnpm build`，再 `pnpm start:all`
 - 单测需完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等）；无 fallback
 - Prisma schema 变更：`pnpm exec prisma generate`；必要时 `pnpm exec prisma db push`
+- **未上线**：不写旧数据兼容（读路径别名、双写、历史枚举映射等）。破坏性变更改完后只在回复里提醒用户清库（MySQL，必要时 Chroma）；不要自己 `db push --force-reset` 或动 `docker-volumes/`。上线后删本条，改为迁移
 - **禁止**：改 `docker-volumes/`；提交 `.env`；用户未要求时 `git commit` / 扩 scope 的无关重构；编辑 `.cursor/plans/` 下的 plan
 
 ## 前后端约定

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const memoryTypeSchema = z.enum(['preference', 'event', 'fact']);
+const memoryTypeSchema = z.enum(['event', 'fact']);
 
 export const maintainClusterItemSchema = z.object({
   text: z.string().trim().min(1),

@@ -38,28 +38,28 @@ describe('extractSpeaker', () => {
 
 describe('formatExtractMessageXml', () => {
   it('空正文为 null', () => {
-    expect(formatExtractMessageXml('m0', 0, 'user', '  ')).toBeNull();
+    expect(formatExtractMessageXml('m0', 0, 'user', '  ', '2026-08-31 20:00:00')).toBeNull();
   });
 
-  it('写出 id seq speaker', () => {
-    expect(formatExtractMessageXml('m0', 0, 'user', 'hi')).toBe(
-      '<message id="m0" seq="0" speaker="user">hi</message>',
+  it('写出 id seq speaker local_time', () => {
+    expect(formatExtractMessageXml('m0', 0, 'user', 'hi', '2026-08-31 20:00:00')).toBe(
+      '<message id="m0" seq="0" speaker="user" local_time="2026-08-31 20:00:00">hi</message>',
     );
   });
 });
 
 describe('parseFinishedMemoryItem', () => {
-  it('returns object for valid preference with ids', () => {
+  it('returns object for valid fact with ids', () => {
     const result = parseFinishedMemoryItem({
       text: '用户喜欢跑步',
-      type: 'preference',
+      type: 'fact',
       source_message_ids: ['m0', 'm1'],
       confidence: 0.9,
     });
 
     expect(result).toEqual({
       text: '用户喜欢跑步',
-      type: 'preference',
+      type: 'fact',
       sourceMessageIds: ['m0', 'm1'],
       confidence: 0.9,
     });
@@ -91,7 +91,7 @@ describe('parseFinishedMemoryItem', () => {
     expect(
       parseFinishedMemoryItem({
         text: '用户喜欢跑步',
-        type: 'preference',
+        type: 'fact',
         source_message_ids: [],
         confidence: 0.8,
       }),
@@ -102,7 +102,7 @@ describe('parseFinishedMemoryItem', () => {
     expect(
       parseFinishedMemoryItem({
         text: '用户喜欢跑步',
-        type: 'preference',
+        type: 'fact',
         source_message_ids: ['m0'],
       }),
     ).toBeNull();
@@ -112,7 +112,7 @@ describe('parseFinishedMemoryItem', () => {
     expect(
       parseFinishedMemoryItem({
         text: '用户喜欢跑步',
-        type: 'preference',
+        type: 'fact',
         source_message_ids: ['m0'],
         confidence: 1.5,
       }),
@@ -126,7 +126,7 @@ describe('mapExtractOutput', () => {
       finished_memories: [
         {
           text: '用户喜欢咖啡',
-          type: 'preference',
+          type: 'fact',
           source_message_ids: ['m0'],
           confidence: 0.95,
         },
@@ -160,7 +160,7 @@ describe('validateAndMergeIds', () => {
         finishedMemories: [
           {
             text: '用户喜欢跑步',
-            type: 'preference',
+            type: 'fact',
             sourceMessageIds: ['m0', 'm1'],
             confidence: 0.9,
           },
@@ -179,7 +179,7 @@ describe('validateAndMergeIds', () => {
         finishedMemories: [
           {
             text: '用户喜欢跑步',
-            type: 'preference',
+            type: 'fact',
             sourceMessageIds: ['m0', 'm1'],
             confidence: 0.9,
           },

@@ -4,6 +4,7 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { readCharacterJobPrompt, readPromptFile } from '@/prompts/load';
 import type { ExtractedMemory, ExtractJobResult, MemoryJob } from '@/types/memory-job';
+import { formatLocalDateTime } from '@/utils/timezone';
 import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
@@ -44,7 +45,7 @@ const extractOutputSchema = z.object({
   finished_memories: z.array(
     z.object({
       text: z.string(),
-      type: z.enum(['preference', 'event', 'fact']),
+      type: z.enum(['event', 'fact']),
       source_message_ids: z.array(z.string()),
       confidence: z.number().min(0).max(1),
     }),
@@ -64,11 +65,6 @@ export interface ExtractModelResult {
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
-
-/** 将单条消息格式化为 LLM 可读的 XML 片段；无有效文本时返回 null。 */
-function formatMessageXml(id: string, seq: number, speaker: string, parts: unknown): string | null {
-  return formatExtractMessageXml(id, seq, speaker, textFromMessageParts(parts));
-}
 
 /** 将内部记忆结构转换为 job 结果中的精简格式。 */
 function toJobMemories(memories: FinishedMemory[]): ExtractedMemory[] {
@@ -171,9 +167,12 @@ export async function generateExtractModelOutput(
 /* -------------------------------------------------------------------------- */
 
 /**
- * 捞取指定单聊会话未提取的消息，按时间正序构建带 id + seq 的 XML transcript。
+ * 捞取指定单聊会话未提取的消息，按时间正序构建带 id + seq + local_time 的 XML transcript。
  */
-async function buildSessionTranscript(sessionId: string): Promise<TranscriptResult | null> {
+async function buildSessionTranscript(
+  sessionId: string,
+  timeZone: string,
+): Promise<TranscriptResult | null> {
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
     select: { character: { select: { slug: true } } },
@@ -190,6 +189,7 @@ async function buildSessionTranscript(sessionId: string): Promise<TranscriptResu
       id: true,
       role: true,
       parts: true,
+      createdAt: true,
     },
   });
 
@@ -198,7 +198,14 @@ async function buildSessionTranscript(sessionId: string): Promise<TranscriptResu
   const messageIds = messages.map((message) => message.id);
   const lines = messages.flatMap((message, seq) => {
     const speaker = extractSpeaker(message.role, assistantSlug);
-    const line = formatMessageXml(message.id, seq, speaker, message.parts);
+    const localTime = formatLocalDateTime(message.createdAt, timeZone);
+    const line = formatExtractMessageXml(
+      message.id,
+      seq,
+      speaker,
+      textFromMessageParts(message.parts),
+      localTime,
+    );
     return line === null ? [] : [line];
   });
 
@@ -211,7 +218,10 @@ async function buildSessionTranscript(sessionId: string): Promise<TranscriptResu
 /**
  * 捞取群聊未提取消息（排除 turn_cue），助理标签用 speaker slug。
  */
-async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptResult | null> {
+async function buildGroupTranscript(
+  groupSessionId: string,
+  timeZone: string,
+): Promise<TranscriptResult | null> {
   const messages = await prisma.message.findMany({
     where: {
       isExtracted: false,
@@ -223,6 +233,7 @@ async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptR
       role: true,
       kind: true,
       parts: true,
+      createdAt: true,
       speakerCharacter: { select: { slug: true } },
     },
   });
@@ -233,7 +244,14 @@ async function buildGroupTranscript(groupSessionId: string): Promise<TranscriptR
   const messageIds = included.map((message) => message.id);
   const lines = included.flatMap((message, seq) => {
     const speaker = extractSpeaker(message.role, message.speakerCharacter?.slug);
-    const line = formatMessageXml(message.id, seq, speaker, message.parts);
+    const localTime = formatLocalDateTime(message.createdAt, timeZone);
+    const line = formatExtractMessageXml(
+      message.id,
+      seq,
+      speaker,
+      textFromMessageParts(message.parts),
+      localTime,
+    );
     return line === null ? [] : [line];
   });
 
@@ -470,6 +488,16 @@ export async function runExtract(
     return;
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { timeZone: true },
+  });
+  if (!user) {
+    await failJob(job, '用户不存在');
+    return;
+  }
+  const { timeZone } = user;
+
   const isGroup = scope.kind === 'group';
   const extractScope = {
     sessionId: isGroup ? undefined : scope.sessionId,
@@ -485,8 +513,8 @@ export async function runExtract(
 
   try {
     const transcriptResult = isGroup
-      ? await buildGroupTranscript(scope.groupSessionId)
-      : await buildSessionTranscript(scope.sessionId);
+      ? await buildGroupTranscript(scope.groupSessionId, timeZone)
+      : await buildSessionTranscript(scope.sessionId, timeZone);
 
     if (!transcriptResult) {
       await completeJob(job, '没有可提取的消息。', emptyResult());

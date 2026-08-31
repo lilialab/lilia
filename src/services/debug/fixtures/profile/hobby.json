@@ -4,12 +4,12 @@
   "referenceMemories": [
     {
       "text": "用户喜欢跑步",
-      "type": "preference",
+      "type": "fact",
       "confidence": 0.95
     },
     {
       "text": "用户常点美式咖啡",
-      "type": "preference",
+      "type": "fact",
       "confidence": 0.9
     }
   ]

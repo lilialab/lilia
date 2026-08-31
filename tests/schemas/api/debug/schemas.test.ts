@@ -79,6 +79,7 @@ describe('debugExtractPostBodySchema', () => {
   it('合法 body 通过', () => {
     const result = debugExtractPostBodySchema.safeParse({
       characterSlug: 'lilia',
+      timeZone: 'Asia/Shanghai',
       messages: [{ speaker: 'user', text: 'hi' }],
     });
     expect(result.success).toBe(true);
@@ -89,7 +90,7 @@ describe('debugMaintainPostBodySchema', () => {
   it('空 neighbors 失败', () => {
     expect(
       debugMaintainPostBodySchema.safeParse({
-        cursor: { text: '用户喜欢咖啡', type: 'preference', confidence: 0.9 },
+        cursor: { text: '用户喜欢咖啡', type: 'fact', confidence: 0.9 },
         neighbors: [],
       }).success,
     ).toBe(false);
@@ -97,8 +98,8 @@ describe('debugMaintainPostBodySchema', () => {
 
   it('合法 body 通过', () => {
     const result = debugMaintainPostBodySchema.safeParse({
-      cursor: { text: '用户喜欢咖啡', type: 'preference', confidence: 0.9 },
-      neighbors: [{ text: '用户常点美式', type: 'preference', confidence: 0.8, distance: 0.12 }],
+      cursor: { text: '用户喜欢咖啡', type: 'fact', confidence: 0.9 },
+      neighbors: [{ text: '用户常点美式', type: 'fact', confidence: 0.8, distance: 0.12 }],
     });
     expect(result.success).toBe(true);
   });
@@ -129,7 +130,7 @@ describe('debugProfilePostBodySchema', () => {
     const result = debugProfilePostBodySchema.safeParse({
       characterSlug: 'lilia',
       existing: { communication_style: '短句' },
-      referenceMemories: [{ text: '用户反感被说教', type: 'preference', confidence: 0.9 }],
+      referenceMemories: [{ text: '用户反感被说教', type: 'fact', confidence: 0.9 }],
     });
     expect(result.success).toBe(true);
   });

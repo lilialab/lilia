@@ -97,6 +97,7 @@ export async function registerUser(input: {
   nickname: string;
   password: string;
   locale: Locale;
+  timeZone: string;
 }): Promise<{ id: string }> {
   const existing = await prisma.user.findUnique({
     where: { username: input.username },
@@ -115,12 +116,21 @@ export async function registerUser(input: {
       nickname: input.nickname,
       passwordHash,
       locale: input.locale,
+      timeZone: input.timeZone,
     },
     select: { id: true },
   });
 
   await ensureDefaultContact(user.id);
   return user;
+}
+
+/** 聊天请求覆盖设备 IANA 时区；与当前值相同则不写库。 */
+export async function persistUserTimeZone(userId: string, timeZone: string): Promise<void> {
+  await prisma.user.updateMany({
+    where: { id: userId, timeZone: { not: timeZone } },
+    data: { timeZone },
+  });
 }
 
 /** 更新用户界面语言偏好。 */

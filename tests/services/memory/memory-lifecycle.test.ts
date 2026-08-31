@@ -112,7 +112,7 @@ describe('createUserMemories', () => {
           userId: 'default',
           characterId: 'char-a',
           text: '用户喜欢跑步',
-          type: 'preference',
+          type: 'fact',
           confidence: 0.9,
         },
         {
@@ -133,7 +133,7 @@ describe('createUserMemories', () => {
           userId: 'default',
           characterId: 'char-a',
           text: '用户喜欢跑步',
-          type: 'preference',
+          type: 'fact',
           confidence: 0.9,
           isMaintained: false,
         }),
@@ -152,7 +152,7 @@ describe('createUserMemories', () => {
         userId: 'default',
         characterId: 'char-a',
         text: '用户喜欢跑步',
-        type: 'preference',
+        type: 'fact',
       }),
       expect.objectContaining({
         userId: 'default',
@@ -189,7 +189,7 @@ describe('applyMaintainMerge', () => {
           userId: 'default',
           characterId: 'char-a',
           text: '用户喜欢跑步',
-          type: 'preference',
+          type: 'fact',
           confidence: 0.9,
         },
       ],
@@ -218,7 +218,7 @@ describe('applyMaintainMerge', () => {
         userId: 'default',
         characterId: 'char-a',
         text: '用户喜欢跑步',
-        type: 'preference',
+        type: 'fact',
         confidence: 0.9,
       }),
     ]);
@@ -236,7 +236,7 @@ describe('applyMaintainMerge', () => {
           userId: 'default',
           characterId: 'char-a',
           text: '用户喜欢跑步',
-          type: 'preference',
+          type: 'fact',
           confidence: 0.9,
         },
         {

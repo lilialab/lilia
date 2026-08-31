@@ -39,6 +39,7 @@ describe('registerBodySchema', () => {
       confirmPassword: 'password123',
       turnstileToken: 'turnstile-token',
       locale: 'en',
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(true);
   });
@@ -50,6 +51,7 @@ describe('registerBodySchema', () => {
       password: 'password123',
       confirmPassword: 'password123',
       locale: 'en',
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(false);
     if (result.success) return;
@@ -64,6 +66,7 @@ describe('registerBodySchema', () => {
       confirmPassword: 'password456',
       turnstileToken: 'turnstile-token',
       locale: 'zh',
+      timeZone: 'Asia/Shanghai',
     });
     expect(result.success).toBe(false);
     if (result.success) return;

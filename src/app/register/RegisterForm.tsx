@@ -12,6 +12,7 @@ import { translateApiError } from '@/i18n/client';
 import { localeFromBrowserLanguage } from '@/i18n/config';
 import { cn } from '@/lib/client/cn';
 import { showErrorToast } from '@/lib/client/toast';
+import { getBrowserTimeZone } from '@/utils/timezone';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
@@ -54,6 +55,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
         confirmPassword,
         turnstileToken,
         locale: localeFromBrowserLanguage(navigator.language),
+        timeZone: getBrowserTimeZone(),
       });
       router.push('/contacts');
       router.refresh();

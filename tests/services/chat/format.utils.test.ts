@@ -17,7 +17,7 @@ describe('formatMemories', () => {
       [
         {
           text: '用户偏好短句交流',
-          type: 'preference',
+          type: 'fact',
           recordedAt: new Date('2026-03-10T06:00:00.000Z'),
           lastActiveAt: new Date('2026-06-20T08:00:00.000Z'),
         },

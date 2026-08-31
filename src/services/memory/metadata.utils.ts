@@ -7,14 +7,6 @@ export interface ParsedMemoryMetadata {
   lastActiveAt: number;
 }
 
-/** 从未知值解析记忆类型，非法时返回 undefined。 */
-export function parseMemoryType(value: unknown): MemoryType | undefined {
-  if (!isMemoryType(value)) {
-    return undefined;
-  }
-  return value;
-}
-
 /** 从未知值解析置信度，非法时返回默认值。 */
 export function parseConfidence(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -43,7 +35,7 @@ export function parseMemoryMetadata(
   nowMs: number,
 ): ParsedMemoryMetadata {
   return {
-    type: parseMemoryType(meta?.type),
+    type: isMemoryType(meta?.type) ? meta.type : undefined,
     confidence: parseConfidence(meta?.confidence),
     lastActiveAt: parseLastActiveAt(meta, nowMs),
   };

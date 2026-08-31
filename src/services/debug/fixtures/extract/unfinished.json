@@ -1,5 +1,6 @@
 {
   "label": "未聊完：明天的事",
+  "timeZone": "Asia/Shanghai",
   "messages": [
     {
       "speaker": "user",

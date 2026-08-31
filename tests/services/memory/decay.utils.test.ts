@@ -13,7 +13,6 @@ const BASE = Date.parse('2026-01-01T00:00:00Z');
 describe('getHalfLifeDays', () => {
   it('returns env half-life for each memory type', () => {
     expect(getHalfLifeDays('event')).toBe(env.MEMORY_HALF_LIFE_EVENT_DAYS);
-    expect(getHalfLifeDays('preference')).toBe(env.MEMORY_HALF_LIFE_PREFERENCE_DAYS);
     expect(getHalfLifeDays('fact')).toBe(env.MEMORY_HALF_LIFE_FACT_DAYS);
     expect(getHalfLifeDays(undefined)).toBe(env.MEMORY_HALF_LIFE_FACT_DAYS);
   });
@@ -56,8 +55,8 @@ describe('similarityFromDistance', () => {
 describe('effectiveScore', () => {
   it('ranks recent high-confidence hits above stale ones', () => {
     const now = BASE + 10 * DAY_MS;
-    const recent = effectiveScore(0.2, 0.9, BASE, now, 'preference');
-    const stale = effectiveScore(0.2, 0.9, BASE - 180 * DAY_MS, now, 'preference');
+    const recent = effectiveScore(0.2, 0.9, BASE, now, 'fact');
+    const stale = effectiveScore(0.2, 0.9, BASE - 180 * DAY_MS, now, 'fact');
     expect(recent).toBeGreaterThan(stale);
   });
 

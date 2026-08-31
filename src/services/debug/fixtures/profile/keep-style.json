@@ -6,7 +6,7 @@
   "referenceMemories": [
     {
       "text": "用户反感被说教、被当小孩",
-      "type": "preference",
+      "type": "fact",
       "confidence": 0.9
     },
     {

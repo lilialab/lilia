@@ -12,7 +12,7 @@ import {
   claimGroupGeneration,
   releaseGroupGeneration,
 } from '@/services/session/generation-lock.service';
-import { getUserById } from '@/services/user/users.service';
+import { getUserById, persistUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import { API_ERROR_CODE } from '@/types/api-error';
 import { isTurnCueKind, type UIMessageStreamPayload } from '@/types/message-kind';
@@ -257,6 +257,8 @@ export async function streamGroupChatFlow(
   if (lastMessage?.role !== 'user') {
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
+
+  await persistUserTimeZone(userId, timeZone);
 
   const chatLlm = await resolveChatLlm(userId);
   if (!chatLlm.usesUserEndpoint) {

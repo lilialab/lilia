@@ -86,6 +86,7 @@ export function ExtractScreen() {
     }
     runMutation.mutate({
       characterSlug: resolvedCharacter,
+      timeZone: selectedFixture.timeZone,
       messages: selectedFixture.messages,
     });
   };

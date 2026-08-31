@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { DEFAULT_CHARACTER_ID, listCharacterSlugs } from '@/prompts/load';
+import { timeZoneSchema } from '@/schemas/shared/time-zone';
 import {
   buildMockExtractTranscript,
   type ExtractMockMessage,
@@ -15,6 +16,7 @@ const FIXTURES_DIR = path.join(process.cwd(), 'src/services/debug/fixtures/extra
 
 const extractFixtureSchema = z.object({
   label: z.string().min(1),
+  timeZone: timeZoneSchema,
   messages: z.array(
     z.object({
       speaker: z.string().trim().min(1),
@@ -26,6 +28,7 @@ const extractFixtureSchema = z.object({
 export interface ExtractDebugFixture {
   id: string;
   label: string;
+  timeZone: string;
   messages: ExtractMockMessage[];
 }
 
@@ -62,7 +65,12 @@ export function listExtractFixtures(): ExtractDebugFixture[] {
         logger.warn({ name, issues: fixture.error.issues }, '[debug] 跳过非法提取夹具');
         return [];
       }
-      return [{ id, label: fixture.data.label, messages: fixture.data.messages }];
+      return [{
+        id,
+        label: fixture.data.label,
+        timeZone: fixture.data.timeZone,
+        messages: fixture.data.messages,
+      }];
     });
 }
 
@@ -86,13 +94,18 @@ export function getExtractDebugMeta(): {
 /** 提取 dry-run：不写库、不标已提取。 */
 export async function previewExtract(
   characterSlug: string,
+  timeZone: string,
   messages: ExtractMockMessage[],
 ): Promise<ExtractPreviewResult> {
   if (!listCharacterSlugs().includes(characterSlug)) {
     throw AppError.notFound('未知角色');
   }
 
-  const { transcript, messageIds } = buildMockExtractTranscript(messages, characterSlug);
+  const { transcript, messageIds } = buildMockExtractTranscript(
+    messages,
+    characterSlug,
+    timeZone,
+  );
   if (messageIds.length === 0) {
     throw AppError.badRequest('没有有效消息');
   }
@@ -100,6 +113,7 @@ export async function previewExtract(
   logger.info({
     event: 'llm.extract.preview.request',
     characterSlug,
+    timeZone,
     messageCount: messageIds.length,
     transcript,
   });

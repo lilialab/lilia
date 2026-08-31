@@ -6,7 +6,7 @@ describe('buildProfileRefreshPrompt', () => {
     const prompt = buildProfileRefreshPrompt({
       existing: { communication_style: '短句，别说教' },
       referenceMemories: [
-        { text: '用户每周跑步三次', type: 'preference', confidence: 0.9 },
+        { text: '用户每周跑步三次', type: 'fact', confidence: 0.9 },
       ],
     });
 

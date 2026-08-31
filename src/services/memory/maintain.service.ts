@@ -30,7 +30,7 @@ const maintainOutputSchema = z.object({
   memories: z.array(
     z.object({
       text: z.string(),
-      type: z.enum(['preference', 'event', 'fact']),
+      type: z.enum(['event', 'fact']),
       confidence: z.number().min(0).max(1),
     }),
   ),

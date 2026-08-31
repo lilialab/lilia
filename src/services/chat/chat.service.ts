@@ -11,6 +11,7 @@ import {
   claimChatGeneration,
   releaseChatGeneration,
 } from '@/services/session/generation-lock.service';
+import { persistUserTimeZone } from '@/services/user/users.service';
 import { resolveToolsForCharacter } from '@/skills/resolve-tools';
 import type { MessageMetadata, UIMessageStreamPayload } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
@@ -199,6 +200,8 @@ export async function streamChatFlow(
   if (lastMessage?.role !== 'user') {
     throw AppError.badRequest('最后一条消息必须是用户消息');
   }
+
+  await persistUserTimeZone(userId, timeZone);
 
   const chatLlm = await resolveChatLlm(userId);
   if (!chatLlm.usesUserEndpoint) {

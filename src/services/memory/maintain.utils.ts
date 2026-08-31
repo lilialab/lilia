@@ -49,10 +49,10 @@ export function parseMaintainMemoryItem(item: unknown): MaintainMemoryItem | nul
 
   const record = item as Record<string, unknown>;
   const text = typeof record.text === 'string' ? record.text.trim() : '';
-  const type = record.type;
+  const type = isMemoryType(record.type) ? record.type : undefined;
   const confidence = parseConfidence(record.confidence);
 
-  if (!text || typeof type !== 'string' || !isMemoryType(type) || confidence === null) {
+  if (!text || type === undefined || confidence === null) {
     return null;
   }
 

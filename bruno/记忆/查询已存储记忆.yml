@@ -15,7 +15,7 @@ http:
       type: query
       disabled: true
     - name: type
-      value: preference
+      value: fact
       type: query
       disabled: true
     - name: isMaintained

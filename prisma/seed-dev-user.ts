@@ -7,6 +7,7 @@ const SEED_USER = {
   nickname: 'Tom',
   password: '123123123',
   locale: 'zh',
+  timeZone: 'Asia/Shanghai',
 } as const;
 
 /** 仅非 production 灌入本地开发用户；已存在则跳过。 */

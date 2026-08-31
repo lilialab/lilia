@@ -17,6 +17,8 @@ model User {
   nickname        String   @map("nickname")
   /// UI 语言偏好（en | zh）；注册时由客户端 body 写入
   locale          String   @default("zh")
+  /// 设备 IANA 时区；注册写入，聊天请求覆盖，供 extract 把消息 createdAt 转成本地墙钟
+  timeZone        String   @map("time_zone")
   /// 用户自备 OpenAI 兼容对话接口；三项齐全才视为启用。密钥只存密文。
   llmBaseUrl      String?  @map("llm_base_url")
   llmApiKeyCipher String?  @map("llm_api_key_cipher") @db.Text
@@ -183,14 +185,14 @@ model Message {
 }
 
 /**
- * 长期用户记忆条目（preference / event / fact）；按 userId + characterId 私有，供 RAG / maintain
+ * 长期用户记忆条目（event / fact）；按 userId + characterId 私有，供 RAG / maintain
  */
 model UserMemory {
   id           String    @id @default(uuid())
   userId       String    @map("user_id")
   characterId  String    @map("character_id")
   text         String    @db.Text
-  type         String // preference | event | fact
+  type         String // event | fact
   confidence   Float     @default(0.7)
   isDeleted    Boolean   @default(false) @map("is_deleted")
   isMaintained Boolean   @default(false) @map("is_maintained")

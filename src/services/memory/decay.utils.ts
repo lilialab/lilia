@@ -7,7 +7,6 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 /** 按记忆类型返回半衰期（天），取值来自 env。 */
 export function getHalfLifeDays(type?: string): number {
   if (type === 'event') return env.MEMORY_HALF_LIFE_EVENT_DAYS;
-  if (type === 'preference') return env.MEMORY_HALF_LIFE_PREFERENCE_DAYS;
   return env.MEMORY_HALF_LIFE_FACT_DAYS;
 }
 

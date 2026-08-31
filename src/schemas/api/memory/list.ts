@@ -2,7 +2,7 @@ import { queryStringToBoolean } from '@/schemas/query';
 import { usernameSchema } from '@/schemas/shared/username';
 import { z } from 'zod';
 
-const memoryTypeSchema = z.enum(['preference', 'event', 'fact']);
+const memoryTypeSchema = z.enum(['event', 'fact']);
 
 export const listMemoryQuerySchema = z.object({
   username: usernameSchema,

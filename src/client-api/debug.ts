@@ -3,6 +3,7 @@ import { apiFetchJson } from '@/lib/client/api-fetch';
 export interface ExtractDebugFixture {
   id: string;
   label: string;
+  timeZone: string;
   messages: { speaker: string; text: string }[];
 }
 
@@ -39,6 +40,7 @@ export function fetchExtractDebugMeta(): Promise<ExtractDebugMeta> {
 /** 提取 dry-run。 */
 export function previewExtract(input: {
   characterSlug: string;
+  timeZone: string;
   messages: { speaker: string; text: string }[];
 }): Promise<ExtractPreviewResult> {
   return apiFetchJson<ExtractPreviewResult>('/api/debug/extract', {
@@ -89,7 +91,7 @@ export interface ProfileDebugFixture {
   id: string;
   label: string;
   existing: { communication_style?: string; avoid_topics?: string[] };
-  referenceMemories: { text: string; type: 'preference' | 'fact'; confidence: number }[];
+  referenceMemories: { text: string; type: 'fact'; confidence: number }[];
 }
 
 export interface ProfileDebugMeta {
