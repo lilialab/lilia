@@ -18,7 +18,7 @@ function extractFirstMentionSlug(text: string): string | null {
 
 /** 群聊续聊触发语文案（turn_cue 正文）。 */
 function buildTurnCueText(characterSlug: string): string {
-  return `【系统】你（@${characterSlug}）被点名，请基于上文以自己身份继续发言。`;
+  return `[system] You (@${characterSlug}) were called on. Continue as yourself, based on the conversation above.`;
 }
 
 export type TurnCueSendMessage = (message: {

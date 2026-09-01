@@ -40,7 +40,8 @@ describe('sendTurnCueIfMentioned', () => {
 
     expect(result).toBe('sent');
     expect(sendMessage).toHaveBeenCalledWith({
-      text: '【系统】你（@einstein）被点名，请基于上文以自己身份继续发言。',
+      text:
+        '[system] You (@einstein) were called on. Continue as yourself, based on the conversation above.',
       metadata: { kind: MESSAGE_KIND_TURN_CUE, slug: 'einstein' },
     });
   });

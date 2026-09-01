@@ -8,25 +8,24 @@ import { z } from 'zod';
  */
 export function createRegisterSkillTool(userId: string) {
   return tool({
-    description: '登记或创建一个新的 skill（能力），供后续对话中调用。'
-      + '能力边界（占位约定）：仅允许只读查询类能力；不可生成或执行任意代码；'
-      + '新 skill 需经系统登记后方可使用。当前为未实现占位，调用只会得到 not_implemented 响应。',
+    description:
+      'Register a new skill for later turns. This is a placeholder: it does not create a real tool. When implemented, only read-only lookups will be allowed—no generating or running arbitrary code. Calling it now returns not_implemented.',
     inputSchema: z.object({
       name: z
         .string()
         .trim()
         .min(1)
-        .describe('新 skill 的稳定标识名，建议英文 camelCase，如 searchOrders'),
+        .describe('Stable skill id. Prefer English camelCase, e.g. searchOrders'),
       description: z
         .string()
         .trim()
         .min(1)
-        .describe('给模型看的 skill 说明：做什么、何时调用'),
+        .describe('What the skill does and when to call it'),
       capabilityNotes: z
         .string()
         .trim()
         .optional()
-        .describe('能力边界与限制说明，如只读、数据范围、禁止事项'),
+        .describe('Limits, e.g. read-only, data scope, things it must not do'),
     }),
     execute: async ({ name, description, capabilityNotes }) => {
       logger.info(
@@ -42,7 +41,7 @@ export function createRegisterSkillTool(userId: string) {
 
       return {
         status: 'not_implemented' as const,
-        message: 'registerSkill 仅为占位，尚未支持真正创建 skill。',
+        message: 'registerSkill is a placeholder and cannot create skills yet.',
         requested: { name, description, capabilityNotes },
       };
     },

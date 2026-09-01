@@ -19,12 +19,8 @@ function formatMemoryFragmentLine(
 ): string {
   const recordedAt = formatLocalDateTime(fragment.recordedAt, timeZone);
   const lastActiveAt = formatLocalDateTime(fragment.lastActiveAt, timeZone);
-
-  if (fragment.type === 'event') {
-    return `[记忆片段 ${index} · 类型 event · 系统收录于 ${recordedAt} · 最近召回于 ${lastActiveAt}]: ${fragment.text}`;
-  }
-
-  return `[记忆片段 ${index} · 记录于 ${recordedAt} · 最近活跃于 ${lastActiveAt}]: ${fragment.text}`;
+  const tag = fragment.type === 'event' ? 'event' : 'memory';
+  return `[${tag} ${index}] saved ${recordedAt} · last used ${lastActiveAt}: ${fragment.text}`;
 }
 
 /** 将检索记忆格式化为 prompt 正文（不含标签；由组装处包 `<memories>`）。 */
@@ -32,7 +28,7 @@ export function formatMemories(
   fragments: MemoryFragment[],
   timeZone: string,
 ): string {
-  if (fragments.length === 0) return '暂无相关历史记忆。';
+  if (fragments.length === 0) return 'No relevant memories.';
   return fragments
     .map((fragment, index) => formatMemoryFragmentLine(index + 1, fragment, timeZone))
     .join('\n');
@@ -42,7 +38,7 @@ export function formatMemories(
 export function formatRuntimeContext(now: Date, timeZone: string): string {
   const localNow = formatLocalDateTime(now, timeZone);
   return [
-    `用户时区：${timeZone}`,
-    `当前时间（用户本地）：${localNow}`,
+    `User time zone: ${timeZone}`,
+    `Current local time: ${localNow}`,
   ].join('\n');
 }

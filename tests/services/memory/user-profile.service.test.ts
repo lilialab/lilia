@@ -13,10 +13,10 @@ describe('buildProfileRefreshPrompt', () => {
       ],
     });
 
-    expect(prompt).toContain('【现有画像】');
+    expect(prompt).toContain('Current profile');
     expect(prompt).toContain('"communication_style": "短句，别说教"');
     expect(prompt).toContain('用户每周跑步三次');
-    expect(prompt).toContain('【参考记忆（高置信度与活跃度优先）】');
+    expect(prompt).toContain('Reference memories');
     expect(prompt).not.toContain('【记忆库统计】');
   });
 
@@ -27,8 +27,9 @@ describe('buildProfileRefreshPrompt', () => {
     });
 
     expect(prompt).toContain('{}');
-    expect(prompt).toContain('【现有画像】');
-    expect(prompt).toContain('【参考记忆（高置信度与活跃度优先）】');
+    expect(prompt).toContain('Current profile');
+    expect(prompt).toContain('Reference memories');
+    expect(prompt).toContain('None.');
   });
 });
 

@@ -12,7 +12,7 @@ describe('formatUtcIso', () => {
 });
 
 describe('formatMemories', () => {
-  it('非 event 包含序号、记录于、最近活跃于与本地时间', () => {
+  it('非 event 包含序号、saved、last used 与本地时间', () => {
     const text = formatMemories(
       [
         {
@@ -25,11 +25,11 @@ describe('formatMemories', () => {
       TIME_ZONE,
     );
     expect(text).toBe(
-      '[记忆片段 1 · 记录于 2026-03-10 14:00:00 · 最近活跃于 2026-06-20 16:00:00]: 用户偏好短句交流',
+      '[memory 1] saved 2026-03-10 14:00:00 · last used 2026-06-20 16:00:00: 用户偏好短句交流',
     );
   });
 
-  it('event 使用系统收录于与最近召回于标签', () => {
+  it('event 行以 [event N] 开头，时间戳标签与 memory 相同', () => {
     const text = formatMemories(
       [
         {
@@ -42,11 +42,11 @@ describe('formatMemories', () => {
       TIME_ZONE,
     );
     expect(text).toBe(
-      '[记忆片段 1 · 类型 event · 系统收录于 2026-01-01 13:00:00 · 最近召回于 2026-01-01 13:00:00]: 用户于 2026 年 1 月 1 日 19:00 有重要聚会',
+      '[event 1] saved 2026-01-01 13:00:00 · last used 2026-01-01 13:00:00: 用户于 2026 年 1 月 1 日 19:00 有重要聚会',
     );
   });
 
-  it('记录于与最近活跃于相同时仍输出两个标签', () => {
+  it('saved 与 last used 相同时仍输出两个标签', () => {
     const at = new Date('2026-03-10T06:00:00.000Z');
     const text = formatMemories(
       [
@@ -60,7 +60,7 @@ describe('formatMemories', () => {
       TIME_ZONE,
     );
     expect(text).toBe(
-      '[记忆片段 1 · 记录于 2026-03-10 14:00:00 · 最近活跃于 2026-03-10 14:00:00]: 用户偏好短句交流',
+      '[memory 1] saved 2026-03-10 14:00:00 · last used 2026-03-10 14:00:00: 用户偏好短句交流',
     );
   });
 
@@ -82,21 +82,21 @@ describe('formatMemories', () => {
       ],
       TIME_ZONE,
     );
-    expect(text).toContain(']: a');
-    expect(text).toContain(']: b');
+    expect(text).toContain(': a');
+    expect(text).toContain(': b');
     expect(text).toContain('\n');
   });
 
   it('无片段时写占位句', () => {
-    expect(formatMemories([], TIME_ZONE)).toBe('暂无相关历史记忆。');
+    expect(formatMemories([], TIME_ZONE)).toBe('No relevant memories.');
   });
 });
 
 describe('formatRuntimeContext', () => {
   it('包含用户时区与当前本地时间，不含标签', () => {
     const body = formatRuntimeContext(new Date('2026-06-26T08:30:00.000Z'), TIME_ZONE);
-    expect(body).toContain('用户时区：Asia/Shanghai');
-    expect(body).toContain('当前时间（用户本地）：2026-06-26 16:30:00');
+    expect(body).toContain('User time zone: Asia/Shanghai');
+    expect(body).toContain('Current local time: 2026-06-26 16:30:00');
     expect(body).not.toContain('<runtime_context>');
   });
 });

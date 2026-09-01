@@ -3,16 +3,26 @@ import { z } from 'zod';
 
 /** 用户画像闭集：每轮注入，只收束怎么回；不是生平。称呼用账号 nickname，不进画像。 */
 export const profileSnapshotSchema = z.object({
-  communication_style: z.string().optional().describe('一句，说话或回应方式'),
-  avoid_topics: z.array(z.string()).optional().describe('回避话题列表，每个元素一个短话题名'),
-  now: z.string().optional().describe('一两句进行中的身份或心情'),
+  communication_style: z.string().optional().describe(
+    'How they prefer you to talk, in one sentence.',
+  ),
+  avoid_topics: z.array(z.string()).optional().describe('Topics to avoid; one short name each.'),
+  now: z.string().optional().describe(
+    'What is going on for them right now, in one or two sentences.',
+  ),
 });
 
 /** LLM 结构化输出：avoid_topics 必为数组，禁止省略该键。 */
 export const profileLlmOutputSchema = z.object({
-  communication_style: z.string().optional().describe('一句，说话或回应方式'),
-  avoid_topics: z.array(z.string()).describe('回避话题列表，每个元素一个短话题名；没有则为 []'),
-  now: z.string().optional().describe('一两句进行中的身份或心情'),
+  communication_style: z.string().optional().describe(
+    'How they prefer you to talk, in one sentence.',
+  ),
+  avoid_topics: z.array(z.string()).describe(
+    'Topics to avoid; one short name each. Use [] if none.',
+  ),
+  now: z.string().optional().describe(
+    'What is going on for them right now, in one or two sentences.',
+  ),
 });
 
 export type ProfileSnapshot = z.infer<typeof profileSnapshotSchema>;

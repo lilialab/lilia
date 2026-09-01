@@ -22,7 +22,7 @@ import {
 
 /** 将参考记忆列表格式化为 prompt 中的 bullet 文本。 */
 function formatMemoryList(memories: { text: string; type: string; confidence: number }[]): string {
-  if (memories.length === 0) return '（无）';
+  if (memories.length === 0) return 'None.';
   return memories
     .map((memory) =>
       `- [${memory.type}, confidence=${memory.confidence.toFixed(2)}] ${memory.text}`
@@ -46,10 +46,10 @@ export function buildProfileRefreshPrompt(input: {
   referenceMemories: { text: string; type: string; confidence: number }[];
 }): string {
   return [
-    '【现有画像】',
+    'Current profile',
     JSON.stringify(input.existing, null, 2),
     '',
-    '【参考记忆（高置信度与活跃度优先）】',
+    'Reference memories',
     formatMemoryList(input.referenceMemories),
   ].join('\n');
 }

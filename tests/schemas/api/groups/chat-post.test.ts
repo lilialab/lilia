@@ -70,7 +70,7 @@ describe('groupChatPostBodySchema', () => {
   it('接受 metadata.kind: turn_cue', () => {
     const result = groupChatPostBodySchema.safeParse(
       userMessage({
-        text: '【系统】你（@einstein）被点名',
+        text: '[system] You (@einstein) were called on.',
         kind: 'turn_cue',
         slug: 'einstein',
       }),

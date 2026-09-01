@@ -63,7 +63,7 @@ sequenceDiagram
 | 触发 | `useChat` `onFinish`，且非 abort/error，role=assistant |
 | 编排 | `sendTurnCueIfMentioned({ assistantParts, members, sendMessage })` |
 | 条件 | 正文有 `@slug` **且** `members` 含该 slug，否则 noop |
-| 发出 | `kind: turn_cue`，`slug`，正文 `【系统】你（@slug）被点名…` |
+| 发出 | `kind: turn_cue`，`slug`，正文 `[system] You (@slug) were called on…` |
 | 后端 | 必须带 slug；speaker 固定为该成员；RAG 取上下文末条助手正文 |
 
 可多轮接力：A @ B → turn_cue → B 回复再 @ C → 再 cue，直到某次回复没有有效群内 @，或自动续聊达到 **5** 轮上限（前端熔断，触顶 toast「续聊轮次已达上限」）。

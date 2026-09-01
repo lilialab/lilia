@@ -7,11 +7,11 @@ export function formatGroupRoster(options: {
   memberSlugs: readonly string[];
 }): string {
   const { userNickname, currentSlug, memberSlugs } = options;
-  const userLine = `- 人类用户：${userNickname}（非 AI，无 slug，不可用 @slug 召唤）`;
+  const userLine = `- Human: ${userNickname} (not an AI; do not @ them)`;
   const memberLines = memberSlugs.map((slug) => {
-    const you = slug === currentSlug ? '你（本轮发言）；' : '';
-    return `- ${you}${slug}`;
+    const you = slug === currentSlug ? ' (you, speaking this turn)' : '';
+    return `- ${slug}${you}`;
   });
 
-  return ['本群成员：', userLine, ...memberLines].join('\n');
+  return ['Group members:', userLine, ...memberLines].join('\n');
 }
