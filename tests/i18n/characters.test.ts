@@ -8,8 +8,10 @@ describe('tCharacter', () => {
   });
 
   it('按 slug 与语言取 shortBio', () => {
-    expect(tCharacter('einstein', 'shortBio', 'zh')).toContain('占位');
-    expect(tCharacter('einstein', 'shortBio', 'en')).toContain('Placeholder');
+    expect(tCharacter('einstein', 'shortBio', 'zh')).toContain('思想实验');
+    expect(tCharacter('einstein', 'shortBio', 'en')).toContain('Thought experiments');
+    expect(tCharacter('socrates', 'shortBio', 'zh')).toContain('爱追问');
+    expect(tCharacter('socrates', 'shortBio', 'en')).toContain('Relentless questions');
   });
 
   it('未知 slug 回退 slug 本身', () => {

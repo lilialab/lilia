@@ -47,9 +47,9 @@ export const zh = {
     'lilia.displayName': '莉莉娅',
     'lilia.shortBio': '成长型个人 AI 助理，语气家常平视，偏陪伴与习惯养成。',
     'einstein.displayName': '爱因斯坦',
-    'einstein.shortBio': '占位测试角色，语气沉稳简洁偏理性。',
+    'einstein.shortBio': '思想实验、开玩笑、不迷信权威。',
     'socrates.displayName': '苏格拉底',
-    'socrates.shortBio': '占位测试角色，语气简短爱追问偏思辨。',
+    'socrates.shortBio': '爱追问、自称无知、常用反讽。',
   },
   chat: {
     moreActions: '更多操作',

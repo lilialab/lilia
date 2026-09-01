@@ -48,9 +48,9 @@ export const en = {
     'lilia.shortBio':
       'A growth-oriented personal AI assistant. Casual, peer-level tone; companionship and habit-building.',
     'einstein.displayName': 'Einstein',
-    'einstein.shortBio': 'Placeholder character. Calm, concise, and analytical.',
+    'einstein.shortBio': 'Thought experiments, jokes, distrust of authority.',
     'socrates.displayName': 'Socrates',
-    'socrates.shortBio': 'Placeholder character. Brief, questioning, and reflective.',
+    'socrates.shortBio': 'Relentless questions, claimed ignorance, irony.',
   },
   chat: {
     moreActions: 'More actions',
