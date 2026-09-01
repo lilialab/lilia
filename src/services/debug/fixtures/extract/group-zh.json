@@ -1,0 +1,186 @@
+{
+  "label": "群聊 · 中文",
+  "timeZone": "Asia/Shanghai",
+  "messages": [
+    {
+      "speaker": "user",
+      "text": "你们都在啊"
+    },
+    {
+      "speaker": "lilia",
+      "text": "在。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "来了。今晚想聊什么？"
+    },
+    {
+      "speaker": "user",
+      "text": "想让你们帮我看看产品。@socrates 先别审我，听我说完。"
+    },
+    {
+      "speaker": "socrates",
+      "text": "那我先问一句：你说的产品，是指已经能用的东西，还是还在脑子里的那个？"
+    },
+    {
+      "speaker": "user",
+      "text": "已经能用。我自己做了一款 AI 朋友 app，不是客服，也不主打解题。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "陪着聊那种。"
+    },
+    {
+      "speaker": "user",
+      "text": "@einstein 核心是记忆，但用户得用几天才能感觉到。初期几乎没亮点。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "就像把灯藏在屋子里，客人进门先摸黑。你是怕第一眼不够亮，不是怕灯本身不好。"
+    },
+    {
+      "speaker": "user",
+      "text": "对。所以我打算把记忆当隐藏卖点，另外再找一个第一眼能看见的。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "别第一眼就推销记得我。烦。"
+    },
+    {
+      "speaker": "user",
+      "text": "@socrates 你觉得朋友该先帮人解决问题吗？"
+    },
+    {
+      "speaker": "socrates",
+      "text": "我不知道。你自己找朋友，是为了把题做完，还是为了有人在？"
+    },
+    {
+      "speaker": "user",
+      "text": "为了有人在。所以对话不该总那么有意义。模型训练时太爱帮忙了。"
+    },
+    {
+      "speaker": "socrates",
+      "text": "那你此刻把我们叫来看产品，算帮忙，还算闲聊？"
+    },
+    {
+      "speaker": "user",
+      "text": "哈哈，被你说中了。对了，我自己聊天也希望对方短句，别说教。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "嗯。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "短句我赞成。能画成一张图的，就别写成论文。"
+    },
+    {
+      "speaker": "user",
+      "text": "我在上海。家里有只猫，叫芝麻，晚上最能叫。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "芝麻。"
+    },
+    {
+      "speaker": "user",
+      "text": "@lilia 橘猫，三岁了。别让爱因斯坦给它讲相对论。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "不会。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "三岁橘猫，比多数委员会都诚实。我闭嘴。"
+    },
+    {
+      "speaker": "user",
+      "text": "周五晚上和大学同学吃饭，在徐汇。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "几点？"
+    },
+    {
+      "speaker": "user",
+      "text": "大概七点，老地方那家面。不是商务局。"
+    },
+    {
+      "speaker": "socrates",
+      "text": "你说「同学」，是还常见的人，还是很久没见、这次才聚？"
+    },
+    {
+      "speaker": "user",
+      "text": "几个还常见。不是同学会那种。"
+    },
+    {
+      "speaker": "user",
+      "text": "我外甥后天开学，初三。住我姐家，不跟我住。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "初三啊。"
+    },
+    {
+      "speaker": "socrates",
+      "text": "你担心的是他，还是你姐让你担心？"
+    },
+    {
+      "speaker": "user",
+      "text": "主要是他压力。我姐让我周末去一趟。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "去呗。"
+    },
+    {
+      "speaker": "user",
+      "text": "我这周日去。不是周六，周六我要改一版上线说明。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "周六改说明书，周日看外甥。两件事别焊成一件。"
+    },
+    {
+      "speaker": "user",
+      "text": "@einstein 把卖点压成一句，投资人能听懂的那种。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "它记得你。先别解释怎么记得。"
+    },
+    {
+      "speaker": "user",
+      "text": "太短了吧。"
+    },
+    {
+      "speaker": "einstein",
+      "text": "短才记得住。你自己也说别说教。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "这句可以。"
+    },
+    {
+      "speaker": "user",
+      "text": "行，我先用这句。我去倒杯水。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "去吧。"
+    },
+    {
+      "speaker": "user",
+      "text": "回来了。对了下周可能去看海，还没定哪天，也没定哪个海岸。"
+    },
+    {
+      "speaker": "lilia",
+      "text": "定了再说。"
+    },
+    {
+      "speaker": "socrates",
+      "text": "「可能」是想去，还是只是说说？"
+    }
+  ]
+}

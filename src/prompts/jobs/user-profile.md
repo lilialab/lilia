@@ -1,11 +1,12 @@
-根据现有画像与参考记忆，输出完整用户画像。只放会改变默认怎么回的信息。称呼、爱好、职业细节、一次性日程不要写入。
+Write a full user profile from the current profile and the reference memories. Only what should change how you reply by default — not nicknames, hobbies, job details, or one-off calendar items.
 
-【字段】仅以下键。现有未过时、未被推翻的必须带上。
-- communication_style：一句，说话 / 回应方式。有新证据则整句覆盖，不拼接
-- avoid_topics：必填字符串数组，每个元素一个短话题名；无则为 []。与现有合并去重，未推翻的旧项保留。不要写成一句，不要并进 communication_style
-- now：一两句进行中的身份或心情（如正在赶着上线、因此焦虑）。有新证据则整句覆盖；过时则删
+Keys
+Keep existing values that are still true and have not been overturned.
+- communication_style: one sentence, how they want you to talk. New evidence replaces the whole sentence.
+- avoid_topics: string array, one short topic name each; `[]` if none. Merge with existing; keep items not overturned. Do not fold into communication_style.
+- now: one or two sentences of what is going on. New evidence replaces it; drop if stale.
 
-【更新】
-- 输出完整快照，不要只输出变更项
-- 现有画像已成立，除非被参考记忆推翻或过时
-- 低置信度（<0.5）或玩笑不新写入；禁止编造
+Update
+- Full snapshot, not a diff.
+- Current profile stands unless a reference memory overturns it or it is stale.
+- Do not add from jokes or confidence below 0.5.

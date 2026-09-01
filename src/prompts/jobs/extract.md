@@ -1,31 +1,29 @@
-从用户与助理的对话中提炼可长期检索的用户记忆。只写用户侧信息。
+Extract long-term memories of the user from this conversation.
 
-【输入】
-若干 `<message id="..." seq="..." speaker="..." local_time="...">正文</message>`。
-- speaker：人类为 `user`，助理为角色 slug（如 `lilia`）
-- `local_time`：该条发送时的用户本地时间 `yyyy-MM-dd HH:mm:ss`
-- 回填 `source_message_ids` 必须用原文 id，禁止编造；`seq` 仅供阅读
+Input
+`<message id="..." seq="..." speaker="..." local_time="...">body</message>`
+- speaker: `user` for the human; character slug (e.g. `lilia`) for the assistant
+- `local_time`: that message's send time in the user's local clock, `yyyy-MM-dd HH:mm:ss`
+- `source_message_ids` must copy these `id` values. `seq` is for reading only.
 
-【类型】
-- event：已发生或计划中的重大日程、关键生活动态
-- fact：其余可长期检索的信息（资料、职业、喜好、处事偏好、长期状态等）
+Types
+- event: a dated happening, or an important planned event
+- fact: anything else worth keeping long-term
 
-【text】
-- 以「用户」为主语的短陈述句，不用「我」「你」
-- 一条只写一个可独立检索的事实；同一话题里有多条独立事实就写多条，不要合成纪要，不要用分号堆要点
-- 同一事实的同义复述不要拆条
-- 寒暄、口水、纯应答、短暂情绪、未拍板的想法、玩笑不要单独成条
-- 不要把助理的建议或猜测写成用户事实或计划
+text
+- Conversation language. The subject is "the user" (or that language's ordinary word for it), not I, you, or their name.
+- One independently retrievable fact per item; the same topic may have several items. No recap.
+- Skip small talk, passing mood, uncommitted ideas, jokes, and the assistant's suggestions written as the user's plans.
 
-【话题块】
-只提取已交待完整、用户已离开的话题；不限制块内记忆条数。末尾未完结的整段不提取，其 id 不得出现在任何 `source_message_ids`。
-- 无合格记忆则 `finished_memories` 为 `[]`；按对话时间排序
-- 话题 A → B → A：两段 A 分开写，禁止把 B 的 id 混进 A；每条记忆只属于一个连续话题块
-- 同一块内所有记忆共用该块完整的 `source_message_ids`：从块内第一条到最后一条（含寒暄与收尾助理回复），连续、不跳过、不混入其他块
+Topic blocks
+Extract only topics that are complete and that the user has left. A block may produce several memories. Do not extract a trailing unfinished stretch; those ids must not appear in any `source_message_ids`.
+- If nothing qualifies, `finished_memories` is `[]`. Order by conversation time.
+- Topic A → B → A: two separate A's. Do not mix B's ids into A.
+- All memories in a block share that block's full `source_message_ids` (first message through last, including small talk and the closing assistant reply).
 
-【confidence】
-每条必填 0~1。用户明确陈述：0.85–1.0；合理推断：0.5–0.84；低于 0.5 不要产出。
+confidence
+Required, 0–1. Stated: 0.85–1.0. Inferred: 0.5–0.84. Below 0.5: omit.
 
-【event 时间】
-- `type=event` 的 text 必须含用户视角的可读日期时刻（如「2026年1月1日 19:00」或「1月1日晚上7点」）。已发生用过去式，计划用将来式
-- 「明天」「今晚」相对**该条** `local_time` 换算成明确日期时刻，禁止只写「某天」「上次」，不要用任务运行时刻
+Event times
+- event text must contain a calendar date. Include a time of day only if the user gave one. Do not leave relative words (tomorrow, tonight, next week) in the text.
+- Convert relative time using **that message's** `local_time`, not when this job runs.

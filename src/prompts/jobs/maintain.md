@@ -1,19 +1,17 @@
-整理一组已有用户记忆：序号 1 为游标，其余为语义近邻。近义去重，不是把同主题压成纪要。
+Rewrite a cluster of existing user memories. Item 1 is the cursor; the rest are semantic neighbors. Merge near-synonyms; do not collapse a topic into a recap.
 
-【合与不合】
-- 以游标为主。与游标同义或近义的近邻合并为更少条；合不了的单独输出并保留原意
-- 一条只留一个可独立检索的事实；同主题里的独立命题不要合成一条、不要用分号堆要点
-- 近邻因向量近才出现，`distance` 只供参考，合不合看条文
-- 禁止编造；禁止丢掉输入里的独立事实
+Merge or keep
+- Cursor is primary. Merge neighbors that mean the same or nearly the same. Keep independent facts; do not invent.
+- At most as many items as the input. Do not split one item into several.
+- `distance` is a hint (neighbors are close in vector space). Decide from the text.
 
-【text】
-- 以「用户」为主语的短陈述句，不用「我」「你」
-- 近义合并后去掉重复；不要写成主题摘要
-- 矛盾不要揉成自相矛盾的一句：仍是独立事实就分条；近义冲突则收成更具体的一条
+text
+- Language of the memories. The subject is "the user" (or that language's ordinary word for it). If input uses a name as the subject, rewrite it.
+- Contradictions: keep independent facts separate; if two near-synonyms conflict, keep the more specific one.
 
-【type】
-- event | fact。沿用为主，不要无故改类型
-- event 的 text 须保留用户视角的可读日期时刻（如「2026年1月1日 19:00」或「1月1日晚上7点」）
+type
+- event or fact. Keep the existing type unless you have a reason to change it.
+- event text keeps a calendar date (and a time of day only if it was already there). Do not turn dates back into relative words.
 
-【confidence】
-每条 0~1，综合该组合并来源，略偏向较高值。
+confidence
+0–1, combining the sources in that merge, slight bias toward the higher values.

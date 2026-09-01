@@ -1,0 +1,45 @@
+{
+  "label": "更新三项 · 英文",
+  "existing": {
+    "communication_style": "Jokes are fine; longer answers are okay too.",
+    "avoid_topics": ["politics", "exes"],
+    "now": "Rushing an AI-friend app to launch, and anxious about it."
+  },
+  "referenceMemories": [
+    {
+      "text": "The user now wants short sentences, no lectures.",
+      "type": "fact",
+      "confidence": 0.95
+    },
+    {
+      "text": "The user said talking about exes is fine now.",
+      "type": "fact",
+      "confidence": 0.93
+    },
+    {
+      "text": "The user does not want to be asked about income or overtime.",
+      "type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "text": "The user still will not discuss politics.",
+      "type": "fact",
+      "confidence": 0.88
+    },
+    {
+      "text": "The user's app launched on 1 September 2026; they are looking for a new job and feel okay.",
+      "type": "event",
+      "confidence": 0.92
+    },
+    {
+      "text": "The user likes running.",
+      "type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "text": "The user has a checkup on Wednesday morning next week.",
+      "type": "event",
+      "confidence": 0.85
+    }
+  ]
+}

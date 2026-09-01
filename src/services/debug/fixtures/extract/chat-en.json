@@ -1,0 +1,70 @@
+{
+  "label": "单聊 · 英文",
+  "timeZone": "America/New_York",
+  "messages": [
+    {
+      "speaker": "user",
+      "text": "hey"
+    },
+    {
+      "speaker": "assistant",
+      "text": "hey. you okay?"
+    },
+    {
+      "speaker": "user",
+      "text": "kinda stressed. i'm shipping my own app and i don't know if anyone will use it."
+    },
+    {
+      "speaker": "assistant",
+      "text": "what's it about?"
+    },
+    {
+      "speaker": "user",
+      "text": "an AI friend. memory is the core, but people need a few days before they feel it. so there's no first-day hook."
+    },
+    {
+      "speaker": "assistant",
+      "text": "so hide the memory stuff at first?"
+    },
+    {
+      "speaker": "user",
+      "text": "yeah. keep memory as a hidden selling point and find something else that's obvious on day one."
+    },
+    {
+      "speaker": "assistant",
+      "text": "got it."
+    },
+    {
+      "speaker": "user",
+      "text": "when we talk i want short sentences. don't lecture me."
+    },
+    {
+      "speaker": "assistant",
+      "text": "okay."
+    },
+    {
+      "speaker": "user",
+      "text": "friday at 7pm i'm getting dinner with college friends. not a work thing."
+    },
+    {
+      "speaker": "assistant",
+      "text": "friday 7. noted."
+    },
+    {
+      "speaker": "user",
+      "text": "the day after tomorrow my nephew starts school. ninth grade. he lives with my sister, not with me."
+    },
+    {
+      "speaker": "assistant",
+      "text": "that's soon."
+    },
+    {
+      "speaker": "user",
+      "text": "i might go to the sea next week. haven't picked a day or which coast."
+    },
+    {
+      "speaker": "assistant",
+      "text": "tell me when you decide."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "label": "近义合并 · 中文",
+  "cursor": {
+    "text": "用户正在开发一款主打 AI 记忆的 AI 朋友 app，计划 2026 年 9 月上线。",
+    "type": "event",
+    "confidence": 0.9
+  },
+  "neighbors": [
+    {
+      "text": "用户自己做 AI 朋友应用，核心是记忆功能，准备 9 月上线。",
+      "type": "fact",
+      "confidence": 0.92,
+      "distance": 0.12
+    },
+    {
+      "text": "用户的产品定位是 AI 朋友，卖点是记忆，即将上线。",
+      "type": "fact",
+      "confidence": 0.88,
+      "distance": 0.14
+    },
+    {
+      "text": "用户担心 app 上线后没人用。",
+      "type": "fact",
+      "confidence": 0.85,
+      "distance": 0.22
+    },
+    {
+      "text": "用户对即将上线感到焦虑，怕作品石沉大海。",
+      "type": "fact",
+      "confidence": 0.87,
+      "distance": 0.24
+    }
+  ]
+}
