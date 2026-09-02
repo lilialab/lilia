@@ -11,7 +11,7 @@
 | 关系数据库 | MySQL 8 + Prisma 7 |
 | 向量数据库 | ChromaDB |
 | 任务队列 | Redis（BullMQ 后端） |
-| 日志 | Loki + Grafana（pino 推送） |
+| 日志 | pino（stdout；可选 Loki + Grafana） |
 | 模型服务 | OpenAI 兼容对话 API + OpenAI 兼容 Embedding（如硅基 Qwen3-Embedding） |
 
 ## 前置依赖
@@ -48,7 +48,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-将启动以下服务：
+将启动以下服务（端口均绑在 127.0.0.1，仅本机可连）：
 
 | 服务 | 端口 | 用途 |
 |------|------|------|
@@ -56,19 +56,22 @@ docker compose up -d
 | ChromaDB | 8000 | 记忆向量检索 |
 | Redis | 6379 | BullMQ 任务队列 |
 | Loki | 3100 | 日志接收 API（无 Web UI，应用往这里推送） |
-| Grafana | 3001 | 日志查询界面（admin / admin） |
+| Grafana | 3001 | 日志查询界面（admin / password） |
+
+本地和生产用同一份 `docker-compose.yml`，`docker compose up -d` 会起上表全部服务。
 
 #### 日志与调试
 
-应用通过 [pino](https://getpino.io/) 输出结构化日志，LLM 请求/回复、记忆片段等动态上下文写入 Loki（不记录固定 system 提示词全文）。
+应用通过 [pino](https://getpino.io/) 打结构化日志：**始终写 stdout**；`LOG_TO_LOKI=true` 时额外推 Loki。LLM 请求/回复、记忆片段等动态上下文带 `event`（不记录固定 system 提示词全文）。
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
 | `LOG_LEVEL` | 日志级别 | `debug` |
 | `LOKI_URL` | Loki 推送地址 | `http://localhost:3100` |
-| `LOG_TO_LOKI` | 是否推送到 Loki | `true` |
+| `LOG_TO_LOKI` | 是否额外推送到 Loki | `true` |
 
 - Grafana：[http://localhost:3001](http://localhost:3001) → Explore → 数据源 Loki（Label filters 可选 `event`）
+- 终端 / `docker logs` 可直接看 pino JSON；Loki 挂了仍有 stdout
 - 重启应用后新日志带 `event` label；
 - 聊天请求（记忆片段等）：`{app="lilia", event="llm.chat.request"}`
 - 聊天回复：`{app="lilia", event="llm.chat.response"}`
@@ -77,9 +80,9 @@ docker compose up -d
 - 提取结果摘要：`{app="lilia", event="llm.extract.complete"}`
 - globalMax 前缀标记：`{app="lilia", event="llm.extract.mark"}`
 - 按 job 过滤：`{app="lilia"} | json | jobId="<uuid>"`
-- 设 `LOG_TO_LOKI=false` 时不记录日志（终端也不会有输出）
+- `LOG_TO_LOKI=false` 时只打 stdout，不推 Loki
 
-`memory_jobs.snapshot` 仅保留 `messageIds` / `userId`；LLM 输入输出在 Loki 中查询。
+`memory_jobs.snapshot` 仅保留 `messageIds` / `userId`；LLM 输入输出在 Loki（及 stdout）中查询。
 
 ### 4. 初始化数据库
 

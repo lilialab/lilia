@@ -1,4 +1,4 @@
-# 本地基础设施（应用本身用 pnpm dev 跑在宿主机）
+# 本地与生产同一份
 # 凭证与库名来自 .env；数据目录 ./docker-volumes/（已 gitignore）
 x-timezone: &timezone
   TZ: Asia/Shanghai
@@ -6,7 +6,7 @@ x-timezone: &timezone
 services:
   # Prisma：用户、会话、消息、记忆元数据、ConsolidationJob 等
   mysql:
-    image: mysql:8
+    image: mysql:8.4
     container_name: lilia-mysql
     restart: unless-stopped
     environment:
@@ -14,7 +14,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
       MYSQL_DATABASE: ${DATABASE_NAME}
     ports:
-      - '3306:3306'
+      - '127.0.0.1:3306:3306'
     volumes:
       - ./docker-volumes/mysql-data:/var/lib/mysql
 
@@ -26,25 +26,25 @@ services:
     environment:
       <<: *timezone
     ports:
-      - '8000:8000'
+      - '127.0.0.1:8000:8000'
     volumes:
       - ./docker-volumes/chroma-data:/data
 
-  # 日志接收：pino → Loki（无 Web UI）；配置见 docker/loki-config.yml
+  # 日志接收：pino → Loki；配置见 docker/loki-config.yml
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.7
     container_name: lilia-loki
     restart: unless-stopped
     environment:
       <<: *timezone
     ports:
-      - '3100:3100'
+      - '127.0.0.1:3100:3100'
     command: -config.file=/etc/loki/loki-config.yml
     volumes:
       - ./docker/loki-config.yml:/etc/loki/loki-config.yml:ro
       - ./docker-volumes/loki-data:/loki
 
-  # 日志查询 UI：宿主机 http://localhost:3001（admin/password），预置 Loki 数据源
+  # 日志查询 UI：http://localhost:3001（admin/password）
   grafana:
     image: grafana/grafana:latest
     container_name: lilia-grafana
@@ -52,7 +52,7 @@ services:
     depends_on:
       - loki
     ports:
-      - '3001:3000'
+      - '127.0.0.1:3001:3000'
     environment:
       <<: *timezone
       GF_SECURITY_ADMIN_USER: admin
@@ -64,13 +64,13 @@ services:
 
   # BullMQ / ioredis（REDIS_URL）；AOF 持久化延迟任务与队列状态
   redis:
-    image: redis:8
+    image: redis:8.8
     container_name: lilia-redis
     restart: unless-stopped
     environment:
       <<: *timezone
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - ./docker-volumes/redis-data:/data
     command: redis-server --appendonly yes
