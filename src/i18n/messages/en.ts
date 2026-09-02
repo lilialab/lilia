@@ -124,6 +124,7 @@ export const en = {
     language: 'Language',
     privacyPolicy: 'Privacy Policy',
     deleteAccount: 'Delete account',
+    appVersion: 'Lilia {version}',
   },
   changeNickname: {
     title: 'Change nickname',

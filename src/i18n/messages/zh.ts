@@ -120,6 +120,7 @@ export const zh = {
     language: '语言',
     privacyPolicy: '隐私政策',
     deleteAccount: '删除账号',
+    appVersion: 'Lilia {version}',
   },
   changeNickname: {
     title: '修改昵称',

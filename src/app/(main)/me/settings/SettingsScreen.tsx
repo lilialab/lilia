@@ -43,7 +43,11 @@ function SettingsRow({ href, label, trailing, destructive }: SettingsRowProps) {
   );
 }
 
-export function SettingsScreen() {
+interface SettingsScreenProps {
+  version: string;
+}
+
+export function SettingsScreen({ version }: SettingsScreenProps) {
   const router = useRouter();
   const t = useTranslations('settings');
   const { locale } = useI18n();
@@ -83,6 +87,10 @@ export function SettingsScreen() {
             destructive
           />
         </section>
+
+        <p className={cn('px-4 py-6 text-center text-xs text-muted-foreground')}>
+          {t('appVersion', { version })}
+        </p>
       </div>
     </div>
   );

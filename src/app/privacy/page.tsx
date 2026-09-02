@@ -4,7 +4,7 @@ import { PrivacyPolicyBody } from './PrivacyPolicyBody';
 import { PrivacyScreen } from './PrivacyScreen';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy · lilia',
+  title: 'Privacy Policy · Lilia',
   description: 'What Lilia collects, where it goes, and how you can delete it.',
 };
 
