@@ -118,6 +118,7 @@ export const zh = {
     changePassword: '修改密码',
     llmConfig: 'LLM API',
     language: '语言',
+    privacyPolicy: '隐私政策',
     deleteAccount: '删除账号',
   },
   changeNickname: {
@@ -168,7 +169,7 @@ export const zh = {
     languageAria: '语言',
   },
   login: {
-    title: '登录 lilia',
+    title: '登录 Lilia',
     noAccount: '还没有账号？',
     goRegister: '去注册',
     submit: '登录',
@@ -214,6 +215,7 @@ export const zh = {
     confirmPassword: '确认密码',
     hasAccount: '已有账号？',
     goLogin: '去登录',
+    privacyPolicy: '隐私政策',
     completeVerification: '请完成人机验证',
     submit: '注册并登录',
     submitting: '注册中...',

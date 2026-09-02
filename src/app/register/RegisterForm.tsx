@@ -1,5 +1,6 @@
 'use client';
 
+import { privacyPageHref } from '@/app/privacy/privacy-return';
 import { register } from '@/client-api/auth';
 import {
   AuthField,
@@ -72,12 +73,23 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
       title={t('title')}
       returnTo="/register"
       footer={
-        <>
-          {t('hasAccount')}{' '}
-          <Link href="/login" className={cn('text-primary underline')}>
-            {t('goLogin')}
-          </Link>
-        </>
+        <div className={cn('flex flex-col gap-3')}>
+          <p>
+            {t('hasAccount')}{' '}
+            <Link href="/login" className={cn('text-primary underline')}>
+              {t('goLogin')}
+            </Link>
+          </p>
+          <p>
+            <Link
+              href={privacyPageHref('/register')}
+              transitionTypes={['nav-forward']}
+              className={cn('text-primary underline')}
+            >
+              {t('privacyPolicy')}
+            </Link>
+          </p>
+        </div>
       }
     >
       <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>

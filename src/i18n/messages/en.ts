@@ -122,6 +122,7 @@ export const en = {
     changePassword: 'Change password',
     llmConfig: 'LLM API',
     language: 'Language',
+    privacyPolicy: 'Privacy Policy',
     deleteAccount: 'Delete account',
   },
   changeNickname: {
@@ -173,7 +174,7 @@ export const en = {
     languageAria: 'Language',
   },
   login: {
-    title: 'Log in to lilia',
+    title: 'Log in to Lilia',
     noAccount: "Don't have an account?",
     goRegister: 'Sign up',
     submit: 'Log in',
@@ -219,6 +220,7 @@ export const en = {
     confirmPassword: 'Confirm password',
     hasAccount: 'Already have an account?',
     goLogin: 'Log in',
+    privacyPolicy: 'Privacy Policy',
     completeVerification: 'Please complete the verification',
     submit: 'Sign up and log in',
     submitting: 'Creating account...',
