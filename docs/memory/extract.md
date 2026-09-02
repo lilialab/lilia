@@ -5,7 +5,7 @@
 ```mermaid
 flowchart TD
   ChatIdle["单聊 session / 群 groupSession 发消息重置 delay"] --> Queue[BullMQ memory-extract]
-  API["POST memory/extract"] --> Queue
+  API["POST /api/debug/memory/extract"] --> Queue
   Queue --> Worker[Worker]
   Worker --> CreateJob[创建提取任务]
   CreateJob --> MainFlow[提取主流程]
@@ -30,10 +30,10 @@ flowchart TD
 
 - **滑动窗口（单聊按 session）**：发聊天消息后调度 `extract-${sessionId}`（`MEMORY_EXTRACT_IDLE_MINUTES`）；同会话再次发消息会重置
 - **滑动窗口（群聊按 groupSession）**：用户发群消息（含 turn_cue）后调度 `extract-group-${groupSessionId}`；同群再次发消息会重置；**不**调度 maintain
-- **立即触发（测试）**：
-  - 单聊：`POST /api/memory/extract?username=&sessionId=`
-  - 群聊：`POST /api/memory/extract?username=&groupSessionId=`
-  - 二者互斥；本进程异步跑 `runExtract`，返回可轮询 `jobId`（不经 Bull）
+- **立即触发（测试，仅 development）**：
+  - 单聊：`POST /api/debug/memory/extract?username=&sessionId=`
+  - 群聊：`POST /api/debug/memory/extract?username=&groupSessionId=`
+  - 二者互斥；本进程异步跑 `runExtract`，返回可轮询 `jobId`（`GET /api/debug/memory/jobs?jobId=`，不经 Bull）
 - Worker：`pnpm worker:memory-extract`，消费滑动窗口入队的任务（单聊 / 群聊同一队列）
 
 ### 何时进入提取池

@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-  API["POST memory/profile?characterId="] --> Entry[触发画像 job]
+  API["POST /api/debug/memory/profile?characterId="] --> Entry[触发画像 job]
   Pipeline["maintain→profile 管线"] --> Entry
   Entry --> Core[画像全量快照]
   Core --> LoadProfile[并行加载该角色画像与参考记忆]
@@ -24,7 +24,7 @@ system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）。角色 over
 ### 何时触发
 
 - **管线**：某角色 maintain 成功后串行跑该角色 profile（见 [pipeline](./pipeline.md)）
-- **立即触发（测试）**：`POST /api/memory/profile?username=&characterId=`；须为通讯录好友；本进程异步跑，返回 `jobId`
+- **立即触发（测试，仅 development）**：`POST /api/debug/memory/profile?username=&characterId=`；须为通讯录好友；本进程异步跑，返回 `jobId`
 
 ### 参考记忆
 

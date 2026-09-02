@@ -1,11 +1,11 @@
 info:
   name: 查询已存储记忆
   type: http
-  seq: 5
+  seq: 6
 
 http:
   method: GET
-  url: http://localhost:3000/api/memory/list?username=tom&limit=20
+  url: http://localhost:3000/api/debug/memory/list?username=tom&limit=20
   params:
     - name: username
       value: tom

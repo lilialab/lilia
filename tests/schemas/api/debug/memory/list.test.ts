@@ -1,4 +1,4 @@
-import { listMemoryQuerySchema } from '@/schemas/api/memory/list';
+import { listMemoryQuerySchema } from '@/schemas/api/debug/memory/list';
 import { safeParseQueryParams } from '@/schemas/query';
 import { describe, expect, it } from 'vitest';
 

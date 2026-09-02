@@ -1,7 +1,8 @@
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
+import { assertDevelopmentDebug } from '@/lib/server/debug-guard';
 import { logger } from '@/lib/server/logger';
 import { parseSearchParams } from '@/lib/server/parse-schema';
-import { memoryExtractQuerySchema } from '@/schemas/api/memory/extract';
+import { memoryExtractQuerySchema } from '@/schemas/api/debug/memory/extract';
 import { assertGroupOwnedByUser } from '@/services/group/groups.service';
 import { runExtract } from '@/services/memory/extract.service';
 import { prepareMemoryJob } from '@/services/memory/job.service';
@@ -10,7 +11,9 @@ import { resolveUserIdByUsername } from '@/services/user/users.service';
 import { randomUUID } from 'crypto';
 import { type NextRequest } from 'next/server';
 
+/** 立即跑 extract（不经 Bull）；development 专用。 */
 export const POST = withApiHandler(async (req: NextRequest) => {
+  assertDevelopmentDebug();
   const { username, sessionId, groupSessionId } = parseSearchParams(
     memoryExtractQuerySchema,
     req.nextUrl.searchParams,

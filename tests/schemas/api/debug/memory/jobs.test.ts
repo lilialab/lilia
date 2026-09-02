@@ -1,4 +1,4 @@
-import { getMemoryJobQuerySchema } from '@/schemas/api/memory/jobs';
+import { getMemoryJobQuerySchema } from '@/schemas/api/debug/memory/jobs';
 import { safeParseQueryParams } from '@/schemas/query';
 import { describe, expect, it } from 'vitest';
 

@@ -26,14 +26,14 @@ flowchart TB
   subgraph jobs [离线 Job]
     ScheduleExtract --> WorkerExtract["Worker runExtract 按 session 或 group"]
     ScheduleGroupExtract --> WorkerExtract
-    ManualExtract["POST memory/extract"] --> RunExtract["本进程 runExtract"]
+    ManualExtract["POST /api/debug/memory/extract"] --> RunExtract["本进程 runExtract"]
     WorkerExtract --> WriteMemory["写入 UserMemory；群聊全员扇出 + Chroma"]
     RunExtract --> WriteMemory
     ScheduleMaintain --> WorkerMaintain["Worker：间隔到期"]
     WorkerMaintain --> RunMaintain["runMaintain（该角色）"]
     RunMaintain --> RunProfile["runProfileRefresh（该角色）"]
-    ManualMaintain["POST memory/maintain?characterId="] --> RunMaintain
-    ManualProfile["POST memory/profile?characterId="] --> RunProfile
+    ManualMaintain["POST /api/debug/memory/maintain?characterId="] --> RunMaintain
+    ManualProfile["POST /api/debug/memory/profile?characterId="] --> RunProfile
     RunMaintain --> WriteMemory
     RunProfile --> UserProfile[(UserProfile)]
     UserProfile --> LoadProfile

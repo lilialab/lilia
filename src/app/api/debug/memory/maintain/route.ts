@@ -1,7 +1,8 @@
 import { successResponse, withApiHandler } from '@/lib/server/api-handler';
+import { assertDevelopmentDebug } from '@/lib/server/debug-guard';
 import { logger } from '@/lib/server/logger';
 import { parseSearchParams } from '@/lib/server/parse-schema';
-import { memoryMaintainQuerySchema } from '@/schemas/api/memory/maintain';
+import { memoryMaintainQuerySchema } from '@/schemas/api/debug/memory/maintain';
 import { assertIsContact } from '@/services/character/contacts.service';
 import { prepareMemoryJob } from '@/services/memory/job.service';
 import { runMaintain } from '@/services/memory/maintain.service';
@@ -9,7 +10,9 @@ import { resolveUserIdByUsername } from '@/services/user/users.service';
 import { randomUUID } from 'crypto';
 import { type NextRequest } from 'next/server';
 
+/** 立即跑 maintain（不经 Bull）；development 专用。 */
 export const POST = withApiHandler(async (req: NextRequest) => {
+  assertDevelopmentDebug();
   const { username, characterId } = parseSearchParams(
     memoryMaintainQuerySchema,
     req.nextUrl.searchParams,

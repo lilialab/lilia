@@ -77,9 +77,9 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 方式 | 用法 | 适用 |
 |------|------|------|
 | Cookie | `resolveRequestUserId(req)`；页面由 `proxy.ts` 保护 | chat、sessions、`/api/auth/*`；需登录页 |
-| username | `resolveUserIdByUsername` + `?username=` | `/api/memory/*`；Bruno「记忆」 |
+| username | `resolveUserIdByUsername` + `?username=` | `/api/debug/memory/*`；Bruno「debug / 记忆」 |
 
-**禁止**：memory route 使用 `resolveRequestUserId`。
+**禁止**：`/api/debug/memory/*` 使用 `resolveRequestUserId`。
 
 ### 其它
 
@@ -129,7 +129,7 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 记忆检索 / 衰减 | `vector` + `decay.utils` + `metadata.utils` |
 | 用户画像 | `user-profile.service.ts` |
 | 会话 / 历史 | `sessions.service.ts` + `message.service.ts` |
-| 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/记忆/`；`api/memory/?username=`；memory workers |
+| 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/debug/记忆/`；`/api/debug/memory/?username=`；memory workers |
 | 登录 / 注册 | `session` + `request-user`；`api/auth/`；`client-api/auth`；`login/`、`register/` |
 | 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / nickname / `delete-account`；`/me/settings` |
 | 聊天 UI / 流 | `ChatScreen.tsx` + `api/chat` |

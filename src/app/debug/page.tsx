@@ -31,6 +31,10 @@ export default function DebugIndexPage() {
           Chroma API：
           <code className={cn('ml-1 text-xs')}>/api/debug/chroma</code>
         </li>
+        <li className={cn('text-muted-foreground')}>
+          记忆任务 API：
+          <code className={cn('ml-1 text-xs')}>/api/debug/memory/*</code>
+        </li>
       </ul>
     </div>
   );

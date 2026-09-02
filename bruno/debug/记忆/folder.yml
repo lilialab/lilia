@@ -1,10 +1,13 @@
 info:
   name: 记忆
   type: folder
-  seq: 5
+  seq: 2
 
 vars:
   - name: jobId
     value: ''
   - name: username
     value: tom
+
+request:
+  auth: inherit

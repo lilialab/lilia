@@ -1,17 +1,17 @@
 info:
-  name: 启动群聊记忆提取
+  name: 启动记忆提取
   type: http
-  seq: 3
+  seq: 1
 
 http:
   method: POST
-  url: http://localhost:3000/api/memory/extract?username=tom&groupSessionId=
+  url: http://localhost:3000/api/debug/memory/extract?username=tom&sessionId=502d3282-58d7-4cee-b9cc-a4194ccaf87c
   params:
     - name: username
       value: tom
       type: query
-    - name: groupSessionId
-      value: ""
+    - name: sessionId
+      value: 502d3282-58d7-4cee-b9cc-a4194ccaf87c
       type: query
   auth: inherit
 

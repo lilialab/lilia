@@ -1,11 +1,11 @@
 info:
   name: 查询记忆任务
   type: http
-  seq: 3
+  seq: 5
 
 http:
   method: GET
-  url: http://localhost:3000/api/memory/jobs?jobId=59668e78-7514-41fd-b489-b29e2a395370
+  url: http://localhost:3000/api/debug/memory/jobs?jobId=59668e78-7514-41fd-b489-b29e2a395370
   params:
     - name: jobId
       value: 59668e78-7514-41fd-b489-b29e2a395370

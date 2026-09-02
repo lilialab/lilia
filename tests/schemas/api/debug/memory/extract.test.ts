@@ -1,4 +1,4 @@
-import { memoryExtractQuerySchema } from '@/schemas/api/memory/extract';
+import { memoryExtractQuerySchema } from '@/schemas/api/debug/memory/extract';
 import { describe, expect, it } from 'vitest';
 
 describe('memoryExtractQuerySchema', () => {
