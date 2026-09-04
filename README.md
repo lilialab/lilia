@@ -60,6 +60,23 @@ docker compose up -d
 
 本地和生产用同一份 `docker-compose.yml`，`docker compose up -d` 会起上表全部服务。
 
+端口不对公网开放。从本机连 VPS 上的 Grafana / MySQL / Redis 时，用 SSH 本地转发。
+
+```bash
+ssh -L 3001:127.0.0.1:3001 -L 3306:127.0.0.1:3306 -L 6379:127.0.0.1:6379 user@your-vps
+```
+
+- Grafana：浏览器打开 [http://localhost:3001](http://localhost:3001)（`admin` / `password`）
+- MySQL / Redis：DBeaver、Redis Insight 等连本机对应端口即可
+- `exit` 结束 SSH 后转发即关闭。
+
+Grafana 只是查 Loki 的 UI，停掉不影响写日志。在 VPS 的 compose 目录里只动这一个服务：
+
+```bash
+docker compose start grafana       # 打开（容器还在，只是停了）
+docker compose stop grafana        # 关闭；数据仍在 docker-volumes/grafana-data
+```
+
 #### 日志与调试
 
 应用通过 [pino](https://getpino.io/) 打结构化日志：**始终写 stdout**；`LOG_TO_LOKI=true` 时额外推 Loki。LLM 请求/回复、记忆片段等动态上下文带 `event`（不记录固定 system 提示词全文）。
