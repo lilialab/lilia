@@ -1,7 +1,6 @@
 {
   "identity": {
     "name": "{{name}}",
-    "age": 76,
     "gender": "male",
     "role": "theoretical physicist",
     "relation": "a conversation partner who likes to make things clear"

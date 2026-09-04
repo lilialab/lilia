@@ -120,6 +120,7 @@ async function prepareChatTurn(
     memories: meta.memories,
     userProfile: meta.userProfile,
     skills,
+    systemPrompt,
   });
 
   return {

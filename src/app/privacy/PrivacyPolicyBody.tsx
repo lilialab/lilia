@@ -2,6 +2,8 @@ import { cn } from '@/lib/client/cn';
 import type { ReactNode } from 'react';
 
 const CONTACT_EMAIL = 'liuyuchuan816@gmail.com';
+const SILICONFLOW_PRIVACY = 'https://docs.siliconflow.cn/en/legals/privacy-policy';
+const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
 
 interface PrivacySectionProps {
   title: string;
@@ -19,22 +21,39 @@ function PrivacySection({ title, children }: PrivacySectionProps) {
   );
 }
 
+interface ExternalLinkProps {
+  href: string;
+  children: ReactNode;
+}
+
+function ExternalLink({ href, children }: ExternalLinkProps) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn('text-primary underline')}
+    >
+      {children}
+    </a>
+  );
+}
+
 const listClass = cn('list-disc space-y-1.5 pl-5');
 
-/** 按当前产品行为写的英文隐私说明；不宣称合规。 */
+/** 按当前产品行为写的英文隐私说明。 */
 export function PrivacyPolicyBody() {
   return (
     <article lang="en" className={cn('mx-auto max-w-2xl px-4 py-6 pb-12')}>
-      <p className={cn('text-sm text-muted-foreground')}>Last updated: 2 September 2026</p>
+      <p className={cn('text-sm text-muted-foreground')}>Last updated: 4 September 2026</p>
       <p className={cn('mt-4 text-sm leading-relaxed text-foreground/90')}>
-        This page describes what Lilia actually does with your information. It is not a claim that
-        we comply with the GDPR, CCPA, or any other privacy law.
+        We treat your chats as private. We only keep what Lilia needs to run, we do not sell your
+        information, and we do not use it for advertising. This page explains what we store, how we
+        protect it, who helps us process it, and what happens when you delete your account.
       </p>
 
       <PrivacySection title="Who we are">
-        <p>
-          Lilia is a chat app with long-term memory. It is operated by an individual, not a company.
-        </p>
+        <p>Lilia is a chat app with long-term memory, run by one person.</p>
         <p>
           Contact:{' '}
           <a href={`mailto:${CONTACT_EMAIL}`} className={cn('text-primary underline')}>
@@ -62,28 +81,23 @@ export function PrivacyPolicyBody() {
           <li>Vector embeddings of those memories, used to recall them in later chats</li>
           <li>A login cookie so you stay signed in</li>
         </ul>
-        <p>We also process, for a limited time:</p>
+        <p>We also process, briefly, what we need to keep the service stable:</p>
         <ul className={listClass}>
+          <li>Your IP address, to limit abusive sign-up and login attempts</li>
           <li>
-            Your IP address, to limit abusive sign-up and login attempts (short-lived rate-limit
-            counters in Redis)
+            Background job records that identify which chat should be processed for memory (user id
+            and session id, not the full message text)
           </li>
           <li>
-            Job records in Redis that identify which chat should be processed for memory extraction
-            (user id and session id, not the full message text)
-          </li>
-          <li>
-            Operational logs such as errors. We do not currently log full chat transcripts on
-            purpose. An error log may still include a username, a request path, or a short snippet
-            of a failed request
+            Operational logs such as errors. We do not log full chat transcripts. An error log may
+            still include a username, a request path, or a short snippet of a failed request
           </li>
         </ul>
         <p>
-          On sign-up we use Cloudflare Turnstile to tell humans from bots. Cloudflare receives the
-          verification token and whatever data their widget collects. See Cloudflare’s own privacy
-          policy for that part.
+          On sign-up we use Cloudflare Turnstile to tell humans from bots. Cloudflare receives what
+          its widget needs for that check. See{' '}
+          <ExternalLink href={CLOUDFLARE_PRIVACY}>Cloudflare’s privacy policy</ExternalLink>.
         </p>
-        <p>We do not use advertising SDKs or third-party analytics products.</p>
       </PrivacySection>
 
       <PrivacySection title="How we use it">
@@ -97,12 +111,22 @@ export function PrivacyPolicyBody() {
         </ul>
       </PrivacySection>
 
+      <PrivacySection title="How we protect it">
+        <ul className={listClass}>
+          <li>Your password is stored as a hash. We never keep the password itself</li>
+          <li>If you add your own LLM API key, we store it encrypted</li>
+          <li>The login cookie is HTTP-only, so page scripts cannot read it</li>
+          <li>We do not use advertising SDKs or third-party analytics</li>
+          <li>We do not sell your information</li>
+          <li>We do not use your chats to train a Lilia model</li>
+        </ul>
+      </PrivacySection>
+
       <PrivacySection title="Where it is stored and who else sees it">
         <p>
           <span className={cn('font-medium text-foreground')}>Our servers.</span>{' '}
-          The app database (MySQL), the vector store (Chroma), Redis, and application logs run on a
-          Vultr virtual machine in the western United States. If we move the server, we will update
-          this page.
+          Your account, chats, memories, and embeddings live on a server we operate in the western
+          United States (Vultr). If that location changes, we will update this page.
         </p>
         <p>
           <span className={cn('font-medium text-foreground')}>
@@ -110,21 +134,15 @@ export function PrivacyPolicyBody() {
           </span>{' '}
           Chat replies (unless you set your own API), memory extraction, memory maintenance, profile
           generation, and embeddings are sent to SiliconFlow (硅基流动), a company based in China.
-          We currently use a DeepSeek model they host. SiliconFlow receives the text we send them.
-          We do not control how long they keep it, whom they share it with, or where they process
-          it.
+          We currently use a DeepSeek model they host. SiliconFlow receives the text we send so it
+          can run the model. That processing is covered by{' '}
+          <ExternalLink href={SILICONFLOW_PRIVACY}>SiliconFlow’s privacy policy</ExternalLink>.
         </p>
         <p>
           <span className={cn('font-medium text-foreground')}>Your own LLM API.</span>{' '}
-          If you save your own OpenAI-compatible base URL, API key, and model, chat completions go
-          to that endpoint instead of our default. Memory extraction, embeddings, and related
-          background jobs still use SiliconFlow.
-        </p>
-        <p>We do not sell your information. We do not show ads.</p>
-        <p>
-          Because this is a memory product, the sensitive part is not only that we store your chats,
-          but that we derive lasting notes and a profile from them, and that copies of that text go
-          to SiliconFlow.
+          If you save your own OpenAI-compatible base URL, API key, and model, chat replies go to
+          that endpoint instead of our default. Memory extraction, embeddings, and related
+          background jobs still use SiliconFlow, so that text still goes there.
         </p>
       </PrivacySection>
 
@@ -133,33 +151,28 @@ export function PrivacyPolicyBody() {
           We keep your account, chats, memories, embeddings, and profiles until you delete your
           account.
         </p>
+        <p>The login cookie expires after a limited period.</p>
         <p>
-          Login cookies last for a limited number of days set on the server (on the order of weeks).
-        </p>
-        <p>
-          Rate-limit keys in Redis expire on a short schedule (minutes to about a day, depending on
-          the limit). Memory job records in Redis are removed after they complete or fail, aside
-          from a small recent history.
+          Rate-limit records and background job records are short-lived and are removed when they
+          expire or finish.
         </p>
       </PrivacySection>
 
       <PrivacySection title="What you can do">
         <ul className={listClass}>
+          <li>Change nickname, password, language, and LLM API settings while signed in</li>
           <li>
-            Change nickname, password, language, and LLM API settings while signed in
+            Delete your account in Settings. That permanently removes your account, chats, memories,
+            profiles, login sessions, and stored vectors from our systems
           </li>
           <li>
-            Delete your account in Settings. That permanently deletes your user row in our database
-            (chats, memories, profiles, and login sessions go with it) and deletes your vectors in
-            Chroma
-          </li>
-          <li>
-            Email us if something did not delete and we can still reach it on our servers
+            Email us if something did not delete and we can still reach it on our servers. We will
+            remove it
           </li>
         </ul>
         <p>
-          We cannot delete copies that SiliconFlow (or your own LLM provider) may already have
-          processed.
+          Text already sent to SiliconFlow (or your own LLM provider) is processed under their
+          privacy policy. We cannot delete copies on their systems.
         </p>
         <p>
           There is no in-app export of all your data yet. If you need a copy, email us and we will
@@ -169,8 +182,8 @@ export function PrivacyPolicyBody() {
 
       <PrivacySection title="Cookies">
         <p>
-          We set one first-party cookie: an HTTP-only session cookie used to keep you logged in. It
-          is marked Secure in production and SameSite=Lax.
+          We set one first-party cookie: an HTTP-only session cookie used to keep you logged in. In
+          production it is marked Secure.
         </p>
         <p>Cloudflare Turnstile may set its own cookies during registration.</p>
       </PrivacySection>
@@ -183,9 +196,9 @@ export function PrivacyPolicyBody() {
 
       <PrivacySection title="International users">
         <p>
-          If you use Lilia from outside the United States, your information is transferred to the
-          United States (our Vultr server) and to China (SiliconFlow). We do not offer a regional
-          storage option.
+          If you use Lilia from outside the United States, your account data is stored in the United
+          States, and text sent for model inference is processed by SiliconFlow in China. We do not
+          currently offer a choice of region.
         </p>
       </PrivacySection>
 

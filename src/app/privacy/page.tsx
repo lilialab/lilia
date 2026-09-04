@@ -5,7 +5,7 @@ import { PrivacyScreen } from './PrivacyScreen';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy · Lilia',
-  description: 'What Lilia collects, where it goes, and how you can delete it.',
+  description: 'What Lilia stores, how we protect it, and what deletion covers.',
 };
 
 export default async function PrivacyPage(props: PageProps<'/privacy'>) {

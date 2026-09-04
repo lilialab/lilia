@@ -143,6 +143,7 @@ export async function streamGroupAssistantReply({
     groupChatRules: meta.groupChatRules,
     rosterBlock: meta.rosterBlock,
     skills,
+    systemPrompt,
   });
 
   const startedAt = Date.now();

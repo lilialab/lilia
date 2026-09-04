@@ -50,6 +50,13 @@ export function ChatInput({
     el.setSelectionRange(len, len);
   }, [focusKey]);
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return;
+    e.preventDefault();
+    if (disabled || !value.trim()) return;
+    e.currentTarget.form?.requestSubmit();
+  }
+
   return (
     <form
       onSubmit={onSubmit}
@@ -78,6 +85,8 @@ export function ChatInput({
           rows={1}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          enterKeyHint="send"
           placeholder={isStreaming ? t('placeholderStreaming') : t('placeholder')}
           disabled={disabled}
           className={cn(

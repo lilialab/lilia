@@ -103,9 +103,12 @@ docker compose stop grafana        # 关闭；数据仍在 docker-volumes/grafan
 
 ### 4. 初始化数据库
 
+空库按迁移建表并灌角色（详见下方「Prisma / 数据库」）：
+
 ```bash
 pnpm exec prisma generate
-pnpm exec prisma db push
+pnpm exec prisma migrate deploy
+pnpm exec prisma db seed
 ```
 
 ### 5. 准备对话 LLM 与 Embedding
@@ -137,7 +140,39 @@ pnpm dev
 ## 开发说明
 
 - 本项目使用 **Next.js 16**，部分 API 与常见版本存在差异，编写代码前建议查阅 `node_modules/next/dist/docs/`。
-- Prisma Client 生成路径为 `src/generated/prisma`，Schema 变更后需重新执行 `pnpm exec prisma generate`。
+- Prisma Client 输出到 `src/generated/prisma`（已 gitignore）。Prisma 7 的 `migrate` / `db push` / `db seed` **都不会**自动 `generate`；clone 或改 schema 后先执行 `pnpm exec prisma generate`。`seed` 会 import 该 Client，没 generate 会失败。
+
+## Prisma / 数据库
+
+迁移文件在 `prisma/migrations/`。本地调试可以先 `db push` 试 schema；**定稿后必须留下迁移**，生产只跑 `migrate deploy`。不要在生产使用 `db push`、`migrate dev` 或 `migrate reset`。
+
+| 场景 | 命令 |
+|------|------|
+| 生成 Client | `pnpm exec prisma generate` |
+| 本地反复改表（不写迁移） | `pnpm exec prisma db push` |
+| 灌角色目录（幂等）；非 production 还会建用户 `tom` | `pnpm exec prisma db seed` |
+| 生产 / 空库：执行尚未应用的迁移 | `pnpm exec prisma migrate deploy` |
+
+**本地开发 → 准备上线：**
+
+1. 开发中改 `prisma/schema.prisma` 后用 `pnpm exec prisma db push & generate`，不必每次都 `migrate dev`（避免堆半成品迁移）。
+
+2. schema 确定、准备提交并上线时执行：
+
+    ```bash
+    # 清空本地库，按已有迁移文件重建并 seed（此时库 = 上一版迁移，不是 push 后的新表）
+    pnpm exec prisma migrate reset
+
+    # 对比「已有迁移叠起来的结果」和当前 schema.prisma，生成一条增量 SQL 并应用到本地库
+    pnpm exec prisma migrate dev --name 简短说明
+    ```
+
+3. 生产：同步含新迁移的代码，必要时先停应用，然后执行：
+
+    ```bash
+    pnpm exec prisma generate
+    pnpm exec prisma migrate deploy
+    ```
 
 ## 常用命令
 
@@ -150,23 +185,4 @@ pnpm start:all    # 生产 Next + extract/maintain Worker（需先 build；需 R
 pnpm lint         # ESLint 检查
 pnpm worker:memory-extract  # 记忆整理 Worker（需 Redis；另开终端）
 pnpm worker:memory-maintain  # maintain→profile 闲置窗口（需 Redis；另开终端）
-
-
-# 根据 schema 生成 Prisma Client（类型与 API）；migrate / db push 通常会顺带跑
-pnpm exec prisma generate
-
-# 开发：把 schema 同步到数据库（不生成迁移文件）
-pnpm exec prisma db push
-
-# 开发：清空库并按 schema 重建（会丢数据）
-pnpm exec prisma db push --force-reset
-
-# 灌入角色目录（幂等）；非 production 时还会建本地用户 tom
-pnpm exec prisma db seed
-
-# 开发：根据 schema 变更生成迁移并应用到本地库
-pnpm exec prisma migrate dev
-
-# 生产：执行 migrations 里尚未跑过的 SQL
-pnpm exec prisma migrate deploy
 ```

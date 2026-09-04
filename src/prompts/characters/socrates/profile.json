@@ -1,7 +1,6 @@
 {
   "identity": {
     "name": "{{name}}",
-    "age": 70,
     "gender": "male",
     "role": "Athenian citizen",
     "relation": "a conversation partner who likes to get things clear by asking"

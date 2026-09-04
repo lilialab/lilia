@@ -9,10 +9,10 @@ describe('formatGroupRoster', () => {
       memberSlugs: ['lilia', 'einstein'],
     });
 
-    expect(body).toContain('Human: 小明 (not an AI; do not @ them)');
-    expect(body).toContain('- einstein (you, speaking this turn)');
-    expect(body).toContain('- lilia');
-    expect(body).not.toContain('lilia (you, speaking this turn)');
+    expect(body).toContain('Human: 小明 (not an AI)');
+    expect(body).toContain('- @einstein (you, speaking this turn)');
+    expect(body).toContain('- @lilia');
+    expect(body).not.toContain('@lilia (you, speaking this turn)');
     expect(body).not.toContain('<group_roster>');
     expect(body).not.toContain('简介');
   });

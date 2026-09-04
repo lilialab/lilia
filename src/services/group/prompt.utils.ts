@@ -7,10 +7,10 @@ export function formatGroupRoster(options: {
   memberSlugs: readonly string[];
 }): string {
   const { userNickname, currentSlug, memberSlugs } = options;
-  const userLine = `- Human: ${userNickname} (not an AI; do not @ them)`;
+  const userLine = `- Human: ${userNickname} (not an AI)`;
   const memberLines = memberSlugs.map((slug) => {
     const you = slug === currentSlug ? ' (you, speaking this turn)' : '';
-    return `- ${slug}${you}`;
+    return `- @${slug}${you}`;
   });
 
   return ['Group members:', userLine, ...memberLines].join('\n');
