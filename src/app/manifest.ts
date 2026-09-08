@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Lilia',
-    short_name: 'Lilia',
+    name: 'LILIA',
+    short_name: 'LILIA',
     description: '本地 RAG 聊天应用',
     start_url: '/',
     display: 'standalone',

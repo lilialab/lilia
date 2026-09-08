@@ -45,7 +45,7 @@ export const zh = {
   },
   characters: {
     'lilia.displayName': '莉莉娅',
-    'lilia.shortBio': '成长型个人 AI 助理，语气家常平视，偏陪伴与习惯养成。',
+    'lilia.shortBio': '短句、家常的朋友。',
     'einstein.displayName': '爱因斯坦',
     'einstein.shortBio': '思想实验、开玩笑、不迷信权威。',
     'socrates.displayName': '苏格拉底',
@@ -120,7 +120,7 @@ export const zh = {
     language: '语言',
     privacyPolicy: '隐私政策',
     deleteAccount: '删除账号',
-    appVersion: 'Lilia {version}',
+    appVersion: 'LILIA {version}',
   },
   changeNickname: {
     title: '修改昵称',
@@ -170,7 +170,7 @@ export const zh = {
     languageAria: '语言',
   },
   login: {
-    title: '登录 Lilia',
+    title: '登录 LILIA',
     noAccount: '还没有账号？',
     goRegister: '去注册',
     submit: '登录',

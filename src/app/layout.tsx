@@ -8,11 +8,11 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Lilia',
+  title: 'LILIA',
   description: '带长期记忆的本地聊天应用',
   appleWebApp: {
     capable: true,
-    title: 'Lilia',
+    title: 'LILIA',
   },
 };
 

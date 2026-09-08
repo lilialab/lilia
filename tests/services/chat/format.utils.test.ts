@@ -1,4 +1,9 @@
-import { formatMemories, formatRuntimeContext, formatUtcIso } from '@/services/chat/format.utils';
+import {
+  formatIdleDuration,
+  formatMemories,
+  formatRuntimeContext,
+  formatUtcIso,
+} from '@/services/chat/format.utils';
 import { describe, expect, it } from 'vitest';
 
 const TIME_ZONE = 'Asia/Shanghai';
@@ -93,10 +98,49 @@ describe('formatMemories', () => {
 });
 
 describe('formatRuntimeContext', () => {
-  it('包含用户时区与当前本地时间，不含标签', () => {
+  it('包含时区、偏移、日期、星期与时刻，不含标签', () => {
     const body = formatRuntimeContext(new Date('2026-06-26T08:30:00.000Z'), TIME_ZONE);
-    expect(body).toContain('User time zone: Asia/Shanghai');
-    expect(body).toContain('Current local time: 2026-06-26 16:30:00');
+    expect(body).toBe(
+      [
+        'User time zone: Asia/Shanghai',
+        'UTC offset: +08:00',
+        'Local date: 2026-06-26',
+        'Weekday: Friday',
+        'Local time: 16:30',
+      ].join('\n'),
+    );
     expect(body).not.toContain('<runtime_context>');
+  });
+
+  it('有上一条时附带本地时间与 idle', () => {
+    const previous = new Date('2026-06-24T04:30:00.000Z');
+    const now = new Date('2026-06-26T08:30:00.000Z');
+    const body = formatRuntimeContext(now, TIME_ZONE, previous);
+    expect(body).toContain('Last message: 2026-06-24 12:30');
+    expect(body).toContain('Idle: 2d 4h');
+  });
+});
+
+describe('formatIdleDuration', () => {
+  it('不足 1 分钟为 under 1m', () => {
+    const from = new Date('2026-06-26T08:30:00.000Z');
+    expect(formatIdleDuration(from, new Date('2026-06-26T08:30:30.000Z'))).toBe('under 1m');
+  });
+
+  it('满 1 分钟起算', () => {
+    const from = new Date('2026-06-26T08:30:00.000Z');
+    expect(formatIdleDuration(from, new Date('2026-06-26T08:31:00.000Z'))).toBe('1m');
+  });
+
+  it('组合天与小时', () => {
+    const from = new Date('2026-06-24T04:30:00.000Z');
+    const to = new Date('2026-06-26T08:30:00.000Z');
+    expect(formatIdleDuration(from, to)).toBe('2d 4h');
+  });
+
+  it('时刻颠倒时仍取绝对值', () => {
+    const earlier = new Date('2026-06-26T08:30:00.000Z');
+    const later = new Date('2026-06-26T09:30:00.000Z');
+    expect(formatIdleDuration(later, earlier)).toBe('1h');
   });
 });

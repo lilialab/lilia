@@ -47,13 +47,13 @@ export function PrivacyPolicyBody() {
     <article lang="en" className={cn('mx-auto max-w-2xl px-4 py-6 pb-12')}>
       <p className={cn('text-sm text-muted-foreground')}>Last updated: 4 September 2026</p>
       <p className={cn('mt-4 text-sm leading-relaxed text-foreground/90')}>
-        We treat your chats as private. We only keep what Lilia needs to run, we do not sell your
+        We treat your chats as private. We only keep what LILIA needs to run, we do not sell your
         information, and we do not use it for advertising. This page explains what we store, how we
         protect it, who helps us process it, and what happens when you delete your account.
       </p>
 
       <PrivacySection title="Who we are">
-        <p>Lilia is a chat app with long-term memory, run by one person.</p>
+        <p>LILIA is a chat app with long-term memory, run by one person.</p>
         <p>
           Contact:{' '}
           <a href={`mailto:${CONTACT_EMAIL}`} className={cn('text-primary underline')}>
@@ -63,7 +63,7 @@ export function PrivacyPolicyBody() {
       </PrivacySection>
 
       <PrivacySection title="What we collect">
-        <p>When you create an account and use Lilia, we store:</p>
+        <p>When you create an account and use LILIA, we store:</p>
         <ul className={listClass}>
           <li>
             Account data: username, nickname, a hash of your password (not the password itself),
@@ -118,7 +118,7 @@ export function PrivacyPolicyBody() {
           <li>The login cookie is HTTP-only, so page scripts cannot read it</li>
           <li>We do not use advertising SDKs or third-party analytics</li>
           <li>We do not sell your information</li>
-          <li>We do not use your chats to train a Lilia model</li>
+          <li>We do not use your chats to train a LILIA model</li>
         </ul>
       </PrivacySection>
 
@@ -190,13 +190,13 @@ export function PrivacyPolicyBody() {
 
       <PrivacySection title="Children">
         <p>
-          Lilia is not directed at children under 13. Do not create an account if you are under 13.
+          LILIA is not directed at children under 13. Do not create an account if you are under 13.
         </p>
       </PrivacySection>
 
       <PrivacySection title="International users">
         <p>
-          If you use Lilia from outside the United States, your account data is stored in the United
+          If you use LILIA from outside the United States, your account data is stored in the United
           States, and text sent for model inference is processed by SiliconFlow in China. We do not
           currently offer a choice of region.
         </p>

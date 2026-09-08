@@ -34,6 +34,8 @@ export interface BuildGroupSystemPromptOptions {
   lastUserContent: string;
   timeZone: string;
   locale: Locale;
+  /** 本轮用户/turn_cue 写入前，群里上一条消息的时间 */
+  previousMessageAt?: Date | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -52,6 +54,7 @@ export async function buildGroupSystemPrompt({
   lastUserContent,
   timeZone,
   locale,
+  previousMessageAt,
 }: BuildGroupSystemPromptOptions): Promise<GroupSystemPromptResult> {
   const now = new Date();
   const displayName = tCharacter(characterSlug, 'displayName', locale);
@@ -70,7 +73,7 @@ export async function buildGroupSystemPrompt({
   ]);
 
   const memories = formatMemories(memoryFragments, timeZone);
-  const runtimeContext = formatRuntimeContext(now, timeZone);
+  const runtimeContext = formatRuntimeContext(now, timeZone, previousMessageAt);
   const replyRules = readPromptFile('reply-rules.md');
 
   const systemPrompt = [

@@ -51,6 +51,16 @@ function mapMessageRow(
 /* Read                                                                       */
 /* -------------------------------------------------------------------------- */
 
+/** 会话中最新一条未删除消息的时间；没有则 null。须在写入本轮用户消息之前调用。 */
+export async function findLatestMessageCreatedAt(sessionId: string): Promise<Date | null> {
+  const row = await prisma.message.findFirst({
+    where: { sessionId, ...activeMessageFilter },
+    orderBy: { createdAt: 'desc' },
+    select: { createdAt: true },
+  });
+  return row?.createdAt ?? null;
+}
+
 /**
  * 获取会话最近 N 条消息，按时间正序返回，供 LLM 上下文使用。
  * @param limit 条数上限，默认 CONTEXT_MESSAGE_LIMIT

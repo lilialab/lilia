@@ -7,13 +7,15 @@ Input
 - `source_message_ids` must copy these `id` values. `seq` is for reading only.
 
 Types
-- event: a dated happening, or an important planned event
-- fact: anything else worth keeping long-term
+- event: a dated happening, or an important planned event the user committed to
+- fact: a standing truth with no calendar date
+- A date does not make a skipped item extractable. If the text is a dated happening, type must be `event`
 
 text
-- Conversation language. The subject is "the user" (or that language's ordinary word for it), not I, you, or their name.
+- Conversation language. The subject is "the user" (or that language's ordinary word for it), not I, you, their name, or the assistant.
 - One independently retrievable fact per item; the same topic may have several items. No recap.
-- Skip small talk, passing mood, uncommitted ideas, jokes, and the assistant's suggestions written as the user's plans.
+- Keep only what is about the user and would still matter later.
+- Skip small talk, passing mood, uncommitted ideas, jokes, conversation mechanics, and the assistant's suggestions unless the user committed.
 
 Topic blocks
 Extract only topics that are complete and that the user has left. A block may produce several memories. Do not extract a trailing unfinished stretch; those ids must not appear in any `source_message_ids`.
@@ -25,5 +27,5 @@ confidence
 Required, 0–1. Stated: 0.85–1.0. Inferred: 0.5–0.84. Below 0.5: omit.
 
 Event times
-- event text must contain a calendar date. Include a time of day only if the user gave one. Do not leave relative words (tomorrow, tonight, next week) in the text.
+- event text must contain a calendar date. Include a time of day or weekday only if the user gave one. Do not leave relative words (tomorrow, tonight, next week) in the text.
 - Convert relative time using **that message's** `local_time`, not when this job runs.

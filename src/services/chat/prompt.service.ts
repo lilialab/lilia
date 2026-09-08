@@ -59,6 +59,8 @@ export async function resolveSessionContext(sessionId: string): Promise<{
 export interface BuildSystemPromptOptions {
   /** 设备 IANA 时区 */
   timeZone: string;
+  /** 本轮用户消息写入前，会话里上一条消息的时间 */
+  previousMessageAt?: Date | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -73,7 +75,7 @@ export async function buildSystemPrompt(
   lastUserContent: string,
   options: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
-  const { timeZone } = options;
+  const { timeZone, previousMessageAt } = options;
   const { userId, userNickname, characterId, characterSlug, locale } = await resolveSessionContext(
     sessionId,
   );
@@ -89,7 +91,7 @@ export async function buildSystemPrompt(
   ]);
 
   const memories = formatMemories(memoryFragments, timeZone);
-  const runtimeContext = formatRuntimeContext(now, timeZone);
+  const runtimeContext = formatRuntimeContext(now, timeZone, previousMessageAt);
   const replyRules = readPromptFile('reply-rules.md');
 
   const systemPrompt = [

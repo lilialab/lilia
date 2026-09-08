@@ -26,6 +26,7 @@ import {
 } from 'ai';
 import {
   createGroupUserMessage,
+  findLatestGroupMessageCreatedAt,
   getGroupContextMessages,
   saveGroupAssistantResponse,
 } from './message.service';
@@ -84,6 +85,8 @@ interface StreamGroupAssistantReplyOptions {
   /** 群成员列表（提供则跳过花名册 DB 查询） */
   members: GroupMemberRef[];
   timeZone: string;
+  /** 本轮用户/turn_cue 写入前，群里上一条消息的时间 */
+  previousMessageAt?: Date | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -100,6 +103,7 @@ export async function streamGroupAssistantReply({
   chatLlm,
   members,
   timeZone,
+  previousMessageAt,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
   const user = await getUserById(userId);
   const skills = loadCharacterSkills(speaker.slug);
@@ -127,6 +131,7 @@ export async function streamGroupAssistantReply({
     lastUserContent: ragQueryText,
     timeZone,
     locale: user?.locale ?? DEFAULT_LOCALE,
+    previousMessageAt,
   });
 
   logger.info({
@@ -272,6 +277,7 @@ export async function streamGroupChatFlow(
     const kind = lastMessage.metadata?.kind ?? null;
     const slug = lastMessage.metadata?.slug ?? null;
     const isTurnCue = isTurnCueKind(kind);
+    const previousMessageAt = await findLatestGroupMessageCreatedAt(groupSessionId);
     const { id: userMessageId } = await createGroupUserMessage(
       groupSessionId,
       lastMessage.parts,
@@ -303,6 +309,7 @@ export async function streamGroupChatFlow(
         chatLlm,
         members,
         timeZone,
+        previousMessageAt,
       });
     }
 
@@ -323,6 +330,7 @@ export async function streamGroupChatFlow(
       chatLlm,
       members,
       timeZone,
+      previousMessageAt,
     });
   } catch (err) {
     await releaseGroupGeneration(groupSessionId, claimedAt);

@@ -131,6 +131,18 @@ export async function getGroupHistoryPage(
   return { messages: rows.map(mapGroupMessageRow), hasMore };
 }
 
+/** 群会话中最新一条未删除消息的时间；没有则 null。须在写入本轮用户/turn_cue 之前调用。 */
+export async function findLatestGroupMessageCreatedAt(
+  groupSessionId: string,
+): Promise<Date | null> {
+  const row = await prisma.message.findFirst({
+    where: { groupSessionId, ...activeMessageFilter },
+    orderBy: { createdAt: 'desc' },
+    select: { createdAt: true },
+  });
+  return row?.createdAt ?? null;
+}
+
 /**
  * 获取群聊最近 N 条消息，按时间正序；排除 turn_cue；助手为纯正文 + metadata.slug（不加模型前缀）。
  */

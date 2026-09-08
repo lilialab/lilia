@@ -45,8 +45,7 @@ export const en = {
   },
   characters: {
     'lilia.displayName': 'Lilia',
-    'lilia.shortBio':
-      'A growth-oriented personal AI assistant. Casual, peer-level tone; companionship and habit-building.',
+    'lilia.shortBio': 'Short, casual. A friend.',
     'einstein.displayName': 'Einstein',
     'einstein.shortBio': 'Thought experiments, jokes, distrust of authority.',
     'socrates.displayName': 'Socrates',
@@ -124,7 +123,7 @@ export const en = {
     language: 'Language',
     privacyPolicy: 'Privacy Policy',
     deleteAccount: 'Delete account',
-    appVersion: 'Lilia {version}',
+    appVersion: 'LILIA {version}',
   },
   changeNickname: {
     title: 'Change nickname',
@@ -175,7 +174,7 @@ export const en = {
     languageAria: 'Language',
   },
   login: {
-    title: 'Log in to Lilia',
+    title: 'Log in to LILIA',
     noAccount: "Don't have an account?",
     goRegister: 'Sign up',
     submit: 'Log in',

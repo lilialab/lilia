@@ -22,7 +22,11 @@ import {
   streamText,
   type UIDataTypes,
 } from 'ai';
-import { getContextMessages, saveAssistantResponse } from './message.service';
+import {
+  findLatestMessageCreatedAt,
+  getContextMessages,
+  saveAssistantResponse,
+} from './message.service';
 import { buildSystemPrompt, resolveSessionContext } from './prompt.service';
 
 /* -------------------------------------------------------------------------- */
@@ -90,6 +94,7 @@ async function prepareChatTurn(
   timeZone: string,
   modelId: string,
 ): Promise<PreparedChatTurn> {
+  const previousMessageAt = await findLatestMessageCreatedAt(sessionId);
   const userMessage = await prisma.message.create({
     data: {
       sessionId,
@@ -108,7 +113,10 @@ async function prepareChatTurn(
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
   const skills = loadCharacterSkills(characterSlug);
   const tools = resolveToolsForCharacter(skills, { userId, characterSlug });
-  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, { timeZone });
+  const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, {
+    timeZone,
+    previousMessageAt,
+  });
 
   logger.info({
     event: 'llm.chat.request',
