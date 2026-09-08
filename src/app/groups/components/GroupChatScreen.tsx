@@ -309,10 +309,9 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
             value={input}
             onChange={setInput}
             onSubmit={handleFormSubmit}
-            disabled={inputLocked}
-            isStreaming={inputLocked}
+            sendLocked={inputLocked}
             mentionDisplayName={selectedMember ? tCharacter(selectedMember.slug) : undefined}
-            onMentionClick={selectedMember && !inputLocked ? () => setMentionOpen(true) : undefined}
+            onMentionClick={selectedMember ? () => setMentionOpen(true) : undefined}
             focusKey={inputFocusKey}
           />
         </div>

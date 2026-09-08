@@ -236,8 +236,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
             value={input}
             onChange={setInput}
             onSubmit={handleFormSubmit}
-            disabled={inputLocked}
-            isStreaming={inputLocked}
+            sendLocked={inputLocked}
           />
         </div>
       </PageStatus>

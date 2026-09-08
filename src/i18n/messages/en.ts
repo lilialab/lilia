@@ -72,7 +72,7 @@ export const en = {
   },
   chatInput: {
     placeholder: 'Message...',
-    placeholderStreaming: 'Generating...',
+    waitForReply: 'Reply in progress. Send when it finishes.',
     send: 'Send',
     mentionAria: 'Currently @ {name}. Tap to change.',
   },

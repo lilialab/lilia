@@ -70,7 +70,7 @@ export const zh = {
   },
   chatInput: {
     placeholder: '输入消息...',
-    placeholderStreaming: '正在生成中...',
+    waitForReply: '回复生成中，稍后再发送',
     send: '发送',
     mentionAria: '当前 @ {name}，点击更换',
   },
