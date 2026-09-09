@@ -1,4 +1,4 @@
-export const locales = ['en', 'zh'] as const;
+export const locales = ['en', 'zh', 'ja'] as const;
 
 export type Locale = (typeof locales)[number];
 
@@ -8,11 +8,13 @@ export const DEFAULT_LOCALE: Locale = 'en';
 export const localeLabels: Record<Locale, string> = {
   en: 'English',
   zh: '中文',
+  ja: '日本語',
 };
 
 const localeHtmlLang: Record<Locale, string> = {
   en: 'en',
   zh: 'zh-CN',
+  ja: 'ja',
 };
 
 /** 语言偏好 Cookie 逻辑名（实际名由 `lib/client/cookie` 加 `pai_` 前缀）。 */
@@ -32,10 +34,13 @@ export function parseLocale(value: string | undefined | null): Locale {
   return DEFAULT_LOCALE;
 }
 
-/** 浏览器语言标签：zh* → zh，其余 → en。 */
+/** 浏览器语言标签：主语言在 locales 内则用之，否则默认语言。 */
 export function localeFromBrowserLanguage(tag: string | undefined | null): Locale {
   const primary = tag?.split('-')[0]?.toLowerCase();
-  return primary === 'zh' ? 'zh' : DEFAULT_LOCALE;
+  if (primary && isLocale(primary)) {
+    return primary;
+  }
+  return DEFAULT_LOCALE;
 }
 
 export function localeToHtmlLang(locale: Locale): string {

@@ -1,4 +1,5 @@
 import { en } from '@/i18n/messages/en';
+import { ja } from '@/i18n/messages/ja';
 import { zh } from '@/i18n/messages/zh';
 import { API_ERROR_CODE, isApiErrorCode } from '@/types/api-error';
 import { describe, expect, it } from 'vitest';
@@ -17,10 +18,11 @@ describe('isApiErrorCode', () => {
 });
 
 describe('errors 文案目录', () => {
-  it('en / zh 覆盖全部 API_ERROR_CODE', () => {
+  it('en / zh / ja 覆盖全部 API_ERROR_CODE', () => {
     for (const code of Object.values(API_ERROR_CODE)) {
       expect(en.errors[code].length).toBeGreaterThan(0);
       expect(zh.errors[code].length).toBeGreaterThan(0);
+      expect(ja.errors[code].length).toBeGreaterThan(0);
     }
   });
 });

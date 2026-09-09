@@ -8,9 +8,10 @@ import {
 import { describe, expect, it } from 'vitest';
 
 describe('isLocale', () => {
-  it('接受 en / zh', () => {
+  it('接受 en / zh / ja', () => {
     expect(isLocale('en')).toBe(true);
     expect(isLocale('zh')).toBe(true);
+    expect(isLocale('ja')).toBe(true);
   });
 
   it('拒绝其它值', () => {
@@ -24,13 +25,14 @@ describe('parseLocale', () => {
   it('解析合法值', () => {
     expect(parseLocale('en')).toBe('en');
     expect(parseLocale('zh')).toBe('zh');
+    expect(parseLocale('ja')).toBe('ja');
   });
 
   it('无效或缺失时回落默认英文', () => {
     expect(parseLocale(undefined)).toBe(DEFAULT_LOCALE);
     expect(parseLocale(null)).toBe(DEFAULT_LOCALE);
     expect(parseLocale('')).toBe(DEFAULT_LOCALE);
-    expect(parseLocale('ja')).toBe(DEFAULT_LOCALE);
+    expect(parseLocale('fr')).toBe(DEFAULT_LOCALE);
     expect(DEFAULT_LOCALE).toBe('en');
   });
 });
@@ -39,6 +41,7 @@ describe('localeToHtmlLang', () => {
   it('映射到 html lang', () => {
     expect(localeToHtmlLang('en')).toBe('en');
     expect(localeToHtmlLang('zh')).toBe('zh-CN');
+    expect(localeToHtmlLang('ja')).toBe('ja');
   });
 });
 
@@ -50,10 +53,16 @@ describe('localeFromBrowserLanguage', () => {
     expect(localeFromBrowserLanguage('ZH-CN')).toBe('zh');
   });
 
+  it('ja* 为日语', () => {
+    expect(localeFromBrowserLanguage('ja')).toBe('ja');
+    expect(localeFromBrowserLanguage('ja-JP')).toBe('ja');
+    expect(localeFromBrowserLanguage('JA-JP')).toBe('ja');
+  });
+
   it('其余为英文', () => {
     expect(localeFromBrowserLanguage(undefined)).toBe(DEFAULT_LOCALE);
     expect(localeFromBrowserLanguage('en')).toBe('en');
     expect(localeFromBrowserLanguage('en-US')).toBe('en');
-    expect(localeFromBrowserLanguage('ja')).toBe('en');
+    expect(localeFromBrowserLanguage('fr')).toBe('en');
   });
 });
