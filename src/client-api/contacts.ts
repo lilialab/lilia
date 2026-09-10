@@ -34,7 +34,7 @@ export async function fetchContactSession(characterId: string): Promise<ContactS
   return apiFetchJson<ContactSession>(`/api/contacts/${characterId}/session`);
 }
 
-/** 删除 AI 好友（同时删除对应会话与聊天记录）。 */
+/** 删除 AI 好友（单聊记录软删；群与记忆保留）。 */
 export async function removeContact(characterId: string): Promise<void> {
   await apiFetchJson<{ ok: boolean }>(`/api/contacts/${characterId}`, {
     method: 'DELETE',

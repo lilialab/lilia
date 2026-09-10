@@ -1,6 +1,6 @@
 import { prisma } from '../src/lib/server/prisma';
 
-export const CHARACTER_SLUGS = ['lilia', 'einstein', 'socrates'] as const;
+export const CHARACTER_SLUGS = ['lilia', 'rin'] as const;
 
 /** 按 slug upsert 角色目录（幂等，不删除库中多余角色）。 */
 export async function seedCharacterCatalog(): Promise<void> {

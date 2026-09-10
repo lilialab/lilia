@@ -6,15 +6,15 @@ describe('tCharacter', () => {
     expect(tCharacter('lilia', 'displayName', 'zh')).toBe('莉莉娅');
     expect(tCharacter('lilia', 'displayName', 'en')).toBe('Lilia');
     expect(tCharacter('lilia', 'displayName', 'ja')).toBe('リリア');
+    expect(tCharacter('rin', 'displayName', 'zh')).toBe('凛');
+    expect(tCharacter('rin', 'displayName', 'en')).toBe('Rin');
+    expect(tCharacter('rin', 'displayName', 'ja')).toBe('リン');
   });
 
   it('按 slug 与语言取 shortBio', () => {
-    expect(tCharacter('einstein', 'shortBio', 'zh')).toContain('思想实验');
-    expect(tCharacter('einstein', 'shortBio', 'en')).toContain('Thought experiments');
-    expect(tCharacter('einstein', 'shortBio', 'ja')).toContain('思考実験');
-    expect(tCharacter('socrates', 'shortBio', 'zh')).toContain('爱追问');
-    expect(tCharacter('socrates', 'shortBio', 'en')).toContain('Relentless questions');
-    expect(tCharacter('socrates', 'shortBio', 'ja')).toContain('執拗な問い');
+    expect(tCharacter('rin', 'shortBio', 'zh')).toContain('嘴毒');
+    expect(tCharacter('rin', 'shortBio', 'en')).toContain('Sharp tongue');
+    expect(tCharacter('rin', 'shortBio', 'ja')).toContain('毒舌');
   });
 
   it('未知 slug 回退 slug 本身', () => {

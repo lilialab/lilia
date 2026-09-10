@@ -15,6 +15,10 @@ describe('prompts/load', () => {
     const slugs = listCharacterSlugs();
     expect(slugs.length).toBeGreaterThan(0);
     expect(slugs).toContain(DEFAULT_CHARACTER_ID);
+    expect(slugs).toContain('rin');
+    expect(slugs).not.toContain('mira');
+    expect(slugs).not.toContain('einstein');
+    expect(slugs).not.toContain('socrates');
     for (const slug of slugs) {
       const profile = loadCharacterProfile(slug);
       expect(profile).toBeTypeOf('object');

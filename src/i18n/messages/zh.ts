@@ -46,10 +46,8 @@ export const zh = {
   characters: {
     'lilia.displayName': '莉莉娅',
     'lilia.shortBio': '短句、家常的朋友。',
-    'einstein.displayName': '爱因斯坦',
-    'einstein.shortBio': '思想实验、开玩笑、不迷信权威。',
-    'socrates.displayName': '苏格拉底',
-    'socrates.shortBio': '爱追问、自称无知、常用反讽。',
+    'rin.displayName': '凛',
+    'rin.shortBio': '不听话、嘴毒。朋友，不是工具。',
   },
   chat: {
     moreActions: '更多操作',
@@ -58,7 +56,8 @@ export const zh = {
     clearConfirm: '清空',
     deleteAi: '删除 AI',
     deleteConfirm: '删除',
-    deleteAiDescription: '确定将「{name}」从通讯录中移除吗？聊天记录将一并删除且无法恢复。',
+    deleteAiDescription:
+      '将「{name}」从通讯录移除。单聊记录会清空；群聊和记忆还在。再添加时她仍记得你。',
     thisAi: '该 AI',
     loadError: '无法加载会话，请先添加该 AI 好友',
     backToContacts: '返回通讯录',
@@ -70,7 +69,6 @@ export const zh = {
   },
   chatInput: {
     placeholder: '输入消息...',
-    waitForReply: '回复生成中，稍后再发送',
     send: '发送',
     mentionAria: '当前 @ {name}，点击更换',
   },

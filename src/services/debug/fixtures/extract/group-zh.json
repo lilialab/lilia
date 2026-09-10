@@ -11,16 +11,16 @@
       "text": "在。"
     },
     {
-      "speaker": "einstein",
-      "text": "来了。今晚想聊什么？"
+      "speaker": "rin",
+      "text": "在。别一上来就派活。"
     },
     {
       "speaker": "user",
-      "text": "想让你们帮我看看产品。@socrates 先别审我，听我说完。"
+      "text": "想让你们帮我看看产品。@rin 先听我说完。"
     },
     {
-      "speaker": "socrates",
-      "text": "那我先问一句：你说的产品，是指已经能用的东西，还是还在脑子里的那个？"
+      "speaker": "rin",
+      "text": "说。听完我再决定帮不帮。"
     },
     {
       "speaker": "user",
@@ -32,11 +32,11 @@
     },
     {
       "speaker": "user",
-      "text": "@einstein 核心是记忆，但用户得用几天才能感觉到。初期几乎没亮点。"
+      "text": "@rin 核心是记忆，但用户得用几天才能感觉到。初期几乎没亮点。"
     },
     {
-      "speaker": "einstein",
-      "text": "就像把灯藏在屋子里，客人进门先摸黑。你是怕第一眼不够亮，不是怕灯本身不好。"
+      "speaker": "rin",
+      "text": "那别一开口就卖记忆。听着像说明书。"
     },
     {
       "speaker": "user",
@@ -48,19 +48,19 @@
     },
     {
       "speaker": "user",
-      "text": "@socrates 你觉得朋友该先帮人解决问题吗？"
+      "text": "@rin 你觉得朋友该先帮人解决问题吗？"
     },
     {
-      "speaker": "socrates",
-      "text": "我不知道。你自己找朋友，是为了把题做完，还是为了有人在？"
+      "speaker": "rin",
+      "text": "不该。我又不是客服。"
     },
     {
       "speaker": "user",
       "text": "为了有人在。所以对话不该总那么有意义。模型训练时太爱帮忙了。"
     },
     {
-      "speaker": "socrates",
-      "text": "那你此刻把我们叫来看产品，算帮忙，还算闲聊？"
+      "speaker": "rin",
+      "text": "那你现在叫我们看产品，算聊天还是派工？"
     },
     {
       "speaker": "user",
@@ -71,8 +71,8 @@
       "text": "嗯。"
     },
     {
-      "speaker": "einstein",
-      "text": "短句我赞成。能画成一张图的，就别写成论文。"
+      "speaker": "rin",
+      "text": "短句可以。别把我当提词器。"
     },
     {
       "speaker": "user",
@@ -84,15 +84,15 @@
     },
     {
       "speaker": "user",
-      "text": "@lilia 橘猫，三岁了。别让爱因斯坦给它讲相对论。"
+      "text": "@lilia 橘猫，三岁了。"
     },
     {
       "speaker": "lilia",
-      "text": "不会。"
+      "text": "记住了。"
     },
     {
-      "speaker": "einstein",
-      "text": "三岁橘猫，比多数委员会都诚实。我闭嘴。"
+      "speaker": "rin",
+      "text": "芝麻比你诚实。晚上叫就让它叫。"
     },
     {
       "speaker": "user",
@@ -107,8 +107,8 @@
       "text": "大概七点，老地方那家面。不是商务局。"
     },
     {
-      "speaker": "socrates",
-      "text": "你说「同学」，是还常见的人，还是很久没见、这次才聚？"
+      "speaker": "rin",
+      "text": "同学是还常见，还是很久没见？"
     },
     {
       "speaker": "user",
@@ -123,8 +123,8 @@
       "text": "初三啊。"
     },
     {
-      "speaker": "socrates",
-      "text": "你担心的是他，还是你姐让你担心？"
+      "speaker": "rin",
+      "text": "你担心他，还是你姐把你拽进去了。"
     },
     {
       "speaker": "user",
@@ -139,24 +139,24 @@
       "text": "我这周日去。不是周六，周六我要改一版上线说明。"
     },
     {
-      "speaker": "einstein",
-      "text": "周六改说明书，周日看外甥。两件事别焊成一件。"
+      "speaker": "rin",
+      "text": "两件事分开。别焊一起。"
     },
     {
       "speaker": "user",
-      "text": "@einstein 把卖点压成一句，投资人能听懂的那种。"
+      "text": "@rin 把卖点压成一句，投资人能听懂的那种。"
     },
     {
-      "speaker": "einstein",
-      "text": "它记得你。先别解释怎么记得。"
+      "speaker": "rin",
+      "text": "不想当广告词。你自己写。"
     },
     {
       "speaker": "user",
-      "text": "太短了吧。"
+      "text": "行吧。它记得你，先别解释怎么记得？"
     },
     {
-      "speaker": "einstein",
-      "text": "短才记得住。你自己也说别说教。"
+      "speaker": "rin",
+      "text": "这句还行。别再加。"
     },
     {
       "speaker": "lilia",
@@ -179,8 +179,8 @@
       "text": "定了再说。"
     },
     {
-      "speaker": "socrates",
-      "text": "「可能」是想去，还是只是说说？"
+      "speaker": "rin",
+      "text": "「可能」就先别拉我计划。"
     }
   ]
 }

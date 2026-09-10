@@ -46,10 +46,8 @@ export const en = {
   characters: {
     'lilia.displayName': 'Lilia',
     'lilia.shortBio': 'Short, casual. A friend.',
-    'einstein.displayName': 'Einstein',
-    'einstein.shortBio': 'Thought experiments, jokes, distrust of authority.',
-    'socrates.displayName': 'Socrates',
-    'socrates.shortBio': 'Relentless questions, claimed ignorance, irony.',
+    'rin.displayName': 'Rin',
+    'rin.shortBio': "Won't take orders. Sharp tongue. A friend, not a tool.",
   },
   chat: {
     moreActions: 'More actions',
@@ -60,7 +58,7 @@ export const en = {
     deleteAi: 'Delete AI',
     deleteConfirm: 'Delete',
     deleteAiDescription:
-      'Remove {name} from contacts? Chat history will also be deleted and cannot be recovered.',
+      'Remove {name} from contacts? This chat will be cleared. Groups and memories stay — they will still remember you if you add them back.',
     thisAi: 'this AI',
     loadError: 'Could not load this chat. Add this AI as a friend first.',
     backToContacts: 'Back to contacts',
@@ -72,7 +70,6 @@ export const en = {
   },
   chatInput: {
     placeholder: 'Message...',
-    waitForReply: 'Reply in progress. Send when it finishes.',
     send: 'Send',
     mentionAria: 'Currently @ {name}. Tap to change.',
   },

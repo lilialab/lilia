@@ -167,7 +167,7 @@ export async function generateExtractModelOutput(
 /* -------------------------------------------------------------------------- */
 
 /**
- * 捞取指定单聊会话未提取的消息，按时间正序构建带 id + seq + local_time 的 XML transcript。
+ * 捞取指定单聊会话未提取、未删除的消息，按时间正序构建带 id + seq + local_time 的 XML transcript。
  */
 async function buildSessionTranscript(
   sessionId: string,
@@ -182,6 +182,7 @@ async function buildSessionTranscript(
   const messages = await prisma.message.findMany({
     where: {
       isExtracted: false,
+      isDeleted: false,
       sessionId,
     },
     orderBy: { createdAt: 'asc' },
@@ -216,7 +217,7 @@ async function buildSessionTranscript(
 }
 
 /**
- * 捞取群聊未提取消息（排除 turn_cue），助理标签用 speaker slug。
+ * 捞取群聊未提取、未删除消息（排除 turn_cue），助理标签用 speaker slug。
  */
 async function buildGroupTranscript(
   groupSessionId: string,
@@ -225,6 +226,7 @@ async function buildGroupTranscript(
   const messages = await prisma.message.findMany({
     where: {
       isExtracted: false,
+      isDeleted: false,
       groupSessionId,
     },
     orderBy: { createdAt: 'asc' },

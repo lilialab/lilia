@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
+import { softDeleteSessionMessages } from '@/services/chat/message.service';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { createSession } from '@/services/session/sessions.service';
@@ -131,8 +132,8 @@ export async function addContact(userId: string, characterId: string) {
 }
 
 /**
- * 删除 AI 好友：移除通讯录关系，并删除对应 ChatSession（消息 cascade）。
- * 已写入的用户记忆 / 画像不受影响。默认角色不可删。
+ * 删除 AI 好友：移除通讯录；单聊消息与清空记录相同（软删），会话行保留。
+ * 群成员、记忆、画像不受影响。默认角色不可删。
  */
 export async function removeContact(userId: string, characterId: string) {
   const character = await prisma.character.findUnique({
@@ -164,20 +165,13 @@ export async function removeContact(userId: string, characterId: string) {
 
   if (session) {
     await cancelMemoryExtract(session.id);
+    await softDeleteSessionMessages(session.id);
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.userCharacter.delete({
-      where: {
-        userId_characterId: { userId, characterId },
-      },
-    });
-
-    if (session) {
-      await tx.chatSession.delete({
-        where: { id: session.id },
-      });
-    }
+  await prisma.userCharacter.delete({
+    where: {
+      userId_characterId: { userId, characterId },
+    },
   });
 }
 

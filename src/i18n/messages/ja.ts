@@ -46,10 +46,8 @@ export const ja = {
   characters: {
     'lilia.displayName': 'リリア',
     'lilia.shortBio': '短い言葉、くだけた友達。',
-    'einstein.displayName': 'アインシュタイン',
-    'einstein.shortBio': '思考実験、冗談、権威を信じない。',
-    'socrates.displayName': 'ソクラテス',
-    'socrates.shortBio': '執拗な問い、無知の知、皮肉。',
+    'rin.displayName': 'リン',
+    'rin.shortBio': '言うことを聞かない。毒舌。友達であり、道具ではない。',
   },
   chat: {
     moreActions: 'その他',
@@ -60,7 +58,7 @@ export const ja = {
     deleteAi: 'AI を削除',
     deleteConfirm: '削除',
     deleteAiDescription:
-      '連絡先から「{name}」を削除しますか？チャット履歴も削除され、元に戻せません。',
+      '連絡先から「{name}」を削除しますか？このチャットの履歴は消えます。グループと記憶はそのままです。再度追加すると、相手はあなたを覚えています。',
     thisAi: 'この AI',
     loadError: 'このチャットを読み込めませんでした。先にこの AI を友だちに追加してください。',
     backToContacts: '連絡先に戻る',
@@ -72,7 +70,6 @@ export const ja = {
   },
   chatInput: {
     placeholder: 'メッセージ...',
-    waitForReply: '返信の生成中です。完了してから送信してください。',
     send: '送信',
     mentionAria: '現在 @ {name}。タップして変更。',
   },

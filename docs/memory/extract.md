@@ -38,7 +38,7 @@ flowchart TD
 
 ### 何时进入提取池
 
-- 消息 `isExtracted = false`
+- 消息 `isExtracted = false` 且 `isDeleted = false`
 - 属于本次 job 的 `sessionId` 或 `groupSessionId`
 - **群聊排除** `kind = turn_cue`（不进 transcript，但仍可重置闲置窗口）
 

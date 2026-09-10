@@ -17,8 +17,7 @@ describe('listExtractFixtures', () => {
     const speakers = new Set(groupZh?.messages.map((message) => message.speaker));
     expect(speakers.has('user')).toBe(true);
     expect(speakers.has('lilia')).toBe(true);
-    expect(speakers.has('einstein')).toBe(true);
-    expect(speakers.has('socrates')).toBe(true);
+    expect(speakers.has('rin')).toBe(true);
     expect(speakers.has('assistant')).toBe(false);
   });
 

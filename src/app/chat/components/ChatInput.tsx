@@ -2,13 +2,14 @@
 
 import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
-import { useId, useLayoutEffect, useRef } from 'react';
+import { showMessageToast } from '@/lib/client/toast';
+import { useLayoutEffect, useRef } from 'react';
 
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (e: React.SubmitEvent) => void;
-  /** 生成中禁止提交；输入框仍可聚焦、可打字 */
+  /** 生成中拦截提交并 toast；输入框仍可聚焦、可打字 */
   sendLocked: boolean;
   /** 左侧 @ 选人按钮展示名；与 onMentionClick 成对传入 */
   mentionDisplayName?: string;
@@ -30,8 +31,8 @@ export function ChatInput({
   focusKey,
 }: ChatInputProps) {
   const t = useTranslations('chatInput');
+  const tErrors = useTranslations('errors');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const waitHintId = useId();
   const showMention = Boolean(onMentionClick) && Boolean(mentionDisplayName);
 
   useLayoutEffect(() => {
@@ -50,10 +51,26 @@ export function ChatInput({
     el.setSelectionRange(len, len);
   }, [focusKey]);
 
+  function toastIfSendLocked(): boolean {
+    if (!sendLocked) return false;
+    if (value.trim()) {
+      showMessageToast(tErrors('GENERATION_BUSY'), 'chat-send-locked');
+    }
+    return true;
+  }
+
+  function handleSubmit(e: React.SubmitEvent) {
+    if (toastIfSendLocked()) {
+      e.preventDefault();
+      return;
+    }
+    onSubmit(e);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return;
     e.preventDefault();
-    if (sendLocked || !value.trim()) return;
+    if (toastIfSendLocked() || !value.trim()) return;
     e.currentTarget.form?.requestSubmit();
   }
 
@@ -63,16 +80,11 @@ export function ChatInput({
 
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       className={cn(
         'border-t border-border bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]',
       )}
     >
-      {sendLocked && (
-        <p id={waitHintId} role="status" className={cn('mb-2 text-xs text-muted-foreground')}>
-          {t('waitForReply')}
-        </p>
-      )}
       <div className={cn('flex items-end gap-2')}>
         {showMention && (
           <button
@@ -96,7 +108,6 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           enterKeyHint="send"
           placeholder={t('placeholder')}
-          aria-describedby={sendLocked ? waitHintId : undefined}
           className={cn(
             'min-h-11 max-h-36 flex-1 resize-none overflow-y-auto px-3 py-2',
             'border border-border rounded-md text-base leading-normal text-foreground',
@@ -105,8 +116,7 @@ export function ChatInput({
         />
         <button
           type="submit"
-          disabled={sendLocked || !value.trim()}
-          aria-describedby={sendLocked ? waitHintId : undefined}
+          disabled={!value.trim()}
           onMouseDown={keepTextareaFocus}
           className={cn(
             'min-h-11 shrink-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover',
