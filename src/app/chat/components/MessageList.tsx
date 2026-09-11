@@ -1,6 +1,6 @@
 import type { HistoryMessage } from '@/client-api/sessions';
 import { Divider } from '@/components/Divider';
-import { useTCharacter, useTranslations } from '@/components/I18nProvider';
+import { useTranslations } from '@/components/I18nProvider';
 import { ScrollToBottomButton } from '@/components/ScrollToBottomButton';
 import { cn } from '@/lib/client/cn';
 import { isDisplayMessage } from '@/types/message-kind';
@@ -19,8 +19,6 @@ interface MessageListProps {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
-  /** 用户消息显示名；缺省时用 common.userFallback */
-  userNickname?: string;
 }
 
 export function MessageList({
@@ -30,16 +28,13 @@ export function MessageList({
   hasMore = false,
   isLoadingMore = false,
   onLoadMore,
-  userNickname,
 }: MessageListProps) {
   /* -------------------------------------------------------------------------- */
   /* State & data                                                               */
   /* -------------------------------------------------------------------------- */
 
-  const tCharacter = useTCharacter();
   const tCommon = useTranslations('common');
   const tDate = useTranslations('chatDate');
-  const resolvedUserNickname = userNickname ?? tCommon('userFallback');
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPinnedRef = useRef(true);
   const pendingScrollHeightRef = useRef<number | null>(null);
@@ -153,12 +148,11 @@ export function MessageList({
           }
 
           const message = item.message;
-          if (awaitingAssistant && message.id === lastMessage?.id) {
-            const slug = message.metadata?.slug;
+          if (awaitingAssistant && message.id === lastMessage?.id && message.role === 'assistant') {
             return (
               <AssistantLoadingBubble
                 key={message.id}
-                speakerName={slug ? tCharacter(slug) : undefined}
+                speakerName={message.metadata?.name ?? null}
               />
             );
           }
@@ -167,7 +161,7 @@ export function MessageList({
             <MessageBubble
               key={message.id}
               message={message}
-              userNickname={resolvedUserNickname}
+              speakerName={message.metadata?.name ?? null}
             />
           );
         })}

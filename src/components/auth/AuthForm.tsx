@@ -60,7 +60,7 @@ function AuthLocaleLink({ returnTo }: AuthLocaleLinkProps) {
       className={cn(
         'absolute right-3 top-3 flex min-h-10 min-w-10 items-center justify-center rounded-md',
         'border border-border bg-surface text-foreground/80',
-        'hover:bg-chat hover:text-foreground',
+        'hover:bg-row-hover hover:text-foreground',
       )}
     >
       <Languages className={cn('h-5 w-5')} aria-hidden />

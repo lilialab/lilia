@@ -6,7 +6,6 @@ export const en = {
     cancel: 'Cancel',
     confirm: 'Confirm',
     loading: 'Loading...',
-    userFallback: 'Me',
   },
   tabBar: {
     contacts: 'Contacts',
@@ -42,12 +41,6 @@ export const en = {
     empty: 'No characters available to add',
     add: 'Add',
     addedToast: 'Added {name}',
-  },
-  characters: {
-    'lilia.displayName': 'Lilia',
-    'lilia.shortBio': 'Short, casual. A friend.',
-    'rin.displayName': 'Rin',
-    'rin.shortBio': "Won't take orders. Sharp tongue. A friend, not a tool.",
   },
   chat: {
     moreActions: 'More actions',
@@ -98,7 +91,6 @@ export const en = {
     saving: 'Saving...',
     save: 'Save',
     pickerEmpty: 'Could not load contacts. Go back and try again.',
-    defaultMember: 'Default',
   },
   groupChat: {
     manageMembers: 'Manage members',
@@ -204,8 +196,6 @@ export const en = {
     USERNAME_TAKEN: 'Username is already taken',
     CONTACT_REQUIRED: 'Add this AI as a friend first',
     GROUP_MEMBERS_NOT_CONTACTS: 'Add the selected AI as friends first',
-    GROUP_MUST_INCLUDE_DEFAULT_CHARACTER: 'Groups must include the default AI friend',
-    CANNOT_DELETE_DEFAULT_CONTACT: 'The default friend cannot be removed',
     GENERATION_BUSY: 'Still generating a reply. Try again in a moment',
     CHARACTER_NOT_IN_GROUP: 'That character is not in this group',
     LLM_CONFIG_INCOMPLETE: 'Enter base URL, API key, and model together',

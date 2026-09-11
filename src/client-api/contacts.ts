@@ -9,6 +9,7 @@ export interface ContactSession {
   sessionId: string;
   characterId: string;
   slug: string;
+  name: string;
   /** 服务端仍在生成助手回复（含断线后台续跑） */
   isGenerating: boolean;
 }

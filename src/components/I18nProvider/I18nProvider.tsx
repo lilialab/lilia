@@ -2,12 +2,6 @@
 
 import { formatMessage, getMessages } from '@/i18n/catalog';
 import {
-  type CharacterTField,
-  type CharacterTranslationFn,
-  tCharacter,
-  type TranslationFn,
-} from '@/i18n/characters';
-import {
   DEFAULT_LOCALE,
   type Locale,
   localeFromBrowserLanguage,
@@ -76,6 +70,12 @@ export function useI18n(): Pick<I18nContextValue, 'locale' | 'setLocale'> {
   return { locale, setLocale };
 }
 
+/** `useTranslations(namespace)` 的回调签名。 */
+export type TranslationFn<N extends keyof Messages> = (
+  key: keyof Messages[N] & string,
+  params?: Record<string, string | number>,
+) => string;
+
 /** 取某一命名空间下的文案；可选 `{key}` 插值。 */
 export function useTranslations<N extends keyof Messages>(namespace: N): TranslationFn<N> {
   const { messages } = useI18nContext();
@@ -85,14 +85,5 @@ export function useTranslations<N extends keyof Messages>(namespace: N): Transla
     (key: keyof Messages[N] & string, params?: Record<string, string | number>) =>
       formatMessage(bag[key], params),
     [bag],
-  );
-}
-
-/** 当前语言下按 slug 取角色 i18n 文案；缺 key 回退 slug。默认 displayName。 */
-export function useTCharacter(): CharacterTranslationFn {
-  const { locale } = useI18nContext();
-  return useCallback(
-    (slug: string, field: CharacterTField = 'displayName') => tCharacter(slug, field, locale),
-    [locale],
   );
 }

@@ -1,5 +1,6 @@
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import { parseCharacterProfile } from '@/services/character/definition.utils';
 import { clearChatGeneration } from '@/services/session/generation-lock.service';
 import type { MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
@@ -18,32 +19,46 @@ const activeMessageFilter = { isDeleted: false };
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
+/** 写入保证：助手必有 speakerCharacter，用户必有 speakerUser。 */
+type HistoryRow = {
+  id: string;
+  role: string;
+  parts: unknown;
+  createdAt: Date;
+  speakerCharacter: { slug: string; profile: unknown };
+  speakerUser: { nickname: string };
+};
+
 /** 将数据库消息行映射为前端历史消息格式。 */
-function mapMessageRow(
-  row: { id: string; role: string; parts: unknown; createdAt: Date },
-  speaker: { characterId: string; slug: string } | null,
-): {
+function mapMessageRow(row: HistoryRow): {
   id: string;
   role: UIMessage['role'];
   parts: UIMessage['parts'];
   createdAt: string;
   metadata: MessageMetadata;
 } {
+  let metadata: MessageMetadata;
+  if (row.role === 'assistant') {
+    const { slug, profile } = row.speakerCharacter;
+    metadata = {
+      kind: null,
+      slug,
+      name: parseCharacterProfile(profile).name,
+    };
+  } else {
+    metadata = {
+      kind: null,
+      slug: null,
+      name: row.speakerUser.nickname,
+    };
+  }
+
   return {
     id: row.id,
     role: row.role as UIMessage['role'],
     parts: row.parts as UIMessage['parts'],
     createdAt: row.createdAt.toISOString(),
-    metadata: row.role === 'assistant' && speaker
-      ? {
-        kind: null,
-        slug: speaker.slug,
-        speakerCharacterId: speaker.characterId,
-      }
-      : {
-        kind: null,
-        slug: null,
-      },
+    metadata,
   };
 }
 
@@ -92,21 +107,6 @@ export async function getHistoryPage(
 ) {
   const limit = options.limit ?? PAGE_SIZE;
 
-  const session = await prisma.chatSession.findUnique({
-    where: { id: sessionId },
-    select: {
-      character: { select: { id: true, slug: true } },
-    },
-  });
-  const speaker = session?.character
-    ? {
-      characterId: session.character.id,
-      slug: session.character.slug,
-    }
-    : null;
-  const mapRow = (row: { id: string; role: string; parts: unknown; createdAt: Date }) =>
-    mapMessageRow(row, speaker);
-
   /** 判断指定时间之前是否还有更早的未删除消息。 */
   async function hasOlderMessages(oldestCreatedAt: Date) {
     const count = await prisma.message.count({
@@ -139,6 +139,14 @@ export async function getHistoryPage(
     },
     orderBy: { createdAt: 'desc' },
     take: limit,
+    select: {
+      id: true,
+      role: true,
+      parts: true,
+      createdAt: true,
+      speakerCharacter: { select: { slug: true, profile: true } },
+      speakerUser: { select: { nickname: true } },
+    },
   });
 
   const rows = items.toReversed();
@@ -146,7 +154,7 @@ export async function getHistoryPage(
   const hasMore = rows.length === limit && oldest !== undefined
     && (await hasOlderMessages(oldest.createdAt));
 
-  return { messages: rows.map(mapRow), hasMore };
+  return { messages: rows.map((row) => mapMessageRow(row as HistoryRow)), hasMore };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -166,12 +174,17 @@ export async function softDeleteSessionMessages(sessionId: string) {
 /**
  * 保存助手回复并更新会话时间（内部事务控制）
  */
-export async function saveAssistantResponse(sessionId: string, parts: UIDataTypes[]) {
+export async function saveAssistantResponse(
+  sessionId: string,
+  speakerCharacterId: string,
+  parts: UIDataTypes[],
+) {
   const [message] = await prisma.$transaction([
     prisma.message.create({
       data: {
         sessionId,
         role: 'assistant',
+        speakerCharacterId,
         parts: parts as InputJsonValue,
       },
     }),

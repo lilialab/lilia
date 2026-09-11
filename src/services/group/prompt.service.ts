@@ -1,11 +1,9 @@
-import { tCharacter } from '@/i18n/characters';
-import type { Locale } from '@/i18n/config';
 import { interpolate } from '@/prompts/interpolate';
-import { loadCharacterProfile, readPromptFile } from '@/prompts/load';
+import { readPromptFile } from '@/prompts/load';
 import { formatMemories, formatRuntimeContext } from '@/services/chat/format.utils';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
-import { jsonToYaml } from '@/utils/json-yaml';
+import { type JsonObject, jsonToYaml } from '@/utils/json-yaml';
 import { xmlBlock } from '@/utils/xml-block';
 import { formatGroupRoster } from './prompt.utils';
 
@@ -30,10 +28,11 @@ export interface BuildGroupSystemPromptOptions {
   userNickname: string;
   characterId: string;
   characterSlug: string;
+  characterName: string;
+  persona: JsonObject;
   memberSlugs: readonly string[];
   lastUserContent: string;
   timeZone: string;
-  locale: Locale;
   /** 本轮用户/turn_cue 写入前，群里上一条消息的时间 */
   previousMessageAt?: Date | null;
 }
@@ -50,16 +49,16 @@ export async function buildGroupSystemPrompt({
   userNickname,
   characterId,
   characterSlug,
+  characterName,
+  persona,
   memberSlugs,
   lastUserContent,
   timeZone,
-  locale,
   previousMessageAt,
 }: BuildGroupSystemPromptOptions): Promise<GroupSystemPromptResult> {
   const now = new Date();
-  const displayName = tCharacter(characterSlug, 'displayName', locale);
-  const vars = { name: displayName, slug: characterSlug };
-  const characterProfile = interpolate(jsonToYaml(loadCharacterProfile(characterSlug)), vars);
+  const vars = { name: characterName, slug: characterSlug };
+  const characterProfile = interpolate(jsonToYaml(persona), vars);
   const groupChatRules = interpolate(readPromptFile('group-chat-rules.md'), vars);
   const roster = formatGroupRoster({
     userNickname,

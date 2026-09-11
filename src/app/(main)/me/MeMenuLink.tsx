@@ -16,7 +16,7 @@ export function MeMenuLink({ href, label, icon: Icon }: MeMenuLinkProps) {
       transitionTypes={['nav-forward']}
       className={cn(
         'flex w-full items-center gap-3 px-4 py-3.5 text-sm text-foreground',
-        'hover:bg-surface',
+        'hover:bg-row-hover',
       )}
     >
       <Icon className={cn('h-4 w-4 text-muted-foreground')} aria-hidden />

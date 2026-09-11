@@ -9,8 +9,8 @@ export type MessageKind = typeof MESSAGE_KIND_TURN_CUE;
 export type MessageMetadata = {
   kind: string | null;
   slug: string | null;
-  /** 助手消息才有；用户出站可不带 */
-  speakerCharacterId?: string | null;
+  /** 显示名：助手为当前角色名，用户为当前昵称 */
+  name: string | null;
 };
 
 /** streamText 结果 + 写入 UI 流 start 事件的 metadata。 */

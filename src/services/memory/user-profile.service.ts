@@ -2,7 +2,7 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { readJobPrompt, tryReadCharacterJobPrompt } from '@/prompts/load';
+import { readJobPrompt } from '@/prompts/load';
 import type { MemoryJob, ProfileJobResult } from '@/types/memory-job';
 import { xmlBlock } from '@/utils/xml-block';
 import { generateText, Output } from 'ai';
@@ -30,14 +30,9 @@ function formatMemoryList(memories: { text: string; type: string; confidence: nu
     .join('\n');
 }
 
-/** 组装画像 system prompt：全局规则 + 可选角色焦点。 */
-export function buildProfileSystemPrompt(characterSlug: string): string {
-  const blocks = [xmlBlock('user_profile_rules', readJobPrompt('user-profile'))];
-  const focus = tryReadCharacterJobPrompt(characterSlug, 'user-profile');
-  if (focus) {
-    blocks.push(xmlBlock('character_user_profile_focus', focus));
-  }
-  return blocks.join('\n\n');
+/** 组装画像 system prompt。 */
+export function buildProfileSystemPrompt(): string {
+  return xmlBlock('user_profile_rules', readJobPrompt('user-profile'));
 }
 
 /** 组装画像刷新 prompt 正文（纯函数，便于单测）。 */
@@ -62,13 +57,13 @@ export interface ProfileModelResult {
   error: string | undefined;
 }
 
-/** 按全局规则 + 角色焦点调用画像模型；失败时 error 有值，不抛。 */
+/** 按全局规则调用画像模型；失败时 error 有值，不抛。 */
 export async function generateProfileModelOutput(
   characterSlug: string,
   existing: ProfileSnapshot,
   referenceMemories: { text: string; type: string; confidence: number }[],
 ): Promise<ProfileModelResult> {
-  const systemPrompt = buildProfileSystemPrompt(characterSlug);
+  const systemPrompt = buildProfileSystemPrompt();
   const userPrompt = buildProfileRefreshPrompt({ existing, referenceMemories });
 
   try {

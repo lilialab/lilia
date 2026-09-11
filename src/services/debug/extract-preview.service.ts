@@ -1,16 +1,14 @@
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
-import { DEFAULT_CHARACTER_ID, listCharacterSlugs } from '@/prompts/load';
 import { timeZoneSchema } from '@/schemas/shared/time-zone';
-import {
-  buildMockExtractTranscript,
-  type ExtractMockMessage,
-} from '@/services/debug/extract-mock.utils';
+import { getCharacterDefinitionBySlug } from '@/services/character/definition.service';
 import { generateExtractModelOutput } from '@/services/memory/extract.service';
 import { mapExtractOutput, validateAndMergeIds } from '@/services/memory/extract.utils';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+import { listCatalogSlugs } from './catalog.service';
+import { buildMockExtractTranscript, type ExtractMockMessage } from './extract-mock.utils';
 
 const FIXTURES_DIR = path.join(process.cwd(), 'src/services/debug/fixtures/extract');
 
@@ -74,19 +72,16 @@ export function listExtractFixtures(): ExtractDebugFixture[] {
     });
 }
 
-/** 调试页元数据：角色 slug + 夹具。 */
-export function getExtractDebugMeta(): {
+/** 调试页元数据：库中角色 slug + 夹具。 */
+export async function getExtractDebugMeta(): Promise<{
   characters: string[];
   defaultCharacter: string;
   fixtures: ExtractDebugFixture[];
-} {
-  const characters = listCharacterSlugs();
-  const defaultCharacter = characters.includes(DEFAULT_CHARACTER_ID)
-    ? DEFAULT_CHARACTER_ID
-    : (characters[0] ?? '');
+}> {
+  const characters = await listCatalogSlugs();
   return {
     characters,
-    defaultCharacter,
+    defaultCharacter: characters[0] ?? '',
     fixtures: listExtractFixtures(),
   };
 }
@@ -97,9 +92,7 @@ export async function previewExtract(
   timeZone: string,
   messages: ExtractMockMessage[],
 ): Promise<ExtractPreviewResult> {
-  if (!listCharacterSlugs().includes(characterSlug)) {
-    throw AppError.notFound('未知角色');
-  }
+  const character = await getCharacterDefinitionBySlug(characterSlug);
 
   const { transcript, messageIds } = buildMockExtractTranscript(
     messages,
@@ -119,8 +112,9 @@ export async function previewExtract(
   });
 
   const { systemPrompt, userPrompt, output, text, error } = await generateExtractModelOutput(
-    characterSlug,
+    character.slug,
     transcript,
+    character.extract,
   );
 
   if (error || !output) {

@@ -11,7 +11,7 @@ import {
 } from '@/client-api/groups';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { useTCharacter, useTranslations } from '@/components/I18nProvider';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
@@ -36,7 +36,6 @@ import {
   sendTurnCueIfMentioned,
   writeStoredMentionSlug,
 } from './GroupChatScreen.utils';
-import { DEFAULT_CHARACTER_SLUG } from './MemberPicker';
 
 interface GroupChatScreenProps {
   groupSessionId: string;
@@ -50,15 +49,13 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const tCharacter = useTCharacter();
   const t = useTranslations('groupChat');
   const tChat = useTranslations('chat');
-  const tCommon = useTranslations('common');
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mentionOpen, setMentionOpen] = useState(false);
-  /** 用户点选；未点选时为 null，selectedMember 再回落 storage → 默认角色 */
+  /** 用户点选；未点选时为 null，selectedMember 再回落 storage → 群内第一名 */
   const [pickedMember, setPickedMember] = useState<GroupMemberSummary | null>(null);
   const [inputFocusKey, setInputFocusKey] = useState<number | undefined>();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -85,7 +82,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const members = groupQuery.data?.members ?? [];
   const selectedMember = pickedMember
     ?? members.find((m) => m.slug === readStoredMentionSlug(groupSessionId))
-    ?? members.find((m) => m.slug === DEFAULT_CHARACTER_SLUG);
+    ?? members.at(0);
 
   /* -------------------------------------------------------------------------- */
   /* Chat stream & history                                                      */
@@ -178,9 +175,9 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || inputLocked || !selectedMember) return;
+    if (!text || inputLocked || !selectedMember || !user) return;
 
-    const outbound = buildUserOutboundMessage(text, selectedMember.slug);
+    const outbound = buildUserOutboundMessage(text, selectedMember.slug, user.nickname);
     writeStoredMentionSlug(groupSessionId, selectedMember.slug);
     setInput('');
     turnCueHopCountRef.current = 0;
@@ -261,18 +258,16 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           e.preventDefault();
           setInputFocusKey((k) => (k ?? 0) + 1);
         }}
-        items={members.map((m) => {
-          const name = tCharacter(m.slug);
-          return {
-            key: m.id,
-            label: selectedMember?.slug === m.slug
-              ? t('currentMember', { name })
-              : name,
-            onSelect: () => {
-              handleSelectMention(m);
-            },
-          };
-        })}
+        items={members.map((m) => ({
+          key: m.id,
+          label: selectedMember?.slug === m.slug
+            ? t('currentMember', { name: m.name })
+            : m.name,
+          description: `@${m.slug}`,
+          onSelect: () => {
+            handleSelectMention(m);
+          },
+        }))}
       />
 
       <ConfirmDialog
@@ -301,7 +296,6 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void handleLoadMore()}
-          userNickname={user?.nickname ?? tCommon('userFallback')}
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={groupQuery.isGenerating && !isStreaming} />
@@ -310,7 +304,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
             onChange={setInput}
             onSubmit={handleFormSubmit}
             sendLocked={inputLocked}
-            mentionDisplayName={selectedMember ? tCharacter(selectedMember.slug) : undefined}
+            mentionDisplayName={selectedMember?.name}
             onMentionClick={selectedMember ? () => setMentionOpen(true) : undefined}
             focusKey={inputFocusKey}
           />

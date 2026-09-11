@@ -6,7 +6,7 @@ import { Mirage } from 'ldrs/react';
 import 'ldrs/react/Mirage.css';
 
 interface AssistantLoadingBubbleProps {
-  speakerName?: string;
+  speakerName: string | null;
 }
 
 export function AssistantLoadingBubble({ speakerName }: AssistantLoadingBubbleProps) {

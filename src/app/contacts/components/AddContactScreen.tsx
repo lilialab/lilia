@@ -2,7 +2,7 @@
 
 import { type CharacterSummary, fetchCharacters } from '@/client-api/characters';
 import { addContact, fetchContacts } from '@/client-api/contacts';
-import { useTCharacter, useTranslations } from '@/components/I18nProvider';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,14 +30,13 @@ interface AvailableCharactersListProps {
 
 function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
   const queryClient = useQueryClient();
-  const tCharacter = useTCharacter();
   const t = useTranslations('addContact');
 
   const addMutation = useMutation({
     mutationFn: addContact,
     onSuccess: async (contact) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.contacts, exact: true });
-      showSuccessToast(t('addedToast', { name: tCharacter(contact.slug) }));
+      showSuccessToast(t('addedToast', { name: contact.name }));
     },
     onError: (err) => {
       showErrorToast(translateApiError(err), 'contact-add');
@@ -55,9 +54,9 @@ function AvailableCharactersList({ characters }: AvailableCharactersListProps) {
         >
           <div className={cn('min-w-0')}>
             <p className={cn('truncate text-sm font-medium text-foreground')}>
-              {tCharacter(character.slug)}
+              {character.name}
             </p>
-            <p className={cn('truncate text-xs text-muted-foreground')}>{character.slug}</p>
+            <p className={cn('truncate text-xs text-muted-foreground')}>{character.shortBio}</p>
           </div>
           <button
             type="button"

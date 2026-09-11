@@ -65,6 +65,7 @@ erDiagram
     string sessionId FK "nullable"
     string groupSessionId FK "nullable"
     string speakerCharacterId FK "nullable"
+    string speakerUserId FK "nullable"
     string role
   }
 
@@ -86,7 +87,7 @@ erDiagram
 | Model | 表名 | 职责 |
 |-------|------|------|
 | `User` | `users` | 登录用户 |
-| `Character` | `characters` | AI 角色目录；人设与 skills 在 `src/prompts/` |
+| `Character` | `characters` | AI 角色目录；人设、skills、extract 在表列 |
 | `UserCharacter` | `user_characters` | 通讯录；含该角色 maintain→profile 冷却时钟 |
 | `AuthSession` | `auth_sessions` | Cookie 登录会话（非聊天） |
 | `ChatSession` | `chat_sessions` | 单聊；每用户每角色至多一条；`generatingStartedAt` 防并发生成 |
@@ -100,7 +101,8 @@ erDiagram
 ## Message 约束
 
 - `sessionId` 与 `groupSessionId` **恰好一个非空**（应用层校验）
-- `speakerCharacterId`：`null` = 用户；非空 = 该 AI（群聊助手消息应填写；单聊可空，靠 `ChatSession.characterId` 推断）
+- `speakerCharacterId`：非空 = 该 AI 在说
+- `speakerUserId`：非空 = 该用户在说
 
 ## 相关文档
 

@@ -1,12 +1,12 @@
-import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
-import { DEFAULT_CHARACTER_ID, listCharacterSlugs } from '@/prompts/load';
+import { getCharacterDefinitionBySlug } from '@/services/character/definition.service';
 import { generateProfileModelOutput } from '@/services/memory/user-profile.service';
 import { type ProfileSnapshot, profileSnapshotSchema } from '@/services/memory/user-profile.utils';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
+import { listCatalogSlugs } from './catalog.service';
 
 const FIXTURES_DIR = path.join(process.cwd(), 'src/services/debug/fixtures/profile');
 
@@ -62,19 +62,16 @@ export function listProfileFixtures(): ProfileDebugFixture[] {
     });
 }
 
-/** 调试页元数据：角色 slug + 夹具。 */
-export function getProfileDebugMeta(): {
+/** 调试页元数据：库中角色 slug + 夹具。 */
+export async function getProfileDebugMeta(): Promise<{
   characters: string[];
   defaultCharacter: string;
   fixtures: ProfileDebugFixture[];
-} {
-  const characters = listCharacterSlugs();
-  const defaultCharacter = characters.includes(DEFAULT_CHARACTER_ID)
-    ? DEFAULT_CHARACTER_ID
-    : (characters[0] ?? '');
+}> {
+  const characters = await listCatalogSlugs();
   return {
     characters,
-    defaultCharacter,
+    defaultCharacter: characters[0] ?? '',
     fixtures: listProfileFixtures(),
   };
 }
@@ -85,9 +82,7 @@ export async function previewProfile(
   existing: ProfileSnapshot,
   referenceMemories: { text: string; type: string; confidence: number }[],
 ): Promise<ProfilePreviewResult> {
-  if (!listCharacterSlugs().includes(characterSlug)) {
-    throw AppError.notFound('未知角色');
-  }
+  await getCharacterDefinitionBySlug(characterSlug);
 
   logger.info({
     event: 'llm.profile.preview.request',

@@ -1,5 +1,6 @@
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
+import { parseCharacterProfile } from '@/services/character/definition.utils';
 import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
@@ -29,37 +30,47 @@ function mapGroupMessageRole(role: string): UIMessage['role'] {
   return 'assistant';
 }
 
-function mapGroupMessageRow(row: {
+/** 写入保证：助手必有 speakerCharacter，用户必有 speakerUser。 */
+type GroupHistoryRow = {
   id: string;
   role: string;
   kind: string | null;
   parts: unknown;
   createdAt: Date;
-  speakerCharacterId: string | null;
-  speakerCharacter: { slug: string } | null;
-}): {
+  speakerCharacter: { slug: string; profile: unknown };
+  speakerUser: { nickname: string };
+};
+
+function mapGroupMessageRow(row: GroupHistoryRow): {
   id: string;
   role: UIMessage['role'];
   parts: UIMessage['parts'];
   createdAt: string;
   metadata: MessageMetadata;
 } {
+  let metadata: MessageMetadata;
+  if (row.role === 'assistant') {
+    const { slug, profile } = row.speakerCharacter;
+    metadata = {
+      kind: null,
+      slug,
+      name: parseCharacterProfile(profile).name,
+    };
+  } else {
+    metadata = {
+      kind: row.kind,
+      slug: null,
+      name: row.speakerUser.nickname,
+    };
+  }
+
   return {
     id: row.id,
     role: mapGroupMessageRole(row.role),
     // Prisma Json → UI parts；库内由写入路径保证形状
     parts: row.parts as UIMessage['parts'],
     createdAt: row.createdAt.toISOString(),
-    metadata: row.role === 'assistant' && row.speakerCharacter && row.speakerCharacterId
-      ? {
-        kind: null,
-        slug: row.speakerCharacter.slug,
-        speakerCharacterId: row.speakerCharacterId,
-      }
-      : {
-        kind: row.kind,
-        slug: null,
-      },
+    metadata,
   };
 }
 
@@ -69,8 +80,8 @@ const groupMessageSelect = {
   kind: true,
   parts: true,
   createdAt: true,
-  speakerCharacterId: true,
-  speakerCharacter: { select: { slug: true } },
+  speakerCharacter: { select: { slug: true, profile: true } },
+  speakerUser: { select: { nickname: true } },
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -128,7 +139,7 @@ export async function getGroupHistoryPage(
   const hasMore = rows.length === limit && oldest !== undefined
     && (await hasOlderMessages(oldest.createdAt));
 
-  return { messages: rows.map(mapGroupMessageRow), hasMore };
+  return { messages: rows.map((row) => mapGroupMessageRow(row as GroupHistoryRow)), hasMore };
 }
 
 /** 群会话中最新一条未删除消息的时间；没有则 null。须在写入本轮用户/turn_cue 之前调用。 */
@@ -186,6 +197,7 @@ export async function getGroupContextMessages(
       metadata: {
         kind: null,
         slug,
+        name: null,
       } satisfies MessageMetadata,
     };
   });
@@ -197,10 +209,12 @@ export async function getGroupContextMessages(
 
 /**
  * 写入群聊用户消息并更新群会话时间（不触发 LLM）。
+ * @param speakerUserId 发言用户
  * @param kind null/缺省为普通消息；turn_cue 为续聊触发语
  */
 export async function createGroupUserMessage(
   groupSessionId: string,
+  speakerUserId: string,
   parts: unknown,
   kind: string | null = null,
 ): Promise<{ id: string }> {
@@ -211,6 +225,7 @@ export async function createGroupUserMessage(
         role: 'user',
         kind,
         speakerCharacterId: null,
+        speakerUserId,
         parts: parts as InputJsonValue,
       },
     }),

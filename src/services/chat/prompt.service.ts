@@ -1,12 +1,12 @@
-import { tCharacter } from '@/i18n/characters';
 import { type Locale, parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { interpolate } from '@/prompts/interpolate';
-import { loadCharacterProfile, readPromptFile } from '@/prompts/load';
+import { readPromptFile } from '@/prompts/load';
+import { parseCharacterProfile, parseCharacterSkills } from '@/services/character/definition.utils';
 import { fetchMemoryFragmentsForPrompt } from '@/services/memory/rag-context.service';
 import { getUserProfileText } from '@/services/memory/user-profile.service';
-import { jsonToYaml } from '@/utils/json-yaml';
+import { type JsonObject, jsonToYaml } from '@/utils/json-yaml';
 import { xmlBlock } from '@/utils/xml-block';
 import { formatMemories, formatRuntimeContext } from './format.utils';
 
@@ -34,6 +34,9 @@ export async function resolveSessionContext(sessionId: string): Promise<{
   userNickname: string;
   characterId: string;
   characterSlug: string;
+  characterName: string;
+  persona: JsonObject;
+  skills: string[];
   locale: Locale;
 }> {
   const session = await prisma.chatSession.findUnique({
@@ -41,17 +44,21 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     select: {
       userId: true,
       user: { select: { locale: true, nickname: true } },
-      character: { select: { id: true, slug: true } },
+      character: { select: { id: true, slug: true, profile: true, skills: true } },
     },
   });
   if (!session) {
     throw AppError.notFound('会话不存在');
   }
+  const profile = parseCharacterProfile(session.character.profile);
   return {
     userId: session.userId,
     userNickname: session.user.nickname,
     characterId: session.character.id,
     characterSlug: session.character.slug,
+    characterName: profile.name,
+    persona: profile.persona,
+    skills: parseCharacterSkills(session.character.skills),
     locale: parseLocale(session.user.locale),
   };
 }
@@ -76,14 +83,14 @@ export async function buildSystemPrompt(
   options: BuildSystemPromptOptions,
 ): Promise<SystemPromptResult> {
   const { timeZone, previousMessageAt } = options;
-  const { userId, userNickname, characterId, characterSlug, locale } = await resolveSessionContext(
-    sessionId,
-  );
+  const { userId, userNickname, characterId, characterSlug, characterName, persona } =
+    await resolveSessionContext(
+      sessionId,
+    );
   const now = new Date();
 
-  const displayName = tCharacter(characterSlug, 'displayName', locale);
-  const vars = { name: displayName, slug: characterSlug };
-  const characterProfile = interpolate(jsonToYaml(loadCharacterProfile(characterSlug)), vars);
+  const vars = { name: characterName, slug: characterSlug };
+  const characterProfile = interpolate(jsonToYaml(persona), vars);
 
   const [userProfile, memoryFragments] = await Promise.all([
     getUserProfileText(userId, characterId, userNickname),

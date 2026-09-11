@@ -10,7 +10,7 @@ export const maxDuration = 120;
 /** 画像调试元数据：角色列表与 JSON 夹具。 */
 export const GET = withApiHandler(async () => {
   assertDevelopmentDebug();
-  return successResponse(getProfileDebugMeta());
+  return successResponse(await getProfileDebugMeta());
 });
 
 /** 画像 dry-run，不写库。 */

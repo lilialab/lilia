@@ -15,12 +15,13 @@ model User {
   username        String   @unique
   passwordHash    String   @map("password_hash")
   nickname        String   @map("nickname")
-  /// UI 语言偏好（en | zh）；注册时由客户端 body 写入
+  /// UI 语言（en | zh）；注册时由客户端写入
   locale          String   @default("zh")
   /// 设备 IANA 时区；注册写入，聊天请求覆盖，供 extract 把消息 createdAt 转成本地墙钟
   timeZone        String   @map("time_zone")
-  /// 用户自备 OpenAI 兼容对话接口；三项齐全才视为启用。密钥只存密文。
+  /// 用户自备 OpenAI 兼容对话接口；与密钥、模型三项齐全才视为启用
   llmBaseUrl      String?  @map("llm_base_url")
+  /// 用户 LLM 密钥，只存密文
   llmApiKeyCipher String?  @map("llm_api_key_cipher") @db.Text
   llmModel        String?  @map("llm_model")
   createdAt       DateTime @default(now()) @map("created_at")
@@ -32,18 +33,25 @@ model User {
   userCharacters UserCharacter[]
   memories       UserMemory[]
   profiles       UserProfile[]
+  spokenMessages Message[]
 
   @@map("users")
 }
 
 /**
- * AI 角色目录（全局）；人设/skills 在 prompts，不在本表
+ * AI 角色目录（全局）。运行时人设/skills/extract 读本表，不读 prompts 文件。
  */
 model Character {
-  id             String          @id @default(uuid())
-  slug           String          @unique
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  id        String @id @default(uuid())
+  slug      String @unique
+  /// 单语 JSON：name、shortBio，其余字段为人设（可含 `{{name}}`）
+  profile   Json
+  /// skill id 列表（JSON 字符串数组）
+  skills    Json
+  /// 记忆提取角色焦点
+  extract   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   sessions       ChatSession[]
   groupMembers   GroupMember[]
   spokenMessages Message[]
@@ -61,9 +69,7 @@ model UserCharacter {
   id                   String    @id @default(uuid())
   userId               String    @map("user_id")
   characterId          String    @map("character_id")
-  /**
-   * 该用户×角色 maintain→profile 管线上次两者都成功完成的时刻
-   */
+  /// 该用户×角色 maintain→profile 管线上次两者都成功完成的时刻
   lastMemoryPipelineAt DateTime? @map("last_memory_pipeline_at")
   createdAt            DateTime  @default(now()) @map("created_at")
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -97,9 +103,7 @@ model ChatSession {
   userId              String    @map("user_id")
   characterId         String    @map("character_id")
   title               String    @default("新对话")
-  /**
-   * 非空表示正在生成；超时后可被新请求抢占
-   */
+  /// 非空表示正在生成；超时后可被新请求抢占
   generatingStartedAt DateTime? @map("generating_started_at")
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
@@ -119,9 +123,7 @@ model GroupSession {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
   title     String   @default("群聊")
-  /**
-   * 非空表示正在生成；超时后可被新请求抢占
-   */
+  /// 非空表示正在生成；超时后可被新请求抢占
   generatingStartedAt DateTime? @map("generating_started_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -154,18 +156,22 @@ model GroupMember {
 /**
  * 单聊 / 群聊共用消息表。
  * sessionId 与 groupSessionId 恰好一个非空（应用层校验）。
- * speakerCharacterId：null = 用户；非空 = 该 AI（群聊助手消息应填写）。
- * kind：null = 普通消息；turn_cue = 群聊续聊触发语（role 仍为 user）。
  */
 model Message {
   id                 String   @id @default(uuid())
   sessionId          String?  @map("session_id")
   groupSessionId     String?  @map("group_session_id")
+  /// 非空 = 该 AI 在说
   speakerCharacterId String?  @map("speaker_character_id")
+  /// 非空 = 该用户在说
+  speakerUserId      String?  @map("speaker_user_id")
   role               String
+  /// null = 普通消息；turn_cue = 群聊续聊触发语（role 仍为 user）
   kind               String?  @map("kind")
   parts              Json
+  /// 是否已被 extract 纳入
   isExtracted        Boolean  @default(false) @map("is_extracted")
+  /// 软删
   isDeleted          Boolean  @default(false) @map("is_deleted")
   extractJobId       String?  @map("extract_job_id")
   createdAt          DateTime @default(now()) @map("created_at")
@@ -173,6 +179,7 @@ model Message {
   session          ChatSession?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   groupSession     GroupSession? @relation(fields: [groupSessionId], references: [id], onDelete: Cascade)
   speakerCharacter Character?    @relation(fields: [speakerCharacterId], references: [id], onDelete: SetNull)
+  speakerUser      User?         @relation(fields: [speakerUserId], references: [id], onDelete: SetNull)
 
   @@index([sessionId])
   @@index([groupSessionId])
@@ -192,10 +199,14 @@ model UserMemory {
   userId       String    @map("user_id")
   characterId  String    @map("character_id")
   text         String    @db.Text
-  type         String // event | fact
+  /// event | fact
+  type         String
   confidence   Float     @default(0.7)
+  /// 软删
   isDeleted    Boolean   @default(false) @map("is_deleted")
+  /// 是否已被 maintain 处理
   isMaintained Boolean   @default(false) @map("is_maintained")
+  /// 衰减用活跃时间；RAG 命中会刷新
   lastActiveAt DateTime  @default(now()) @map("last_active_at")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
@@ -214,7 +225,9 @@ model UserMemory {
 model UserProfile {
   userId        String    @map("user_id")
   characterId   String    @map("character_id")
+  /// 画像 JSON
   data          Json?
+  /// 驱动刷新的记忆版本
   sourceVersion Int       @default(0) @map("source_version")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
@@ -230,12 +243,15 @@ model UserProfile {
  */
 model MemoryJob {
   id          String    @id @default(uuid())
-  kind        String    @default("extract") // extract | maintain | profile
-  status      String    @default("pending") // pending | running | completed | failed
+  /// extract | maintain | profile
+  kind        String    @default("extract")
+  /// pending | running | completed | failed
+  status      String    @default("pending")
   progress    String    @default("等待开始...")
   error       String?   @db.Text
   result      Json?
-  snapshot    Json? // 任务上下文 + 提取大模型对话 rawPayload
+  /// 任务上下文 + 提取大模型对话 rawPayload
+  snapshot    Json?
   startedAt   DateTime  @default(now()) @map("started_at")
   completedAt DateTime? @map("completed_at")
 

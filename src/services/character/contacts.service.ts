@@ -1,6 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
+import { toCharacterCatalogItem } from '@/services/character/definition.utils';
 import { softDeleteSessionMessages } from '@/services/chat/message.service';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
@@ -14,6 +14,7 @@ import { API_ERROR_CODE } from '@/types/api-error';
 const characterSelect = {
   id: true,
   slug: true,
+  profile: true,
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -22,38 +23,19 @@ const characterSelect = {
 
 /** 列出全部 AI 角色目录。 */
 export async function listCharacters() {
-  return prisma.character.findMany({
+  const rows = await prisma.character.findMany({
     select: characterSelect,
     orderBy: { createdAt: 'asc' },
   });
+  return rows.map(toCharacterCatalogItem);
 }
 
 /* -------------------------------------------------------------------------- */
 /* Contacts                                                                   */
 /* -------------------------------------------------------------------------- */
 
-/**
- * 确保用户通讯录含默认角色（幂等）。
- * @returns 默认角色的 characterId
- */
-export async function ensureDefaultContact(userId: string): Promise<string> {
-  const defaultCharacter = await prisma.character.findUnique({
-    where: { slug: DEFAULT_CHARACTER_ID },
-    select: { id: true },
-  });
-
-  if (!defaultCharacter) {
-    throw AppError.internal(`默认角色 ${DEFAULT_CHARACTER_ID} 不存在，请先执行 seed`);
-  }
-
-  await addContact(userId, defaultCharacter.id);
-  return defaultCharacter.id;
-}
-
-/** 列出用户已添加的 AI 通讯录（会懒补齐默认角色）。 */
+/** 列出用户已添加的 AI 通讯录。 */
 export async function listContacts(userId: string) {
-  await ensureDefaultContact(userId);
-
   const rows = await prisma.userCharacter.findMany({
     where: { userId },
     orderBy: { createdAt: 'asc' },
@@ -64,8 +46,7 @@ export async function listContacts(userId: string) {
   });
 
   return rows.map((row) => ({
-    id: row.character.id,
-    slug: row.character.slug,
+    ...toCharacterCatalogItem(row.character),
     createdAt: row.createdAt,
   }));
 }
@@ -110,8 +91,7 @@ export async function addContact(userId: string, characterId: string) {
 
   if (existing) {
     return {
-      id: existing.character.id,
-      slug: existing.character.slug,
+      ...toCharacterCatalogItem(existing.character),
       createdAt: existing.createdAt,
     };
   }
@@ -125,26 +105,16 @@ export async function addContact(userId: string, characterId: string) {
   });
 
   return {
-    id: created.character.id,
-    slug: created.character.slug,
+    ...toCharacterCatalogItem(created.character),
     createdAt: created.createdAt,
   };
 }
 
 /**
  * 删除 AI 好友：移除通讯录；单聊消息与清空记录相同（软删），会话行保留。
- * 群成员、记忆、画像不受影响。默认角色不可删。
+ * 群成员、记忆、画像不受影响。
  */
 export async function removeContact(userId: string, characterId: string) {
-  const character = await prisma.character.findUnique({
-    where: { id: characterId },
-    select: { slug: true },
-  });
-
-  if (character?.slug === DEFAULT_CHARACTER_ID) {
-    throw AppError.badRequest('不能删除默认好友', API_ERROR_CODE.CANNOT_DELETE_DEFAULT_CONTACT);
-  }
-
   const existing = await prisma.userCharacter.findUnique({
     where: {
       userId_characterId: { userId, characterId },
@@ -194,6 +164,8 @@ export async function getOrCreateContactSession(userId: string, characterId: str
     throw AppError.notFound('角色不存在');
   }
 
+  const item = toCharacterCatalogItem(character);
+
   const existing = await prisma.chatSession.findUnique({
     where: {
       userId_characterId: { userId, characterId },
@@ -204,17 +176,19 @@ export async function getOrCreateContactSession(userId: string, characterId: str
   if (existing) {
     return {
       sessionId: existing.id,
-      characterId: character.id,
-      slug: character.slug,
+      characterId: item.id,
+      slug: item.slug,
+      name: item.name,
       isGenerating: isGenerationBusy(existing.generatingStartedAt),
     };
   }
 
-  const session = await createSession(userId, characterId, character.slug);
+  const session = await createSession(userId, characterId, item.slug);
   return {
     sessionId: session.id,
-    characterId: character.id,
-    slug: character.slug,
+    characterId: item.id,
+    slug: item.slug,
+    name: item.name,
     isGenerating: false,
   };
 }

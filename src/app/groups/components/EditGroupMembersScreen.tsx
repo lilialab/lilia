@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  DEFAULT_CHARACTER_SLUG,
-  MemberPickerEmpty,
-  MemberPickerList,
-} from '@/app/groups/components/MemberPicker';
+import { MemberPickerEmpty, MemberPickerList } from '@/app/groups/components/MemberPicker';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { fetchGroup, replaceGroupMembers } from '@/client-api/groups';
 import { useTranslations } from '@/components/I18nProvider';
@@ -33,7 +29,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   const { user } = useAuth();
   const t = useTranslations('groupMembers');
   /** null = 尚未本地改动，勾选跟随群详情；非 null = 用户已编辑 */
-  const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string> | null>(null);
+  const [editedIds, setEditedIds] = useState<Set<string> | null>(null);
 
   const groupQuery = useQuery({
     queryKey: queryKeys.group(groupSessionId),
@@ -48,15 +44,9 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
   });
 
   const contacts = contactsQuery.data ?? [];
-  const defaultCharacterId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
   const members = groupQuery.data?.members ?? [];
-
-  const defaultExtraIds = new Set(
-    members.filter((m) => m.slug !== DEFAULT_CHARACTER_SLUG).map((m) => m.id),
-  );
-  const effectiveExtraIds = extraSelectedIds ?? defaultExtraIds;
-  const selectedIds = new Set(effectiveExtraIds);
-  if (defaultCharacterId) selectedIds.add(defaultCharacterId);
+  const memberIds = new Set(members.map((m) => m.id));
+  const selectedIds = editedIds ?? memberIds;
 
   const goBackToChat = () => {
     router.push(`/groups/${groupSessionId}`, { transitionTypes: ['nav-back'] });
@@ -76,16 +66,15 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
 
   const isBootstrapping = groupQuery.isLoading || contactsQuery.isLoading;
   const isLoadError = groupQuery.isError || contactsQuery.isError;
-  const canSubmit = Boolean(groupQuery.data) && !saveMutation.isPending;
+  const canSubmit = Boolean(groupQuery.data) && selectedIds.size > 0 && !saveMutation.isPending;
 
   /* -------------------------------------------------------------------------- */
   /* Handlers                                                                   */
   /* -------------------------------------------------------------------------- */
 
   const handleToggle = (contact: ContactSummary) => {
-    if (contact.slug === DEFAULT_CHARACTER_SLUG) return;
-    setExtraSelectedIds((prev) => {
-      const base = prev ?? defaultExtraIds;
+    setEditedIds((prev) => {
+      const base = prev ?? memberIds;
       const next = new Set(base);
       if (next.has(contact.id)) next.delete(contact.id);
       else next.add(contact.id);

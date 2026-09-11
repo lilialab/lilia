@@ -34,8 +34,8 @@ describe('buildProfileRefreshPrompt', () => {
 });
 
 describe('buildProfileSystemPrompt', () => {
-  it('无角色 overlay 时只拼全局规则', () => {
-    const prompt = buildProfileSystemPrompt('nonexistent');
+  it('拼全局规则', () => {
+    const prompt = buildProfileSystemPrompt();
     expect(prompt).toContain('<user_profile_rules>');
     expect(prompt).not.toContain('character_user_profile_focus');
   });

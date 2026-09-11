@@ -1,2 +1,2 @@
-export type { CharacterTranslationFn, TranslationFn } from '@/i18n/characters';
-export { I18nProvider, useI18n, useTCharacter, useTranslations } from './I18nProvider';
+export type { TranslationFn } from './I18nProvider';
+export { I18nProvider, useI18n, useTranslations } from './I18nProvider';

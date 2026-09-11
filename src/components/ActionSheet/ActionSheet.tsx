@@ -8,6 +8,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 export type ActionSheetItem = {
   key: string;
   label: string;
+  description?: string;
   variant?: 'default' | 'danger';
   disabled?: boolean;
   onSelect: () => void;
@@ -76,10 +77,14 @@ export function ActionSheet({
                   className={cn(
                     'flex min-h-12 w-full items-center justify-center px-4 text-base transition-colors',
                     'hover:bg-surface disabled:pointer-events-none disabled:opacity-40',
+                    item.description && 'flex-col py-2',
                     item.variant === 'danger' ? 'text-destructive' : 'text-foreground',
                   )}
                 >
                   {item.label}
+                  {item.description && (
+                    <span className={cn('text-xs text-muted-foreground')}>{item.description}</span>
+                  )}
                 </button>
               </li>
             ))}

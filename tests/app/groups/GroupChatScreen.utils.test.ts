@@ -15,13 +15,13 @@ describe('groupMentionStorageKey', () => {
 
 describe('buildUserOutboundMessage', () => {
   it('正文前拼 @slug，metadata 直接带 slug', () => {
-    expect(buildUserOutboundMessage('你好', 'einstein')).toEqual({
+    expect(buildUserOutboundMessage('你好', 'einstein', '阿明')).toEqual({
       text: '@einstein 你好',
-      metadata: { kind: null, slug: 'einstein' },
+      metadata: { kind: null, slug: 'einstein', name: '阿明' },
     });
-    expect(buildUserOutboundMessage('  hi  ', 'lilia')).toEqual({
+    expect(buildUserOutboundMessage('  hi  ', 'lilia', '阿明')).toEqual({
       text: '@lilia hi',
-      metadata: { kind: null, slug: 'lilia' },
+      metadata: { kind: null, slug: 'lilia', name: '阿明' },
     });
   });
 });
@@ -42,7 +42,7 @@ describe('sendTurnCueIfMentioned', () => {
     expect(sendMessage).toHaveBeenCalledWith({
       text:
         '[system] You (@einstein) were called on. Continue as yourself, based on the conversation above.',
-      metadata: { kind: MESSAGE_KIND_TURN_CUE, slug: 'einstein' },
+      metadata: { kind: MESSAGE_KIND_TURN_CUE, slug: 'einstein', name: null },
     });
   });
 

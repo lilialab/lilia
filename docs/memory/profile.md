@@ -19,7 +19,7 @@ flowchart TD
 
 按 **userId + characterId** 私有：从该角色下的长期记忆维护用户画像（每轮注入，只收束怎么回，不是生平摘要），以 JSON 存 `UserProfile.data`，单聊 / 群聊注入 prompt 时转为 YAML。字段闭集：`communication_style`、`avoid_topics`、`now`。称呼用账号 `nickname`（注入时写入 YAML，不进画像）。爱好、职业细节、一次性日程由 RAG 按需检索；进行中的身份或心情可压进 `now`。
 
-system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）。角色 overlay 可选：有 `characters/{slug}/jobs/user-profile.md` 且非空时才拼 `<character_user_profile_focus>`。
+system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）。无角色 overlay。
 
 ### 何时触发
 

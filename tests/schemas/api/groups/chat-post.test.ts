@@ -135,7 +135,7 @@ describe('groupChatPostBodySchema', () => {
           metadata: {
             kind: null,
             slug: 'lilia',
-            speakerCharacterId: null,
+            name: '莉莉娅',
           },
         },
       ],

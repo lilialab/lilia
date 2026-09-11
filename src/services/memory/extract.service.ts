@@ -2,7 +2,7 @@ import { env } from '@/lib/server/env';
 import { getChatModel } from '@/lib/server/llm';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { readCharacterJobPrompt, readPromptFile } from '@/prompts/load';
+import { readPromptFile } from '@/prompts/load';
 import type { ExtractedMemory, ExtractJobResult, MemoryJob } from '@/types/memory-job';
 import { formatLocalDateTime } from '@/utils/timezone';
 import { xmlBlock } from '@/utils/xml-block';
@@ -33,6 +33,7 @@ interface TranscriptResult {
 interface ExtractTarget {
   characterId: string;
   characterSlug: string;
+  extract: string;
 }
 
 export type RunExtractParams = {
@@ -111,10 +112,10 @@ function failJob(job: MemoryJob, errorMessage: string): Promise<void> {
 /* Model                                                                      */
 /* -------------------------------------------------------------------------- */
 
-function buildExtractSystemPrompt(characterSlug: string): string {
+function buildExtractSystemPrompt(extractFocus: string): string {
   return [
     xmlBlock('extract_rules', readPromptFile('jobs', 'extract.md')),
-    xmlBlock('character_extract_focus', readCharacterJobPrompt(characterSlug, 'extract')),
+    xmlBlock('character_extract_focus', extractFocus),
   ].join('\n\n');
 }
 
@@ -126,8 +127,9 @@ function buildExtractUserPrompt(transcript: string): string {
 export async function generateExtractModelOutput(
   characterSlug: string,
   transcript: string,
+  extractFocus: string,
 ): Promise<ExtractModelResult> {
-  const systemPrompt = buildExtractSystemPrompt(characterSlug);
+  const systemPrompt = buildExtractSystemPrompt(extractFocus);
   const userPrompt = buildExtractUserPrompt(transcript);
 
   try {
@@ -263,27 +265,32 @@ async function buildGroupTranscript(
   };
 }
 
-/** 读取群当前成员（job 执行时快照；id 落库，slug 读角色 jobs/extract.md）。 */
+/** 读取群当前成员（job 执行时快照；extract 读角色表）。 */
 async function loadGroupMemberCharacters(groupSessionId: string): Promise<ExtractTarget[]> {
   const members = await prisma.groupMember.findMany({
     where: { groupSessionId },
-    select: { characterId: true, character: { select: { slug: true } } },
+    select: { characterId: true, character: { select: { slug: true, extract: true } } },
     orderBy: { createdAt: 'asc' },
   });
   return members.map((member) => ({
     characterId: member.characterId,
     characterSlug: member.character.slug,
+    extract: member.character.extract,
   }));
 }
 
-/** 单聊会话的角色 id 与 slug。 */
+/** 单聊会话的角色 id、slug 与 extract。 */
 async function loadSessionCharacter(sessionId: string): Promise<ExtractTarget | null> {
   const session = await prisma.chatSession.findUnique({
     where: { id: sessionId },
-    select: { characterId: true, character: { select: { slug: true } } },
+    select: { characterId: true, character: { select: { slug: true, extract: true } } },
   });
   if (!session) return null;
-  return { characterId: session.characterId, characterSlug: session.character.slug };
+  return {
+    characterId: session.characterId,
+    characterSlug: session.character.slug,
+    extract: session.character.extract,
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -299,6 +306,7 @@ async function extractMemoriesFromTranscript(
   scope: { sessionId?: string; groupSessionId?: string },
   characterId: string,
   characterSlug: string,
+  extractFocus: string,
 ): Promise<{ parsed: ExtractParseResult } | { error: string }> {
   await updateMemoryJob(job.id, {
     progress: `正在调用模型提取记忆（${messageIds.length} 条消息）...`,
@@ -324,7 +332,11 @@ async function extractMemoriesFromTranscript(
     groupSessionId: scope.groupSessionId,
   });
 
-  const { output, text, error } = await generateExtractModelOutput(characterSlug, transcript);
+  const { output, text, error } = await generateExtractModelOutput(
+    characterSlug,
+    transcript,
+    extractFocus,
+  );
 
   await updateMemoryJob(job.id, {
     progress: '正在解析模型输出...',
@@ -417,6 +429,7 @@ async function extractForCharacter(
   scope: { sessionId?: string; groupSessionId?: string },
   characterId: string,
   characterSlug: string,
+  extractFocus: string,
 ): Promise<PerCharacterResult | null> {
   const extracted = await extractMemoriesFromTranscript(
     job,
@@ -426,6 +439,7 @@ async function extractForCharacter(
     scope,
     characterId,
     characterSlug,
+    extractFocus,
   );
   if ('error' in extracted) {
     logger.warn(
@@ -552,7 +566,7 @@ export async function runExtract(
     const perCharMemories = new Map<string, FinishedMemory[]>();
     const results: PerCharacterResult[] = [];
 
-    for (const { characterId, characterSlug } of characters) {
+    for (const { characterId, characterSlug, extract } of characters) {
       const charLabel = isGroup ? `角色 ${characterSlug}` : '';
       await updateMemoryJob(job.id, {
         progress: `正在${charLabel}提取记忆（${messageIds.length} 条消息）...`,
@@ -566,6 +580,7 @@ export async function runExtract(
         extractScope,
         characterId,
         characterSlug,
+        extract,
       );
       if (result) {
         results.push(result);

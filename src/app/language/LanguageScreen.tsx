@@ -63,7 +63,7 @@ export function LanguageScreen({ returnTo }: LanguageScreenProps) {
                   aria-pressed={selected}
                   className={cn(
                     'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm',
-                    'hover:bg-surface',
+                    'hover:bg-row-hover',
                     selected ? 'text-primary' : 'text-foreground',
                   )}
                 >

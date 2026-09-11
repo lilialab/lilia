@@ -4,7 +4,7 @@ import { fetchContactSession, removeContact } from '@/client-api/contacts';
 import type { HistoryMessage } from '@/client-api/sessions';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { useTCharacter, useTranslations } from '@/components/I18nProvider';
+import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
@@ -38,9 +38,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const tCharacter = useTCharacter();
   const t = useTranslations('chat');
-  const tCommon = useTranslations('common');
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -56,10 +54,8 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     meta: { showErrorToast: false },
   });
 
-  const sessionId = sessionQuery.data?.sessionId ?? '';
-  const displayName = sessionQuery.data?.slug
-    ? tCharacter(sessionQuery.data?.slug)
-    : '';
+  const session = sessionQuery.data;
+  const sessionId = session?.sessionId ?? '';
 
   const bumpScroll = useCallback(() => {
     setScrollToBottomKey((k) => k + 1);
@@ -139,13 +135,16 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!input.trim() || inputLocked || !sessionId) return;
+    if (!input.trim() || inputLocked || !sessionId || !user) return;
 
     const currentInput = input;
     setInput('');
 
     try {
-      await sendMessage({ text: currentInput }, { body: { sessionId } });
+      await sendMessage({
+        text: currentInput,
+        metadata: { kind: null, slug: null, name: user.nickname },
+      }, { body: { sessionId } });
     } catch (err) {
       showErrorToast(translateApiError(err), 'chat-send');
       setInput(currentInput);
@@ -159,7 +158,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
   return (
     <div className={cn('flex h-dvh flex-col bg-chat text-foreground')}>
       <ScreenHeader
-        title={displayName || '...'}
+        title={session?.name ?? '...'}
         onBack={() => router.push('/contacts', { transitionTypes: ['nav-back'] })}
         right={
           <HeaderIconButton aria-label={t('moreActions')} onClick={() => setMenuOpen(true)}>
@@ -206,7 +205,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
       <ConfirmDialog
         open={confirmDeleteOpen}
         title={t('deleteAi')}
-        description={t('deleteAiDescription', { name: displayName || t('thisAi') })}
+        description={t('deleteAiDescription', { name: session?.name ?? t('thisAi') })}
         confirmLabel={t('deleteConfirm')}
         variant="danger"
         onConfirm={() => void handleConfirmDelete()}
@@ -228,7 +227,6 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void loadMore()}
-          userNickname={user?.nickname ?? tCommon('userFallback')}
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={sessionQuery.isGenerating && !isStreaming} />

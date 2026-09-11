@@ -1,9 +1,8 @@
-import { DEFAULT_LOCALE } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadCharacterSkills } from '@/prompts/load';
 import type { GroupChatPostBody } from '@/schemas/api/groups/chat-post';
+import { getCharacterDefinition } from '@/services/character/definition.service';
 import { assertChatDailyTurnQuota } from '@/services/chat/quota.service';
 import { resolveChatLlm, type ResolvedChatLlm } from '@/services/chat/resolve-llm';
 import { scheduleGroupMemoryExtract } from '@/services/memory/extract-queue.service';
@@ -106,8 +105,8 @@ export async function streamGroupAssistantReply({
   previousMessageAt,
 }: StreamGroupAssistantReplyOptions): Promise<UIMessageStreamPayload> {
   const user = await getUserById(userId);
-  const skills = loadCharacterSkills(speaker.slug);
-  const tools = resolveToolsForCharacter(skills, {
+  const definition = await getCharacterDefinition(speaker.characterId);
+  const tools = resolveToolsForCharacter(definition.skills, {
     userId,
     characterSlug: speaker.slug,
   });
@@ -127,10 +126,11 @@ export async function streamGroupAssistantReply({
     userNickname: user?.nickname ?? '用户',
     characterId: speaker.characterId,
     characterSlug: speaker.slug,
+    characterName: definition.name,
+    persona: definition.persona,
     memberSlugs: members.map((m) => m.character.slug),
     lastUserContent: ragQueryText,
     timeZone,
-    locale: user?.locale ?? DEFAULT_LOCALE,
     previousMessageAt,
   });
 
@@ -147,7 +147,7 @@ export async function streamGroupAssistantReply({
     userProfile: meta.userProfile,
     groupChatRules: meta.groupChatRules,
     rosterBlock: meta.rosterBlock,
-    skills,
+    skills: definition.skills,
     systemPrompt,
   });
 
@@ -238,7 +238,7 @@ export async function streamGroupAssistantReply({
     metadata: {
       kind: null,
       slug: speaker.slug,
-      speakerCharacterId: speaker.characterId,
+      name: definition.name,
     },
   };
 }
@@ -280,6 +280,7 @@ export async function streamGroupChatFlow(
     const previousMessageAt = await findLatestGroupMessageCreatedAt(groupSessionId);
     const { id: userMessageId } = await createGroupUserMessage(
       groupSessionId,
+      userId,
       lastMessage.parts,
       kind,
     );

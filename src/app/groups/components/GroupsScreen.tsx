@@ -1,12 +1,7 @@
 'use client';
 
 import { fetchGroups, type GroupDetail } from '@/client-api/groups';
-import {
-  type CharacterTranslationFn,
-  type TranslationFn,
-  useTCharacter,
-  useTranslations,
-} from '@/components/I18nProvider';
+import { type TranslationFn, useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,14 +15,10 @@ import { useRouter } from 'next/navigation';
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-function memberSubtitle(
-  group: GroupDetail,
-  tCharacter: CharacterTranslationFn,
-  t: TranslationFn<'groups'>,
-): string {
+function memberSubtitle(group: GroupDetail, t: TranslationFn<'groups'>): string {
   if (group.members.length === 0) return t('noMembers');
   if (group.members.length <= 3) {
-    return group.members.map((m) => tCharacter(m.slug)).join(t('memberNameSeparator'));
+    return group.members.map((m) => m.name).join(t('memberNameSeparator'));
   }
   return t('memberCount', { count: group.members.length });
 }
@@ -66,7 +57,6 @@ interface GroupsListProps {
 
 function GroupsList({ groups }: GroupsListProps) {
   const router = useRouter();
-  const tCharacter = useTCharacter();
   const t = useTranslations('groups');
 
   return (
@@ -79,7 +69,7 @@ function GroupsList({ groups }: GroupsListProps) {
             onClick={() => router.push(`/groups/${group.id}`, { transitionTypes: ['nav-forward'] })}
             className={cn(
               'flex w-full items-center gap-3 border-b border-border/50 px-4 py-3 text-left',
-              'hover:bg-surface',
+              'hover:bg-row-hover',
             )}
           >
             <div
@@ -96,7 +86,7 @@ function GroupsList({ groups }: GroupsListProps) {
                 {group.title}
               </div>
               <div className={cn('truncate text-xs text-muted-foreground')}>
-                {memberSubtitle(group, tCharacter, t)}
+                {memberSubtitle(group, t)}
               </div>
             </div>
           </button>

@@ -1,6 +1,9 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { DEFAULT_CHARACTER_ID } from '@/prompts/load';
+import {
+  type CharacterCatalogItem,
+  toCharacterCatalogItem,
+} from '@/services/character/definition.utils';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { API_ERROR_CODE } from '@/types/api-error';
 
@@ -8,10 +11,7 @@ import { API_ERROR_CODE } from '@/types/api-error';
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-export type GroupMemberSummary = {
-  id: string;
-  slug: string;
-};
+export type GroupMemberSummary = CharacterCatalogItem;
 
 export type GroupDetail = {
   id: string;
@@ -29,6 +29,7 @@ export type GroupDetail = {
 const characterSelect = {
   id: true,
   slug: true,
+  profile: true,
 } as const;
 
 const groupDetailSelect = {
@@ -51,29 +52,26 @@ function mapGroupDetail(row: {
   createdAt: Date;
   updatedAt: Date;
   generatingStartedAt: Date | null;
-  members: { character: GroupMemberSummary }[];
+  members: { character: { id: string; slug: string; profile: unknown } }[];
 }): GroupDetail {
   return {
     id: row.id,
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    members: row.members.map((m) => m.character),
+    members: row.members.map((m) => toCharacterCatalogItem(m.character)),
     isGenerating: isGenerationBusy(row.generatingStartedAt),
   };
 }
 
-/** 校验全部 characterId 均在用户通讯录中，且含默认角色。 */
+/** 校验全部 characterId 均在用户通讯录中（至少 1 个由 schema 保证）。 */
 async function assertGroupMembersValid(userId: string, characterIds: string[]): Promise<void> {
   const contacts = await prisma.userCharacter.findMany({
     where: {
       userId,
       characterId: { in: characterIds },
     },
-    select: {
-      characterId: true,
-      character: { select: { slug: true } },
-    },
+    select: { characterId: true },
   });
 
   const found = new Set(contacts.map((c) => c.characterId));
@@ -82,13 +80,6 @@ async function assertGroupMembersValid(userId: string, characterIds: string[]): 
     throw AppError.badRequest(
       '请先将所选 AI 添加为好友',
       API_ERROR_CODE.GROUP_MEMBERS_NOT_CONTACTS,
-    );
-  }
-
-  if (!contacts.some((c) => c.character.slug === DEFAULT_CHARACTER_ID)) {
-    throw AppError.badRequest(
-      '群聊须包含默认 AI 好友',
-      API_ERROR_CODE.GROUP_MUST_INCLUDE_DEFAULT_CHARACTER,
     );
   }
 }
@@ -142,7 +133,7 @@ export async function listGroups(userId: string): Promise<GroupDetail[]> {
 
 /**
  * 创建群聊（同批成员可建多个群）。
- * 成员须已在通讯录中，且必须包含默认角色。
+ * 成员须已在通讯录中，至少 1 个 AI。
  */
 export async function createGroup(
   userId: string,
@@ -174,7 +165,7 @@ export async function deleteGroup(groupSessionId: string, userId: string): Promi
 }
 
 /**
- * 整表覆盖群成员（须含默认角色、须为好友）；踢人只删 GroupMember，不动消息。
+ * 整表覆盖群成员（须为好友、至少 1 个）；踢人只删 GroupMember，不动消息。
  */
 export async function replaceGroupMembers(
   groupSessionId: string,

@@ -1,7 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
-import { loadCharacterSkills } from '@/prompts/load';
 import type { ChatPostBody } from '@/schemas/api/chat/post';
 import { assertChatDailyTurnQuota } from '@/services/chat/quota.service';
 import { resolveChatLlm } from '@/services/chat/resolve-llm';
@@ -40,6 +39,7 @@ type PreparedChatTurn = {
   startedAt: number;
   systemPrompt: string;
   modelId: string;
+  characterId: string;
   modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
   tools: ReturnType<typeof resolveToolsForCharacter>;
   metadata: MessageMetadata;
@@ -100,18 +100,18 @@ async function prepareChatTurn(
       sessionId,
       role: lastMessage.role,
       parts: lastMessage.parts as InputJsonValue,
+      speakerUserId: userId,
     },
   });
   const userMessageId = userMessage.id;
 
-  const { characterId, characterSlug } = await resolveSessionContext(
+  const { characterId, characterSlug, characterName, skills } = await resolveSessionContext(
     sessionId,
   );
   await scheduleMemoryJobsBestEffort(sessionId, userId, characterId);
 
   const contextMessages = await getContextMessages(sessionId);
   const lastUserContent = lastMessage.parts.find((p) => p.type === 'text')?.text ?? '';
-  const skills = loadCharacterSkills(characterSlug);
   const tools = resolveToolsForCharacter(skills, { userId, characterSlug });
   const { systemPrompt, meta } = await buildSystemPrompt(sessionId, lastUserContent, {
     timeZone,
@@ -136,12 +136,13 @@ async function prepareChatTurn(
     startedAt: Date.now(),
     systemPrompt,
     modelId,
+    characterId,
     modelMessages: await convertToModelMessages(contextMessages),
     tools,
     metadata: {
       kind: null,
       slug: characterSlug,
-      speakerCharacterId: characterId,
+      name: characterName,
     },
   };
 }
@@ -153,18 +154,29 @@ async function finishChatTurn(params: {
   userMessageId: string;
   startedAt: number;
   modelId: string;
+  characterId: string;
   text: string;
   reasoningText: string | undefined;
   usage: LanguageModelUsage | undefined;
 }): Promise<void> {
-  const { sessionId, claimedAt, userMessageId, startedAt, modelId, text, reasoningText, usage } =
-    params;
+  const {
+    sessionId,
+    claimedAt,
+    userMessageId,
+    startedAt,
+    modelId,
+    characterId,
+    text,
+    reasoningText,
+    usage,
+  } = params;
 
   await releaseChatGeneration(sessionId, claimedAt);
 
   try {
     const { messageId: assistantMessageId } = await saveAssistantResponse(
       sessionId,
+      characterId,
       buildAssistantParts(text, reasoningText),
     );
 
@@ -243,6 +255,7 @@ export async function streamChatFlow(
           userMessageId: prepared.userMessageId,
           startedAt: prepared.startedAt,
           modelId: prepared.modelId,
+          characterId: prepared.characterId,
           text,
           reasoningText: finalStep.reasoningText,
           usage,

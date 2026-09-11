@@ -46,7 +46,7 @@ flowchart TB
 
 | 功能 | 函数 |
 |------|------|
-| 组装 system prompt（人设 + 画像 + 记忆） | `buildSystemPrompt` / `buildGroupSystemPrompt`（人设 / jobs 文案：`src/prompts/`） |
+| 组装 system prompt（人设 + 画像 + 记忆） | `buildSystemPrompt` / `buildGroupSystemPrompt`（人设：`Character` 表；共享 rules：`src/prompts/`） |
 | 读取并格式化用户画像 | `getUserProfileText` |
 | 语义检索 + 衰减重排 + 滤已删记忆 | `fetchMemoryFragmentsForPrompt`, `queryMemoryWithDecay`, `effectiveScore` |
 | RAG 命中后刷新活跃时间 | `touchMemories` |

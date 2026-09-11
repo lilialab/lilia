@@ -3,7 +3,6 @@ import { AppError } from '@/lib/server/app-error';
 import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
 import { revokeAllAuthSessions } from '@/lib/server/session';
-import { ensureDefaultContact } from '@/services/character/contacts.service';
 import { VectorService } from '@/services/memory/vector.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
@@ -121,7 +120,6 @@ export async function registerUser(input: {
     select: { id: true },
   });
 
-  await ensureDefaultContact(user.id);
   return user;
 }
 

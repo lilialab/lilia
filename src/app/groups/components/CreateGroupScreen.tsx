@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  DEFAULT_CHARACTER_SLUG,
-  MemberPickerEmpty,
-  MemberPickerList,
-} from '@/app/groups/components/MemberPicker';
+import { MemberPickerEmpty, MemberPickerList } from '@/app/groups/components/MemberPicker';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { createGroup } from '@/client-api/groups';
 import { useTranslations } from '@/components/I18nProvider';
@@ -29,8 +25,7 @@ export function CreateGroupScreen() {
   const { user } = useAuth();
   const t = useTranslations('createGroup');
   const [title, setTitle] = useState('');
-  /** 用户可切换的成员；默认角色由下方 selectedIds 派生强制选中 */
-  const [extraSelectedIds, setExtraSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const contactsQuery = useQuery({
     queryKey: queryKeys.contacts,
@@ -39,9 +34,6 @@ export function CreateGroupScreen() {
   });
 
   const contacts = contactsQuery.data ?? [];
-  const defaultCharacterId = contacts.find((c) => c.slug === DEFAULT_CHARACTER_SLUG)?.id;
-  const selectedIds = new Set(extraSelectedIds);
-  if (defaultCharacterId) selectedIds.add(defaultCharacterId);
 
   const createMutation = useMutation({
     mutationFn: createGroup,
@@ -55,15 +47,14 @@ export function CreateGroupScreen() {
   });
 
   const isBootstrapping = contactsQuery.isLoading;
-  const canSubmit = title.trim().length > 0 && !createMutation.isPending;
+  const canSubmit = title.trim().length > 0 && selectedIds.size > 0 && !createMutation.isPending;
 
   /* -------------------------------------------------------------------------- */
   /* Handlers                                                                   */
   /* -------------------------------------------------------------------------- */
 
   const handleToggle = (contact: ContactSummary) => {
-    if (contact.slug === DEFAULT_CHARACTER_SLUG) return;
-    setExtraSelectedIds((prev) => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(contact.id)) next.delete(contact.id);
       else next.add(contact.id);

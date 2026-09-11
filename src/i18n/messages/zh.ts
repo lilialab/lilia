@@ -6,7 +6,6 @@ export const zh = {
     cancel: '取消',
     confirm: '确认',
     loading: '加载中...',
-    userFallback: '我',
   },
   tabBar: {
     contacts: '通讯录',
@@ -42,12 +41,6 @@ export const zh = {
     empty: '没有可添加的角色',
     add: '添加',
     addedToast: '已添加 {name}',
-  },
-  characters: {
-    'lilia.displayName': '莉莉娅',
-    'lilia.shortBio': '短句、家常的朋友。',
-    'rin.displayName': '凛',
-    'rin.shortBio': '不听话、嘴毒。朋友，不是工具。',
   },
   chat: {
     moreActions: '更多操作',
@@ -97,7 +90,6 @@ export const zh = {
     saving: '保存中...',
     save: '保存',
     pickerEmpty: '通讯录加载异常，请返回后重试',
-    defaultMember: '默认成员',
   },
   groupChat: {
     manageMembers: '管理成员',
@@ -201,8 +193,6 @@ export const zh = {
     USERNAME_TAKEN: '账号已被占用',
     CONTACT_REQUIRED: '请先添加该 AI 好友',
     GROUP_MEMBERS_NOT_CONTACTS: '请先将所选 AI 添加为好友',
-    GROUP_MUST_INCLUDE_DEFAULT_CHARACTER: '群聊须包含默认 AI 好友',
-    CANNOT_DELETE_DEFAULT_CONTACT: '不能删除默认好友',
     GENERATION_BUSY: '正在回复，请稍后再发',
     CHARACTER_NOT_IN_GROUP: '该角色不在群内',
     LLM_CONFIG_INCOMPLETE: '请同时填写 Base URL、API Key 与模型',

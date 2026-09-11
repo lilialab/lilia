@@ -10,6 +10,7 @@
   --foreground: #27272a;
   --surface: #fafafa;
   --chat: #f4f4f5;
+  --row-hover: #f4f4f5;
   --border: #e4e4e7;
   --muted-foreground: #71717a;
   --primary: #27272a;
@@ -31,6 +32,7 @@
     --foreground: #f4f4f5;
     --surface: #18181b;
     --chat: #27272a;
+    --row-hover: #27272a;
     --border: #3f3f46;
     --muted-foreground: #a1a1aa;
     --primary: #d4d4d8;
@@ -48,6 +50,7 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-chat: var(--chat);
+  --color-row-hover: var(--row-hover);
   --color-border: var(--border);
   --color-muted-foreground: var(--muted-foreground);
   --color-primary: var(--primary);

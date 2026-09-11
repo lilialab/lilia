@@ -53,10 +53,11 @@ export function writeStoredMentionSlug(groupSessionId: string, slug: string): vo
 export function buildUserOutboundMessage(
   text: string,
   slug: string,
+  name: string,
 ): { text: string; metadata: MessageMetadata } {
   return {
     text: `@${slug} ${text.trim()}`,
-    metadata: { kind: null, slug },
+    metadata: { kind: null, slug, name },
   };
 }
 
@@ -88,7 +89,7 @@ export function sendTurnCueIfMentioned(options: {
 
   void sendMessage({
     text: buildTurnCueText(slug),
-    metadata: { kind: MESSAGE_KIND_TURN_CUE, slug },
+    metadata: { kind: MESSAGE_KIND_TURN_CUE, slug, name: null },
   });
   return 'sent';
 }

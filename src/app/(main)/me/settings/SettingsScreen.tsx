@@ -25,7 +25,7 @@ function SettingsRow({ href, label, trailing, destructive }: SettingsRowProps) {
       href={href}
       transitionTypes={['nav-forward']}
       className={cn(
-        'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm hover:bg-surface',
+        'flex w-full items-center justify-between gap-3 px-4 py-3.5 text-sm hover:bg-row-hover',
         destructive ? 'text-destructive' : 'text-foreground',
       )}
     >
