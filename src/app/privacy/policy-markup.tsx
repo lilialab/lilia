@@ -1,8 +1,9 @@
 import { cn } from '@/lib/client/cn';
 import type { ReactNode } from 'react';
 
-export const CONTACT_EMAIL = 'liuyuchuan816@gmail.com';
-export const SILICONFLOW_PRIVACY = 'https://docs.siliconflow.cn/en/legals/privacy-policy';
+export const CONTACT_EMAIL = 'liuyuchuan816@163.com';
+export const SILICONFLOW_PRIVACY_ZH = 'https://docs.siliconflow.cn/cn/legals/privacy-policy';
+export const SILICONFLOW_PRIVACY_EN = 'https://docs.siliconflow.cn/en/legals/privacy-policy';
 export const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
 
 export const listClass = cn('list-disc space-y-1.5 pl-5');

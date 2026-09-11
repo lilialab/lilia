@@ -6,18 +6,21 @@ import {
   listClass,
   PolicyArticle,
   PrivacySection,
-  SILICONFLOW_PRIVACY,
+  SILICONFLOW_PRIVACY_EN,
 } from '../policy-markup';
 
 export function PrivacyPolicyEn() {
   return (
     <PolicyArticle
       lang="en"
-      updated="Last updated: 9 September 2026"
-      intro="We treat your chats as private. We only keep what LILIA needs to run, we do not sell your information, and we do not use it for advertising. This page explains what we store, how we protect it, who helps us process it, and what happens when you delete your account."
+      updated="Last updated: 11 September 2026"
+      intro="This notice is for people using LILIA in China. We treat your chats as private. We only process the personal information the service needs to run, we do not sell it, and we do not use it for advertising. This page explains what we process, why, who else is involved, and how you can access, correct, or delete it."
     >
       <PrivacySection title="Who we are">
-        <p>LILIA is a chat app with long-term memory, run by one person.</p>
+        <p>
+          LILIA is a chat app with long-term memory, built and run by one person. It is currently
+          offered only to users in China.
+        </p>
         <p>
           Contact:{' '}
           <a href={`mailto:${CONTACT_EMAIL}`} className={cn('text-primary underline')}>
@@ -26,8 +29,8 @@ export function PrivacyPolicyEn() {
         </p>
       </PrivacySection>
 
-      <PrivacySection title="What we collect">
-        <p>When you create an account and use LILIA, we store:</p>
+      <PrivacySection title="What personal information we process">
+        <p>When you create an account and use LILIA, we process:</p>
         <ul className={listClass}>
           <li>
             Account data: username, nickname, a hash of your password (not the password itself),
@@ -58,8 +61,8 @@ export function PrivacyPolicyEn() {
           </li>
         </ul>
         <p>
-          On sign-up we use Cloudflare Turnstile to tell humans from bots. Cloudflare receives what
-          its widget needs for that check. See{' '}
+          On sign-up we use Cloudflare Turnstile to tell humans from bots. Cloudflare is a US
+          company; information needed for that check is sent outside mainland China. See{' '}
           <ExternalLink href={CLOUDFLARE_PRIVACY}>Cloudflare’s privacy policy</ExternalLink>.
         </p>
       </PrivacySection>
@@ -81,7 +84,7 @@ export function PrivacyPolicyEn() {
           <li>If you add your own LLM API key, we store it encrypted</li>
           <li>The login cookie is HTTP-only, so page scripts cannot read it</li>
           <li>We do not use advertising SDKs or third-party analytics</li>
-          <li>We do not sell your information</li>
+          <li>We do not sell your personal information</li>
           <li>We do not use your chats to train a LILIA model</li>
         </ul>
       </PrivacySection>
@@ -89,18 +92,19 @@ export function PrivacyPolicyEn() {
       <PrivacySection title="Where it is stored and who else sees it">
         <p>
           <span className={cn('font-medium text-foreground')}>Our servers.</span>{' '}
-          Your account, chats, memories, and embeddings live on a server we operate in Tokyo, Japan.
-          If that location changes, we will update this page.
+          Your account, chats, memories, and embeddings live on servers we operate. The data center
+          may change as we redeploy and may be outside mainland China. We will not update this page
+          or notify you solely for that.
         </p>
         <p>
           <span className={cn('font-medium text-foreground')}>
             Default language model and embeddings.
           </span>{' '}
           Chat replies (unless you set your own API), memory extraction, memory maintenance, profile
-          generation, and embeddings are sent to SiliconFlow (硅基流动), a company based in China.
-          We currently use a DeepSeek model they host. SiliconFlow receives the text we send so it
-          can run the model. That processing is covered by{' '}
-          <ExternalLink href={SILICONFLOW_PRIVACY}>SiliconFlow’s privacy policy</ExternalLink>.
+          generation, and embeddings are sent to SiliconFlow (北京硅基流动科技有限公司), a company
+          in China. We currently use a DeepSeek model they host. SiliconFlow receives the text we
+          send so it can run the model. That processing is covered by{' '}
+          <ExternalLink href={SILICONFLOW_PRIVACY_EN}>SiliconFlow’s privacy policy</ExternalLink>.
         </p>
         <p>
           <span className={cn('font-medium text-foreground')}>Your own LLM API.</span>{' '}
@@ -108,6 +112,7 @@ export function PrivacyPolicyEn() {
           that endpoint instead of our default. Memory extraction, embeddings, and related
           background jobs still use SiliconFlow, so that text still goes there.
         </p>
+        <p>We do not provide your personal information to other third parties except as above.</p>
       </PrivacySection>
 
       <PrivacySection title="How long we keep it">
@@ -124,14 +129,15 @@ export function PrivacyPolicyEn() {
 
       <PrivacySection title="What you can do">
         <ul className={listClass}>
-          <li>Change nickname, password, language, and LLM API settings while signed in</li>
+          <li>
+            View and change nickname, password, language, and LLM API settings while signed in
+          </li>
           <li>
             Delete your account in Settings. That permanently removes your account, chats, memories,
             profiles, login sessions, and stored vectors from our systems
           </li>
           <li>
-            Email us if something did not delete and we can still reach it on our servers. We will
-            remove it
+            Email us if something did not delete and we can still reach it. We will remove it
           </li>
         </ul>
         <p>
@@ -139,8 +145,8 @@ export function PrivacyPolicyEn() {
           privacy policy. We cannot delete copies on their systems.
         </p>
         <p>
-          There is no in-app export of all your data yet. If you need a copy, email us and we will
-          do what we reasonably can.
+          There is no in-app export of all your personal information yet. If you need a copy, email
+          us and we will do what we reasonably can.
         </p>
       </PrivacySection>
 
@@ -149,27 +155,22 @@ export function PrivacyPolicyEn() {
           We set one first-party cookie: an HTTP-only session cookie used to keep you logged in. In
           production it is marked Secure.
         </p>
-        <p>Cloudflare Turnstile may set its own cookies during registration.</p>
-      </PrivacySection>
-
-      <PrivacySection title="Children">
         <p>
-          LILIA is not directed at children under 13. Do not create an account if you are under 13.
+          Cloudflare Turnstile may set its own cookies during registration (those may also be
+          outside mainland China).
         </p>
       </PrivacySection>
 
-      <PrivacySection title="International users">
+      <PrivacySection title="Minors">
         <p>
-          If you use LILIA from outside Japan, your account data is stored in Japan, and text sent
-          for model inference is processed by SiliconFlow in China. We do not currently offer a
-          choice of region.
+          LILIA is not directed at children under 14. Do not create an account if you are under 14.
         </p>
       </PrivacySection>
 
       <PrivacySection title="Changes">
         <p>
           We will change this page when the product changes (for example a different default model
-          provider or server region). The date at the top is the last update.
+          provider). The date at the top is the last update.
         </p>
       </PrivacySection>
     </PolicyArticle>

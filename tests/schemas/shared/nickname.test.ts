@@ -36,7 +36,8 @@ describe('nicknameSchema', () => {
 describe('patchMeBodySchema', () => {
   it('接受 locale 更新', () => {
     expect(patchMeBodySchema.safeParse({ locale: 'en' }).success).toBe(true);
-    expect(patchMeBodySchema.safeParse({ locale: 'ja' }).success).toBe(true);
+    expect(patchMeBodySchema.safeParse({ locale: 'zh' }).success).toBe(true);
+    expect(patchMeBodySchema.safeParse({ locale: 'ja' }).success).toBe(false);
   });
 
   it('接受 nickname 更新', () => {

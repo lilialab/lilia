@@ -38,7 +38,7 @@ describe('translateApiError', () => {
       '对方正在回复，请稍后再发',
       API_ERROR_CODE.GENERATION_BUSY,
     );
-    expect(translateApiError(error)).toBe(en.errors.GENERATION_BUSY);
+    expect(translateApiError(error)).toBe(zh.errors.GENERATION_BUSY);
   });
 
   it('未知 code 回退到 error.message', () => {
@@ -46,7 +46,7 @@ describe('translateApiError', () => {
   });
 
   it('无 message 时用 fallback', () => {
-    expect(translateApiError({})).toBe(en.errors.fallback);
+    expect(translateApiError({})).toBe(zh.errors.fallback);
   });
 });
 

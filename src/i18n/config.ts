@@ -1,20 +1,18 @@
-export const locales = ['en', 'zh', 'ja'] as const;
+export const locales = ['en', 'zh'] as const;
 
 export type Locale = (typeof locales)[number];
 
-export const DEFAULT_LOCALE: Locale = 'en';
+export const DEFAULT_LOCALE: Locale = 'zh';
 
 /** 语言选择器用的自称（不随界面语言翻译）。 */
 export const localeLabels: Record<Locale, string> = {
   en: 'English',
   zh: '中文',
-  ja: '日本語',
 };
 
 const localeHtmlLang: Record<Locale, string> = {
   en: 'en',
   zh: 'zh-CN',
-  ja: 'ja',
 };
 
 /** 语言偏好 Cookie 逻辑名（实际名由 `lib/client/cookie` 加 `pai_` 前缀）。 */

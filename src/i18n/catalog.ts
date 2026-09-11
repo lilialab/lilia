@@ -1,12 +1,10 @@
 import type { Locale } from './config';
 import { en, type Messages } from './messages/en';
-import { ja } from './messages/ja';
 import { zh } from './messages/zh';
 
 const catalogs: Record<Locale, Messages> = {
   en,
   zh,
-  ja,
 };
 
 /** 按语言取文案目录。 */

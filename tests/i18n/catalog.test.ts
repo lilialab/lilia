@@ -5,7 +5,6 @@ describe('getMessages', () => {
   it('按语言返回对应目录', () => {
     expect(getMessages('en').settings.language).toBe('Language');
     expect(getMessages('zh').settings.language).toBe('语言');
-    expect(getMessages('ja').settings.language).toBe('言語');
   });
 });
 
