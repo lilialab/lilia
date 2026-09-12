@@ -13,7 +13,7 @@ export function PrivacyPolicyZh() {
   return (
     <PolicyArticle
       lang="zh-CN"
-      updated="最后更新：2026年9月11日"
+      updated="最后更新：2026年9月12日"
       intro="本说明面向在中国使用 LILIA 的用户。我们把你的对话视为私密内容，只处理运行服务所需的个人信息，不会出售，也不会用于广告。本页说明我们处理哪些信息、用于什么、由谁处理，以及你如何查阅、更正和删除。"
     >
       <PrivacySection title="我们是谁">
@@ -29,7 +29,7 @@ export function PrivacyPolicyZh() {
       <PrivacySection title="我们处理哪些个人信息">
         <p>当你注册并使用 LILIA 时，我们会处理：</p>
         <ul className={listClass}>
-          <li>账号数据：用户名、昵称、密码哈希（不是密码本身）、语言偏好、时区</li>
+          <li>账号数据：用户名、昵称、可选头像、密码哈希（不是密码本身）、语言偏好、时区</li>
           <li>你填写的可选 LLM 设置（API Base URL、模型名、API Key）。密钥会加密存储</li>
           <li>你的聊天消息，包括单聊和群聊</li>
           <li>从这些聊天中提取的记忆（简短事实与事件），以及我们为你与每个 AI 角色生成的画像</li>
@@ -96,16 +96,16 @@ export function PrivacyPolicyZh() {
       </PrivacySection>
 
       <PrivacySection title="保留多久">
-        <p>在你注销账号之前，我们会保留你的账号、聊天、记忆、嵌入和画像。</p>
+        <p>在你注销账号之前，我们会保留你的账号、聊天、记忆、嵌入、画像和头像。</p>
         <p>登录 Cookie 会在有限期后过期。</p>
         <p>限流记录和后台任务记录是短期的，到期或完成后会删除。</p>
       </PrivacySection>
 
       <PrivacySection title="你可以做什么">
         <ul className={listClass}>
-          <li>登录后可查阅并修改昵称、密码、语言和 LLM API 设置</li>
+          <li>登录后可查阅并修改昵称、头像、密码、语言和 LLM API 设置</li>
           <li>
-            在设置中注销账号。这将永久删除我们系统中你的账号、聊天、记忆、画像、登录会话和已存储的向量
+            在设置中注销账号。这将永久删除我们系统中你的账号、聊天、记忆、画像、登录会话、已存储的向量和头像
           </li>
           <li>若有未删除且我们仍能访问到的内容，可发邮件给我们，我们会删除</li>
         </ul>

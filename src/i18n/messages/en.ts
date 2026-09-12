@@ -28,6 +28,7 @@ export const en = {
   me: {
     title: 'Me',
     settings: 'Settings',
+    changeAvatar: 'Change profile photo',
     logout: 'Log out',
     loggingOut: 'Logging out...',
   },
@@ -46,7 +47,7 @@ export const en = {
     addedToast: 'Added {name}',
     notFound: 'Character not found',
     backToList: 'Back to Explore',
-    noComments: 'No comments yet',
+    noComments: 'No comments yet. Be the first to comment.',
     commentsLoadError: 'Could not load comments',
     commentPlaceholder: 'Write a comment...',
     commentSubmit: 'Post',
@@ -206,6 +207,9 @@ export const en = {
     CHARACTER_NOT_IN_GROUP: 'That character is not in this group',
     LLM_CONFIG_INCOMPLETE: 'Enter base URL, API key, and model together',
     LLM_BASE_URL_INVALID: 'Base URL must be an http(s) address',
+    AVATAR_REQUIRED: 'Please choose an image',
+    AVATAR_TOO_LARGE: 'Image must be 5MB or smaller',
+    AVATAR_INVALID_TYPE: 'Use a JPEG, PNG, or WebP image',
   } satisfies Record<ApiErrorCode | 'fallback', string>,
   register: {
     title: 'Create an account',

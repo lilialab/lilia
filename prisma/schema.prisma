@@ -15,6 +15,8 @@ model User {
   username        String   @unique
   passwordHash    String   @map("password_hash")
   nickname        String   @map("nickname")
+  /// 头像在对象存储中的 key；空表示未上传
+  avatarKey       String?  @map("avatar_key")
   /// UI 语言（en | zh）；注册时由客户端写入
   locale          String   @default("zh")
   /// 设备 IANA 时区；注册写入，聊天请求覆盖，供 extract 把消息 createdAt 转成本地墙钟

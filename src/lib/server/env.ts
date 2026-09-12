@@ -107,6 +107,12 @@ export const env = {
   CHROMA_HOST: requireStringEnv('CHROMA_HOST'),
   CHROMA_PORT: requireNumberEnv('CHROMA_PORT'),
 
+  S3_ENDPOINT: requireStringEnv('S3_ENDPOINT'),
+  S3_REGION: requireStringEnv('S3_REGION'),
+  S3_ACCESS_KEY: requireStringEnv('S3_ACCESS_KEY'),
+  S3_SECRET_KEY: requireStringEnv('S3_SECRET_KEY'),
+  S3_BUCKET: requireStringEnv('S3_BUCKET'),
+
   REDIS_URL: requireStringEnv('REDIS_URL'),
 
   LOG_LEVEL: requireStringEnv('LOG_LEVEL'),

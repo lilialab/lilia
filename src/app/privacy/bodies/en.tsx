@@ -13,7 +13,7 @@ export function PrivacyPolicyEn() {
   return (
     <PolicyArticle
       lang="en"
-      updated="Last updated: 11 September 2026"
+      updated="Last updated: 12 September 2026"
       intro="This notice is for people using LILIA in China. We treat your chats as private. We only process the personal information the service needs to run, we do not sell it, and we do not use it for advertising. This page explains what we process, why, who else is involved, and how you can access, correct, or delete it."
     >
       <PrivacySection title="Who we are">
@@ -33,8 +33,8 @@ export function PrivacyPolicyEn() {
         <p>When you create an account and use LILIA, we process:</p>
         <ul className={listClass}>
           <li>
-            Account data: username, nickname, a hash of your password (not the password itself),
-            language preference, and timezone
+            Account data: username, nickname, optional profile photo, a hash of your password (not
+            the password itself), language preference, and timezone
           </li>
           <li>
             Optional LLM settings you enter (API base URL, model name, and API key). The key is
@@ -117,8 +117,8 @@ export function PrivacyPolicyEn() {
 
       <PrivacySection title="How long we keep it">
         <p>
-          We keep your account, chats, memories, embeddings, and profiles until you delete your
-          account.
+          We keep your account, chats, memories, embeddings, profiles, and profile photo until you
+          delete your account.
         </p>
         <p>The login cookie expires after a limited period.</p>
         <p>
@@ -130,11 +130,12 @@ export function PrivacyPolicyEn() {
       <PrivacySection title="What you can do">
         <ul className={listClass}>
           <li>
-            View and change nickname, password, language, and LLM API settings while signed in
+            View and change nickname, profile photo, password, language, and LLM API settings while
+            signed in
           </li>
           <li>
             Delete your account in Settings. That permanently removes your account, chats, memories,
-            profiles, login sessions, and stored vectors from our systems
+            profiles, login sessions, stored vectors, and profile photo from our systems
           </li>
           <li>
             Email us if something did not delete and we can still reach it. We will remove it

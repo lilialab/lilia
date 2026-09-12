@@ -17,7 +17,10 @@ export interface CharacterComment {
   id: string;
   body: string;
   createdAt: string;
+  userId: string;
   nickname: string;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
 }
 
 /** 拉取 AI 角色目录（含是否已添加）。 */

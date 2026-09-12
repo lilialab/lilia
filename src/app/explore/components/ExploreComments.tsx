@@ -1,6 +1,7 @@
 'use client';
 
 import { formatCommentPostedAt } from '@/app/explore/utils/comment-time';
+import { userAvatarUrl } from '@/client-api/auth';
 import {
   type CharacterComment,
   COMMENT_BODY_MAX_LENGTH,
@@ -39,24 +40,69 @@ interface CommentComposerProps {
 /* Subcomponents                                                              */
 /* -------------------------------------------------------------------------- */
 
+interface CommentAuthorAvatarProps {
+  userId: string;
+  nickname: string;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
+}
+
+/** 评论作者头像：有图显示图，否则昵称首字。 */
+function CommentAuthorAvatar({
+  userId,
+  nickname,
+  hasAvatar,
+  avatarUpdatedAt,
+}: CommentAuthorAvatarProps) {
+  const initial = Array.from(nickname.trim())[0] ?? '';
+
+  return (
+    <span
+      className={cn(
+        'flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full',
+        'bg-border text-[10px] font-medium text-foreground/80',
+      )}
+    >
+      {hasAvatar && (
+        // next/image 优化器不带 Cookie，本接口要登录才能读
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={userAvatarUrl(userId, avatarUpdatedAt)}
+          alt=""
+          className={cn('h-full w-full object-cover')}
+        />
+      )}
+      {!hasAvatar && initial}
+    </span>
+  );
+}
+
 function CommentList({ comments }: CommentListProps) {
   const tCommon = useTranslations('common');
 
   return (
-    <ul className={cn('divide-y divide-border/50')}>
+    <ul>
       {comments.map((comment) => (
-        <li key={comment.id} className={cn('px-4 py-3')}>
-          <p className={cn('text-xs text-muted-foreground')}>{comment.nickname}</p>
-          <p className={cn('mt-1 text-sm text-foreground')}>{comment.body}</p>
-          <time
-            dateTime={comment.createdAt}
-            className={cn('mt-1 block text-xs text-muted-foreground')}
-          >
-            {formatCommentPostedAt(new Date(comment.createdAt), {
-              today: tCommon('today'),
-              yesterday: tCommon('yesterday'),
-            })}
-          </time>
+        <li key={comment.id} className={cn('flex items-start gap-2 px-4 py-3')}>
+          <CommentAuthorAvatar
+            userId={comment.userId}
+            nickname={comment.nickname}
+            hasAvatar={comment.hasAvatar}
+            avatarUpdatedAt={comment.avatarUpdatedAt}
+          />
+          <div className={cn('min-w-0 flex-1')}>
+            <p className={cn('text-xs text-muted-foreground')}>{comment.nickname}</p>
+            <p className={cn('mt-1 text-sm text-foreground')}>{comment.body}</p>
+            <time
+              dateTime={comment.createdAt}
+              className={cn('mt-1 block text-xs text-muted-foreground')}
+            >
+              {formatCommentPostedAt(new Date(comment.createdAt), {
+                today: tCommon('today'),
+                yesterday: tCommon('yesterday'),
+              })}
+            </time>
+          </div>
         </li>
       ))}
     </ul>
@@ -131,7 +177,7 @@ export function ExploreComments({ characterId }: ExploreCommentsProps) {
 
   return (
     <section className={cn('mt-3 bg-background')}>
-      <header className={cn('border-b border-border px-4 py-4')}>
+      <header className={cn('border-b border-border/50 px-4 py-4')}>
         {comments !== undefined && (
           <h2 className={cn('text-sm font-medium text-foreground')}>
             {t('commentsTitle', { count: comments.length })}

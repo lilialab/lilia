@@ -28,6 +28,7 @@ export const zh = {
   me: {
     title: '我',
     settings: '设置',
+    changeAvatar: '更换头像',
     logout: '退出登录',
     loggingOut: '退出中...',
   },
@@ -46,7 +47,7 @@ export const zh = {
     addedToast: '已添加 {name}',
     notFound: '找不到该角色',
     backToList: '返回探索',
-    noComments: '还没有评论',
+    noComments: '还没有评论，来说两句吧',
     commentsLoadError: '无法加载评论',
     commentPlaceholder: '写评论...',
     commentSubmit: '发表',
@@ -203,6 +204,9 @@ export const zh = {
     CHARACTER_NOT_IN_GROUP: '该角色不在群内',
     LLM_CONFIG_INCOMPLETE: '请同时填写 Base URL、API Key 与模型',
     LLM_BASE_URL_INVALID: 'Base URL 须为 http(s) 地址',
+    AVATAR_REQUIRED: '请选择图片',
+    AVATAR_TOO_LARGE: '图片不能超过 5MB',
+    AVATAR_INVALID_TYPE: '仅支持 jpeg、png、webp',
   },
   register: {
     title: '注册账号',

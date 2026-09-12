@@ -34,14 +34,19 @@ describe('listCharacterComments', () => {
     expect(prisma.characterComment.findMany).not.toHaveBeenCalled();
   });
 
-  it('只查楼主未软删，新到旧，join 当前昵称', async () => {
+  it('只查楼主未软删，新到旧，join 当前作者信息', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'char-1' } as never);
     vi.mocked(prisma.characterComment.findMany).mockResolvedValue([
       {
         id: 'c-1',
         body: '好看',
         createdAt: new Date('2026-09-12T00:00:00.000Z'),
-        user: { nickname: '小明' },
+        user: {
+          id: 'user-1',
+          nickname: '小明',
+          avatarKey: 'avatars/user-1/a.jpg',
+          updatedAt: new Date('2026-09-12T01:00:00.000Z'),
+        },
       },
     ] as never);
 
@@ -58,7 +63,7 @@ describe('listCharacterComments', () => {
         id: true,
         body: true,
         createdAt: true,
-        user: { select: { nickname: true } },
+        user: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
       },
     });
     expect(comments).toEqual([
@@ -66,7 +71,10 @@ describe('listCharacterComments', () => {
         id: 'c-1',
         body: '好看',
         createdAt: '2026-09-12T00:00:00.000Z',
+        userId: 'user-1',
         nickname: '小明',
+        hasAvatar: true,
+        avatarUpdatedAt: '2026-09-12T01:00:00.000Z',
       },
     ]);
   });
@@ -87,13 +95,18 @@ describe('createCharacterComment', () => {
     expect(prisma.characterComment.create).not.toHaveBeenCalled();
   });
 
-  it('只写 characterId / userId / body，返回当前昵称', async () => {
+  it('只写 characterId / userId / body，返回当前作者信息', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'char-1' } as never);
     vi.mocked(prisma.characterComment.create).mockResolvedValue({
       id: 'c-1',
       body: '好看',
       createdAt: new Date('2026-09-12T00:00:00.000Z'),
-      user: { nickname: '小明' },
+      user: {
+        id: 'user-1',
+        nickname: '小明',
+        avatarKey: null,
+        updatedAt: new Date('2026-09-12T01:00:00.000Z'),
+      },
     } as never);
 
     const comment = await createCharacterComment('user-1', 'char-1', '好看');
@@ -104,14 +117,17 @@ describe('createCharacterComment', () => {
         id: true,
         body: true,
         createdAt: true,
-        user: { select: { nickname: true } },
+        user: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
       },
     });
     expect(comment).toEqual({
       id: 'c-1',
       body: '好看',
       createdAt: '2026-09-12T00:00:00.000Z',
+      userId: 'user-1',
       nickname: '小明',
+      hasAvatar: false,
+      avatarUpdatedAt: '2026-09-12T01:00:00.000Z',
     });
   });
 });

@@ -2,6 +2,7 @@ import { type Locale, parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
+import { deleteS3Object } from '@/lib/server/s3';
 import { revokeAllAuthSessions } from '@/lib/server/session';
 import { VectorService } from '@/services/memory/vector.service';
 import { API_ERROR_CODE } from '@/types/api-error';
@@ -14,6 +15,7 @@ export interface PublicUser {
   id: string;
   username: string;
   nickname: string;
+  hasAvatar: boolean;
   locale: Locale;
   createdAt: Date;
   updatedAt: Date;
@@ -23,14 +25,38 @@ export interface PublicUser {
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const publicUserSelect = {
+export const publicUserSelect = {
   id: true,
   username: true,
   nickname: true,
+  avatarKey: true,
   locale: true,
   createdAt: true,
   updatedAt: true,
 } as const;
+
+type PublicUserRow = {
+  id: string;
+  username: string;
+  nickname: string;
+  avatarKey: string | null;
+  locale: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+/** 把库行转成公开用户（不暴露 avatarKey）。 */
+export function toPublicUser(row: PublicUserRow): PublicUser {
+  return {
+    id: row.id,
+    username: row.username,
+    nickname: row.nickname,
+    hasAvatar: Boolean(row.avatarKey),
+    locale: parseLocale(row.locale),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
 
 /* -------------------------------------------------------------------------- */
 /* Public API                                                                 */
@@ -43,7 +69,7 @@ export async function getUserById(id: string): Promise<PublicUser | null> {
     select: publicUserSelect,
   });
   if (!row) return null;
-  return { ...row, locale: parseLocale(row.locale) };
+  return toPublicUser(row);
 }
 
 /** 按 ID 取用户；不存在时 401（会话对应用户已失效）。 */
@@ -138,7 +164,7 @@ export async function updateUserLocale(userId: string, locale: Locale): Promise<
     data: { locale },
     select: publicUserSelect,
   });
-  return { ...row, locale: parseLocale(row.locale) };
+  return toPublicUser(row);
 }
 
 /** 更新用户昵称。 */
@@ -151,7 +177,7 @@ export async function updateUserNickname(
     data: { nickname },
     select: publicUserSelect,
   });
-  return { ...row, locale: parseLocale(row.locale) };
+  return toPublicUser(row);
 }
 
 /** 修改登录密码；成功后吊销该用户全部登录会话。 */
@@ -191,7 +217,7 @@ const vectorService = new VectorService();
 export async function deleteUserAccount(userId: string, currentPassword: string): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, passwordHash: true },
+    select: { id: true, passwordHash: true, avatarKey: true },
   });
 
   if (!user) {
@@ -202,6 +228,9 @@ export async function deleteUserAccount(userId: string, currentPassword: string)
     throw AppError.unauthorized('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
   }
 
+  if (user.avatarKey) {
+    await deleteS3Object(user.avatarKey);
+  }
   await vectorService.deleteMemoriesByUserId(userId);
   await prisma.user.delete({ where: { id: userId } });
 }

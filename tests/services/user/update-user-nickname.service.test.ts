@@ -21,6 +21,7 @@ describe('updateUserNickname', () => {
       id: 'user-1',
       username: 'tom',
       nickname: '新昵称',
+      avatarKey: null,
       locale: 'zh',
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-02'),
@@ -34,6 +35,7 @@ describe('updateUserNickname', () => {
       select: expect.objectContaining({ nickname: true }),
     });
     expect(user.nickname).toBe('新昵称');
+    expect(user.hasAvatar).toBe(false);
     expect(user.locale).toBe('zh');
   });
 });

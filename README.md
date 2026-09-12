@@ -55,6 +55,7 @@ docker compose up -d
 | MySQL | 3306 | 会话、消息、记忆元数据 |
 | ChromaDB | 8000 | 记忆向量检索 |
 | Redis | 6379 | BullMQ 任务队列 |
+| SeaweedFS | 8333 | 对象存储 S3 API |
 | Loki | 3100 | 日志接收 API（无 Web UI，应用往这里推送） |
 | Grafana | 3001 | 日志查询界面（admin / password） |
 
@@ -67,6 +68,7 @@ ssh -L 3001:127.0.0.1:3001 -L 3306:127.0.0.1:3306 -L 6379:127.0.0.1:6379 user@yo
 ```
 
 - Grafana：浏览器打开 [http://localhost:3001](http://localhost:3001)（`admin` / `password`）
+- SeaweedFS S3：[http://localhost:8333](http://localhost:8333)（`.env` 里的 `S3_ACCESS_KEY` / `S3_SECRET_KEY`，桶 `S3_BUCKET`）
 - MySQL / Redis：DBeaver、Redis Insight 等连本机对应端口即可
 - `exit` 结束 SSH 后转发即关闭。
 

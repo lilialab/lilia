@@ -5,21 +5,24 @@ export type CharacterCommentItem = {
   id: string;
   body: string;
   createdAt: string;
+  userId: string;
   nickname: string;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
 };
 
 const commentSelect = {
   id: true,
   body: true,
   createdAt: true,
-  user: { select: { nickname: true } },
+  user: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
 } as const;
 
 type CommentRow = {
   id: string;
   body: string;
   createdAt: Date;
-  user: { nickname: string };
+  user: { id: string; nickname: string; avatarKey: string | null; updatedAt: Date };
 };
 
 function toCommentItem(row: CommentRow): CharacterCommentItem {
@@ -27,7 +30,10 @@ function toCommentItem(row: CommentRow): CharacterCommentItem {
     id: row.id,
     body: row.body,
     createdAt: row.createdAt.toISOString(),
+    userId: row.user.id,
     nickname: row.user.nickname,
+    hasAvatar: Boolean(row.user.avatarKey),
+    avatarUpdatedAt: row.user.updatedAt.toISOString(),
   };
 }
 
@@ -41,7 +47,7 @@ async function assertCharacterExists(characterId: string): Promise<void> {
   }
 }
 
-/** 列出角色详情评论：仅楼主、未软删，新到旧；昵称 join 当前用户。 */
+/** 列出角色详情评论：仅楼主、未软删，新到旧；作者信息 join 当前用户。 */
 export async function listCharacterComments(characterId: string): Promise<CharacterCommentItem[]> {
   await assertCharacterExists(characterId);
 

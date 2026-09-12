@@ -9,6 +9,7 @@ export interface AuthUser {
   id: string;
   username: string;
   nickname: string;
+  hasAvatar: boolean;
   locale: Locale;
   createdAt: string;
   updatedAt: string;
@@ -81,4 +82,20 @@ export async function updateUserNickname(nickname: string): Promise<AuthUser> {
     body: JSON.stringify({ nickname }),
   });
   return data.user;
+}
+
+/** 上传当前用户头像。 */
+export async function uploadUserAvatar(file: File): Promise<AuthUser> {
+  const form = new FormData();
+  form.append('file', file);
+  const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me/avatar', {
+    method: 'POST',
+    body: form,
+  });
+  return data.user;
+}
+
+/** 登录用户可读的头像地址（浏览器带 Cookie 拉字节）。 */
+export function userAvatarUrl(userId: string, updatedAt: string): string {
+  return `/api/users/${encodeURIComponent(userId)}/avatar?v=${encodeURIComponent(updatedAt)}`;
 }
