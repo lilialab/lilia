@@ -3,12 +3,11 @@
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
-import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
-import { UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 /* -------------------------------------------------------------------------- */
@@ -67,7 +66,6 @@ export function ContactsScreen() {
   /* State & data                                                               */
   /* -------------------------------------------------------------------------- */
 
-  const router = useRouter();
   const { user } = useAuth();
   const t = useTranslations('contacts');
 
@@ -85,17 +83,7 @@ export function ContactsScreen() {
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
-      <ScreenHeader
-        title={t('title')}
-        right={
-          <HeaderIconButton
-            aria-label={t('addAriaLabel')}
-            onClick={() => router.push('/chat/add', { transitionTypes: ['nav-forward'] })}
-          >
-            <UserPlus className={cn('h-5 w-5')} aria-hidden />
-          </HeaderIconButton>
-        }
-      />
+      <ScreenHeader title={t('title')} />
 
       <PageStatus
         loading={contactsQuery.isLoading}

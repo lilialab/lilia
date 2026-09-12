@@ -1,6 +1,5 @@
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
-import { parseCharacterProfile } from '@/services/character/definition.utils';
 import { clearChatGeneration } from '@/services/session/generation-lock.service';
 import type { MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
@@ -25,7 +24,7 @@ type HistoryRow = {
   role: string;
   parts: unknown;
   createdAt: Date;
-  speakerCharacter: { slug: string; profile: unknown };
+  speakerCharacter: { slug: string; name: string };
   speakerUser: { nickname: string };
 };
 
@@ -39,11 +38,11 @@ function mapMessageRow(row: HistoryRow): {
 } {
   let metadata: MessageMetadata;
   if (row.role === 'assistant') {
-    const { slug, profile } = row.speakerCharacter;
+    const { slug, name } = row.speakerCharacter;
     metadata = {
       kind: null,
       slug,
-      name: parseCharacterProfile(profile).name,
+      name,
     };
   } else {
     metadata = {
@@ -144,7 +143,7 @@ export async function getHistoryPage(
       role: true,
       parts: true,
       createdAt: true,
-      speakerCharacter: { select: { slug: true, profile: true } },
+      speakerCharacter: { select: { slug: true, name: true } },
       speakerUser: { select: { nickname: true } },
     },
   });

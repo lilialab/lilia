@@ -1,6 +1,9 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { toCharacterCatalogItem } from '@/services/character/definition.utils';
+import {
+  catalogCharacterSelect,
+  toCharacterCatalogItem,
+} from '@/services/character/definition.utils';
 import { softDeleteSessionMessages } from '@/services/chat/message.service';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
@@ -8,26 +11,45 @@ import { createSession } from '@/services/session/sessions.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
 /* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-const characterSelect = {
-  id: true,
-  slug: true,
-  profile: true,
-} as const;
-
-/* -------------------------------------------------------------------------- */
 /* Character catalog                                                          */
 /* -------------------------------------------------------------------------- */
 
-/** 列出全部 AI 角色目录。 */
-export async function listCharacters() {
-  const rows = await prisma.character.findMany({
-    select: characterSelect,
-    orderBy: { createdAt: 'asc' },
+/** 列出全部 AI 角色目录，并标记当前用户是否已添加。 */
+export async function listCharacters(userId: string) {
+  const [rows, contacts] = await Promise.all([
+    prisma.character.findMany({
+      select: catalogCharacterSelect,
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.userCharacter.findMany({
+      where: { userId },
+      select: { characterId: true },
+    }),
+  ]);
+  const contactIds = new Set(contacts.map((row) => row.characterId));
+  return rows.map((row) => ({
+    ...toCharacterCatalogItem(row),
+    isContact: contactIds.has(row.id),
+  }));
+}
+
+/** 按 id 取目录角色，并标记当前用户是否已添加。 */
+export async function getCatalogCharacter(userId: string, characterId: string) {
+  const row = await prisma.character.findUnique({
+    where: { id: characterId },
+    select: catalogCharacterSelect,
   });
-  return rows.map(toCharacterCatalogItem);
+  if (!row) {
+    throw AppError.notFound('角色不存在');
+  }
+  const contact = await prisma.userCharacter.findUnique({
+    where: { userId_characterId: { userId, characterId } },
+    select: { id: true },
+  });
+  return {
+    ...toCharacterCatalogItem(row),
+    isContact: contact !== null,
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -41,7 +63,7 @@ export async function listContacts(userId: string) {
     orderBy: { createdAt: 'asc' },
     select: {
       createdAt: true,
-      character: { select: characterSelect },
+      character: { select: catalogCharacterSelect },
     },
   });
 
@@ -72,7 +94,7 @@ export async function assertIsContact(userId: string, characterId: string): Prom
 export async function addContact(userId: string, characterId: string) {
   const character = await prisma.character.findUnique({
     where: { id: characterId },
-    select: characterSelect,
+    select: catalogCharacterSelect,
   });
 
   if (!character) {
@@ -85,7 +107,7 @@ export async function addContact(userId: string, characterId: string) {
     },
     select: {
       createdAt: true,
-      character: { select: characterSelect },
+      character: { select: catalogCharacterSelect },
     },
   });
 
@@ -100,7 +122,7 @@ export async function addContact(userId: string, characterId: string) {
     data: { userId, characterId },
     select: {
       createdAt: true,
-      character: { select: characterSelect },
+      character: { select: catalogCharacterSelect },
     },
   });
 
@@ -157,7 +179,7 @@ export async function getOrCreateContactSession(userId: string, characterId: str
 
   const character = await prisma.character.findUnique({
     where: { id: characterId },
-    select: characterSelect,
+    select: catalogCharacterSelect,
   });
 
   if (!character) {

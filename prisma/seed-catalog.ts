@@ -22,9 +22,15 @@ export async function seedCharacterCatalog(): Promise<void> {
       throw new Error('prisma/characters.json 每条须为对象');
     }
 
-    const { slug, profile, skills, extract } = entry as Record<string, unknown>;
+    const { slug, name, shortBio, profile, skills, extract } = entry as Record<string, unknown>;
     if (typeof slug !== 'string' || slug.trim() === '') {
       throw new Error('角色缺少 slug');
+    }
+    if (typeof name !== 'string' || name.trim() === '') {
+      throw new Error(`角色 ${slug} 缺少 name`);
+    }
+    if (typeof shortBio !== 'string') {
+      throw new Error(`角色 ${slug} 的 shortBio 须为字符串`);
     }
     if (typeof extract !== 'string') {
       throw new Error(`角色 ${slug} 的 extract 须为字符串`);
@@ -42,6 +48,8 @@ export async function seedCharacterCatalog(): Promise<void> {
     await prisma.character.create({
       data: {
         slug,
+        name: name.trim(),
+        shortBio,
         profile: profile as InputJsonValue,
         skills: skills as InputJsonValue,
         extract,

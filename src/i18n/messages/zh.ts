@@ -10,6 +10,7 @@ export const zh = {
   tabBar: {
     contacts: '通讯录',
     groups: '群聊',
+    explore: '探索',
     me: '我',
     navAriaLabel: '主导航',
   },
@@ -30,17 +31,19 @@ export const zh = {
   },
   contacts: {
     title: '通讯录',
-    addAriaLabel: '添加 AI',
     loadError: '无法加载通讯录',
     sectionMyAi: '我的 AI',
-    empty: '还没有 AI 好友，点右上角添加',
+    empty: '还没有 AI 好友，去探索添加',
   },
-  addContact: {
-    title: '添加 AI',
+  explore: {
+    title: '探索',
     loadError: '无法加载角色列表',
-    empty: '没有可添加的角色',
+    empty: '还没有角色',
     add: '添加',
+    added: '已添加',
     addedToast: '已添加 {name}',
+    notFound: '找不到该角色',
+    backToList: '返回探索',
   },
   chat: {
     moreActions: '更多操作',

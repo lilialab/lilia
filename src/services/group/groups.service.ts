@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import {
+  catalogCharacterSelect,
   type CharacterCatalogItem,
   toCharacterCatalogItem,
 } from '@/services/character/definition.utils';
@@ -26,12 +27,6 @@ export type GroupDetail = {
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const characterSelect = {
-  id: true,
-  slug: true,
-  profile: true,
-} as const;
-
 const groupDetailSelect = {
   id: true,
   title: true,
@@ -41,7 +36,7 @@ const groupDetailSelect = {
   members: {
     orderBy: { createdAt: 'asc' as const },
     select: {
-      character: { select: characterSelect },
+      character: { select: catalogCharacterSelect },
     },
   },
 } as const;
@@ -52,7 +47,7 @@ function mapGroupDetail(row: {
   createdAt: Date;
   updatedAt: Date;
   generatingStartedAt: Date | null;
-  members: { character: { id: string; slug: string; profile: unknown } }[];
+  members: { character: { id: string; slug: string; name: string; shortBio: string } }[];
 }): GroupDetail {
   return {
     id: row.id,

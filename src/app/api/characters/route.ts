@@ -4,7 +4,7 @@ import { listCharacters } from '@/services/character/contacts.service';
 import { type NextRequest } from 'next/server';
 
 export const GET = withApiHandler(async (req: NextRequest) => {
-  await resolveRequestUserId(req);
-  const characters = await listCharacters();
+  const userId = await resolveRequestUserId(req);
+  const characters = await listCharacters(userId);
   return successResponse({ characters });
 });

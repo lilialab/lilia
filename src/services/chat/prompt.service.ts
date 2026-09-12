@@ -44,20 +44,19 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     select: {
       userId: true,
       user: { select: { locale: true, nickname: true } },
-      character: { select: { id: true, slug: true, profile: true, skills: true } },
+      character: { select: { id: true, slug: true, name: true, profile: true, skills: true } },
     },
   });
   if (!session) {
     throw AppError.notFound('会话不存在');
   }
-  const profile = parseCharacterProfile(session.character.profile);
   return {
     userId: session.userId,
     userNickname: session.user.nickname,
     characterId: session.character.id,
     characterSlug: session.character.slug,
-    characterName: profile.name,
-    persona: profile.persona,
+    characterName: session.character.name,
+    persona: parseCharacterProfile(session.character.profile),
     skills: parseCharacterSkills(session.character.skills),
     locale: parseLocale(session.user.locale),
   };

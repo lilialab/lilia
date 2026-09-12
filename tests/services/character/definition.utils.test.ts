@@ -7,28 +7,20 @@ import {
 import { describe, expect, it } from 'vitest';
 
 describe('parseCharacterProfile', () => {
-  it('抽出 name/shortBio，其余为人设', () => {
+  it('人设对象原样返回', () => {
     expect(
       parseCharacterProfile({
-        name: '莉莉娅',
-        shortBio: '短句',
         identity: { name: '{{name}}' },
       }),
     ).toEqual({
-      name: '莉莉娅',
-      shortBio: '短句',
-      persona: { identity: { name: '{{name}}' } },
+      identity: { name: '{{name}}' },
     });
   });
 
-  it('trim name', () => {
-    expect(parseCharacterProfile({ name: '  凛  ', shortBio: '' }).name).toBe('凛');
-  });
-
-  it('非对象或缺少字段时抛内部错误', () => {
+  it('非对象或含已升列字段时抛内部错误', () => {
     expect(() => parseCharacterProfile(null)).toThrow(AppError);
-    expect(() => parseCharacterProfile({ shortBio: '' })).toThrow(/角色人设缺少 name/);
-    expect(() => parseCharacterProfile({ name: 'x' })).toThrow(/角色人设缺少 shortBio/);
+    expect(() => parseCharacterProfile({ name: 'x' })).toThrow(/已升列/);
+    expect(() => parseCharacterProfile({ shortBio: '' })).toThrow(/已升列/);
   });
 });
 
@@ -50,7 +42,8 @@ describe('toCharacterCatalogItem', () => {
       toCharacterCatalogItem({
         id: 'c1',
         slug: 'lilia',
-        profile: { name: '莉莉娅', shortBio: '朋友', presence: '话短' },
+        name: '莉莉娅',
+        shortBio: '朋友',
       }),
     ).toEqual({
       id: 'c1',

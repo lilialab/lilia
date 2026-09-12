@@ -7,8 +7,20 @@ export interface CharacterSummary {
   shortBio: string;
 }
 
-/** 拉取 AI 角色目录。 */
-export async function fetchCharacters(): Promise<CharacterSummary[]> {
-  const data = await apiFetchJson<{ characters: CharacterSummary[] }>('/api/characters');
+export interface CatalogCharacter extends CharacterSummary {
+  isContact: boolean;
+}
+
+/** 拉取 AI 角色目录（含是否已添加）。 */
+export async function fetchCharacters(): Promise<CatalogCharacter[]> {
+  const data = await apiFetchJson<{ characters: CatalogCharacter[] }>('/api/characters');
   return data.characters;
+}
+
+/** 拉取单个目录角色（含是否已添加）。 */
+export async function fetchCharacter(characterId: string): Promise<CatalogCharacter> {
+  const data = await apiFetchJson<{ character: CatalogCharacter }>(
+    `/api/characters/${characterId}`,
+  );
+  return data.character;
 }

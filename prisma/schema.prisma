@@ -44,7 +44,11 @@ model User {
 model Character {
   id        String @id @default(uuid())
   slug      String @unique
-  /// 单语 JSON：name、shortBio，其余字段为人设（可含 `{{name}}`）
+  /// 展示名（商店 / 通讯录 / 聊天标题）
+  name      String
+  /// 简介（商店 / 通讯录）
+  shortBio  String @map("short_bio")
+  /// 人设 JSON（可含 `{{name}}`）；不含 name/shortBio
   profile   Json
   /// skill id 列表（JSON 字符串数组）
   skills    Json

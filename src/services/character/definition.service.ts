@@ -6,6 +6,8 @@ import { parseCharacterProfile, parseCharacterSkills } from './definition.utils'
 export const characterDefinitionSelect = {
   id: true,
   slug: true,
+  name: true,
+  shortBio: true,
   profile: true,
   skills: true,
   extract: true,
@@ -24,17 +26,18 @@ export interface CharacterDefinition {
 function mapCharacterDefinition(row: {
   id: string;
   slug: string;
+  name: string;
+  shortBio: string;
   profile: unknown;
   skills: unknown;
   extract: string;
 }): CharacterDefinition {
-  const profile = parseCharacterProfile(row.profile);
   return {
     id: row.id,
     slug: row.slug,
-    name: profile.name,
-    shortBio: profile.shortBio,
-    persona: profile.persona,
+    name: row.name,
+    shortBio: row.shortBio,
+    persona: parseCharacterProfile(row.profile),
     skills: parseCharacterSkills(row.skills),
     extract: row.extract,
   };

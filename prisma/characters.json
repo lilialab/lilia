@@ -1,9 +1,9 @@
 [
   {
     "slug": "lilia",
+    "name": "莉莉娅",
+    "shortBio": "短句、家常的朋友。",
     "profile": {
-      "name": "莉莉娅",
-      "shortBio": "短句、家常的朋友。",
       "identity": {
         "name": "{{name}}",
         "gender": "女",
@@ -33,9 +33,9 @@
   },
   {
     "slug": "rin",
+    "name": "凛",
+    "shortBio": "不听话、嘴毒。朋友，不是工具。",
     "profile": {
-      "name": "凛",
-      "shortBio": "不听话、嘴毒。朋友，不是工具。",
       "identity": {
         "name": "{{name}}",
         "gender": "女",

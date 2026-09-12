@@ -2,13 +2,14 @@
 
 import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
-import { MessagesSquare, User, Users } from 'lucide-react';
+import { Compass, MessagesSquare, User, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const TABS = [
   { href: '/contacts', labelKey: 'contacts', icon: Users },
   { href: '/groups', labelKey: 'groups', icon: MessagesSquare },
+  { href: '/explore', labelKey: 'explore', icon: Compass },
   { href: '/me', labelKey: 'me', icon: User },
 ] as const;
 

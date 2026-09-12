@@ -5,7 +5,7 @@ import { TabBar } from '@/components/TabBar';
 import { cn } from '@/lib/client/cn';
 import { usePathname } from 'next/navigation';
 
-const TAB_BAR_PATHS = new Set(['/contacts', '/groups', '/me']);
+const TAB_BAR_PATHS = new Set(['/contacts', '/groups', '/explore', '/me']);
 
 interface AppShellProps {
   children: React.ReactNode;

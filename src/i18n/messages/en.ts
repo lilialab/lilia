@@ -10,6 +10,7 @@ export const en = {
   tabBar: {
     contacts: 'Contacts',
     groups: 'Groups',
+    explore: 'Explore',
     me: 'Me',
     navAriaLabel: 'Main navigation',
   },
@@ -30,17 +31,19 @@ export const en = {
   },
   contacts: {
     title: 'Contacts',
-    addAriaLabel: 'Add AI',
     loadError: 'Could not load contacts',
     sectionMyAi: 'My AI',
-    empty: 'No AI friends yet. Tap + to add one.',
+    empty: 'No AI friends yet. Add one from Explore.',
   },
-  addContact: {
-    title: 'Add AI',
+  explore: {
+    title: 'Explore',
     loadError: 'Could not load characters',
-    empty: 'No characters available to add',
+    empty: 'No characters yet',
     add: 'Add',
+    added: 'Added',
     addedToast: 'Added {name}',
+    notFound: 'Character not found',
+    backToList: 'Back to Explore',
   },
   chat: {
     moreActions: 'More actions',

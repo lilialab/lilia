@@ -87,7 +87,7 @@ erDiagram
 | Model | 表名 | 职责 |
 |-------|------|------|
 | `User` | `users` | 登录用户 |
-| `Character` | `characters` | AI 角色目录；人设、skills、extract 在表列 |
+| `Character` | `characters` | AI 角色目录；name / shortBio 为列，人设 JSON、skills、extract 在表列 |
 | `UserCharacter` | `user_characters` | 通讯录；含该角色 maintain→profile 冷却时钟 |
 | `AuthSession` | `auth_sessions` | Cookie 登录会话（非聊天） |
 | `ChatSession` | `chat_sessions` | 单聊；每用户每角色至多一条；`generatingStartedAt` 防并发生成 |

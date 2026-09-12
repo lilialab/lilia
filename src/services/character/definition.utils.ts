@@ -1,12 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { type JsonObject } from '@/utils/json-yaml';
 
-export interface CharacterProfile {
-  name: string;
-  shortBio: string;
-  persona: JsonObject;
-}
-
 export interface CharacterCatalogItem {
   id: string;
   slug: string;
@@ -14,25 +8,24 @@ export interface CharacterCatalogItem {
   shortBio: string;
 }
 
-/** 解析角色人设 JSON：name / shortBio 给 UI，其余给人设 prompt。 */
-export function parseCharacterProfile(raw: unknown): CharacterProfile {
+export const catalogCharacterSelect = {
+  id: true,
+  slug: true,
+  name: true,
+  shortBio: true,
+} as const;
+
+/** 解析人设 JSON：须为对象，且不含已升列的 name/shortBio。 */
+export function parseCharacterProfile(raw: unknown): JsonObject {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
     throw AppError.internal('角色人设须为 JSON 对象');
   }
 
-  const { name, shortBio, ...persona } = raw as Record<string, unknown>;
-  if (typeof name !== 'string' || name.trim() === '') {
-    throw AppError.internal('角色人设缺少 name');
+  const persona = raw as Record<string, unknown>;
+  if ('name' in persona || 'shortBio' in persona) {
+    throw AppError.internal('角色人设不应含 name/shortBio（已升列）');
   }
-  if (typeof shortBio !== 'string') {
-    throw AppError.internal('角色人设缺少 shortBio');
-  }
-
-  return {
-    name: name.trim(),
-    shortBio,
-    persona: persona as JsonObject,
-  };
+  return persona as JsonObject;
 }
 
 /** 解析角色 skill id 列表。 */
@@ -47,8 +40,8 @@ export function parseCharacterSkills(raw: unknown): string[] {
 export function toCharacterCatalogItem(row: {
   id: string;
   slug: string;
-  profile: unknown;
+  name: string;
+  shortBio: string;
 }): CharacterCatalogItem {
-  const { name, shortBio } = parseCharacterProfile(row.profile);
-  return { id: row.id, slug: row.slug, name, shortBio };
+  return { id: row.id, slug: row.slug, name: row.name, shortBio: row.shortBio };
 }

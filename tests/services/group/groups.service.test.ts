@@ -16,8 +16,6 @@ import { prisma } from '@/lib/server/prisma';
 import { createGroup } from '@/services/group/groups.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
-const rinProfile = { name: '凛', shortBio: '嘴毒' };
-
 describe('createGroup', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -33,7 +31,7 @@ describe('createGroup', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       generatingStartedAt: null,
-      members: [{ character: { id: 'char-rin', slug: 'rin', profile: rinProfile } }],
+      members: [{ character: { id: 'char-rin', slug: 'rin', name: '凛', shortBio: '嘴毒' } }],
     } as never);
 
     const group = await createGroup('user-1', {
