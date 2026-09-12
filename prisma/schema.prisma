@@ -34,6 +34,7 @@ model User {
   memories       UserMemory[]
   profiles       UserProfile[]
   spokenMessages Message[]
+  comments       CharacterComment[]
 
   @@map("users")
 }
@@ -62,6 +63,7 @@ model Character {
   userCharacters UserCharacter[]
   memories       UserMemory[]
   profiles       UserProfile[]
+  comments       CharacterComment[]
 
   @@map("characters")
 }
@@ -155,6 +157,30 @@ model GroupMember {
   @@unique([groupSessionId, characterId])
   @@index([characterId])
   @@map("group_members")
+}
+
+/**
+ * 角色详情评论。parentId / deletedAt 预留；本版不写。
+ */
+model CharacterComment {
+  id          String    @id @default(uuid())
+  characterId String    @map("character_id")
+  userId      String    @map("user_id")
+  /// 非空 = 回复该评论；本版不写
+  parentId    String?   @map("parent_id")
+  body        String    @db.Text
+  /// 非空 = 已软删；本版不写
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  character Character         @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    CharacterComment? @relation("CharacterCommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies   CharacterComment[] @relation("CharacterCommentReplies")
+
+  @@index([characterId, createdAt])
+  @@index([parentId])
+  @@map("character_comments")
 }
 
 /**

@@ -34,7 +34,6 @@ export function MessageList({
   /* -------------------------------------------------------------------------- */
 
   const tCommon = useTranslations('common');
-  const tDate = useTranslations('chatDate');
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPinnedRef = useRef(true);
   const pendingScrollHeightRef = useRef<number | null>(null);
@@ -45,10 +44,10 @@ export function MessageList({
   const messageItems = useMemo(
     () =>
       buildMessageItems(messages.filter(isDisplayMessage), {
-        today: tDate('today'),
-        yesterday: tDate('yesterday'),
+        today: tCommon('today'),
+        yesterday: tCommon('yesterday'),
       }),
-    [messages, tDate],
+    [messages, tCommon],
   );
 
   /* -------------------------------------------------------------------------- */

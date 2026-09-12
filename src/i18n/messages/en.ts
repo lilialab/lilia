@@ -6,6 +6,8 @@ export const en = {
     cancel: 'Cancel',
     confirm: 'Confirm',
     loading: 'Loading...',
+    today: 'Today',
+    yesterday: 'Yesterday',
   },
   tabBar: {
     contacts: 'Contacts',
@@ -44,6 +46,11 @@ export const en = {
     addedToast: 'Added {name}',
     notFound: 'Character not found',
     backToList: 'Back to Explore',
+    noComments: 'No comments yet',
+    commentsLoadError: 'Could not load comments',
+    commentPlaceholder: 'Write a comment...',
+    commentSubmit: 'Post',
+    commentsTitle: '{count} comments',
   },
   chat: {
     moreActions: 'More actions',
@@ -59,10 +66,6 @@ export const en = {
     loadError: 'Could not load this chat. Add this AI as a friend first.',
     backToContacts: 'Back to contacts',
     generatingAria: 'Generating reply',
-  },
-  chatDate: {
-    today: 'Today',
-    yesterday: 'Yesterday',
   },
   chatInput: {
     placeholder: 'Message...',

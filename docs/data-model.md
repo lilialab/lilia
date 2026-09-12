@@ -20,6 +20,8 @@ erDiagram
   Character ||--o{ Message : "speaker"
   Character ||--o{ UserMemory : "记忆归属"
   Character ||--o{ UserProfile : "画像归属"
+  Character ||--o{ CharacterComment : "评论"
+  User ||--o{ CharacterComment : "发表"
 
   ChatSession ||--o{ Message : "单聊消息"
   GroupSession ||--o{ GroupMember : "含"
@@ -80,6 +82,14 @@ erDiagram
     string userId PK
     string characterId PK
   }
+
+  CharacterComment {
+    string id PK
+    string characterId FK
+    string userId FK
+    string parentId FK "nullable"
+    datetime deletedAt "nullable"
+  }
 ```
 
 ## 表职责
@@ -93,7 +103,7 @@ erDiagram
 | `ChatSession` | `chat_sessions` | 单聊；每用户每角色至多一条；`generatingStartedAt` 防并发生成 |
 | `GroupSession` | `group_sessions` | 群聊；用户为 owner；`generatingStartedAt` 防并发生成 |
 | `GroupMember` | `group_members` | 群内 AI 成员（≠ 通讯录） |
-| `Message` | `messages` | 单聊/群聊共用；见下方约束 |
+| `CharacterComment` | `character_comments` | 角色详情评论；`parentId` / `deletedAt` 预留 |
 | `UserMemory` | `user_memories` | 长期记忆（按 `userId + characterId` 私有） |
 | `UserProfile` | `user_profiles` | 用户×角色画像（按 `userId + characterId` 私有） |
 | `MemoryJob` | `memory_jobs` | extract / maintain / profile 任务记录 |

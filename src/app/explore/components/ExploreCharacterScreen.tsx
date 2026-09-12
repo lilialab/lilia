@@ -1,6 +1,7 @@
 'use client';
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
+import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
 import { fetchCharacter } from '@/client-api/characters';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
@@ -49,16 +50,20 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
         onAction={goBack}
       >
         {character && (
-          <div className={cn('flex-1 overflow-y-auto')}>
-            <section className={cn('mt-3 bg-background px-4 py-4')}>
-              <p className={cn('text-sm text-muted-foreground')}>{character.shortBio}</p>
-              <div className={cn('mt-4')}>
-                <ExploreAddButton
-                  characterId={character.id}
-                  isContact={character.isContact}
-                />
-              </div>
-            </section>
+          <div className={cn('flex min-h-0 flex-1 flex-col')}>
+            <div className={cn('flex-1 overflow-y-auto')}>
+              <section className={cn('mt-3 bg-background px-4 py-4')}>
+                <p className={cn('text-sm text-muted-foreground')}>{character.shortBio}</p>
+                <div className={cn('mt-4')}>
+                  <ExploreAddButton
+                    characterId={character.id}
+                    isContact={character.isContact}
+                  />
+                </div>
+              </section>
+              <ExploreComments characterId={character.id} />
+            </div>
+            <ExploreCommentComposer characterId={character.id} />
           </div>
         )}
       </PageStatus>

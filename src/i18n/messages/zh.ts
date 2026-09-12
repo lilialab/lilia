@@ -6,6 +6,8 @@ export const zh = {
     cancel: '取消',
     confirm: '确认',
     loading: '加载中...',
+    today: '今天',
+    yesterday: '昨天',
   },
   tabBar: {
     contacts: '通讯录',
@@ -44,6 +46,11 @@ export const zh = {
     addedToast: '已添加 {name}',
     notFound: '找不到该角色',
     backToList: '返回探索',
+    noComments: '还没有评论',
+    commentsLoadError: '无法加载评论',
+    commentPlaceholder: '写评论...',
+    commentSubmit: '发表',
+    commentsTitle: '{count} 条评论',
   },
   chat: {
     moreActions: '更多操作',
@@ -58,10 +65,6 @@ export const zh = {
     loadError: '无法加载会话，请先添加该 AI 好友',
     backToContacts: '返回通讯录',
     generatingAria: '正在生成回复',
-  },
-  chatDate: {
-    today: '今天',
-    yesterday: '昨天',
   },
   chatInput: {
     placeholder: '输入消息...',
