@@ -3,6 +3,7 @@
 import { ChatInput } from '@/app/chat/components/ChatInput';
 import { MessageList } from '@/app/chat/components/MessageList';
 import { useGroupMessageHistory } from '@/app/groups/hooks/useGroupMessageHistory';
+import { characterAvatarUrl } from '@/client-api/characters';
 import {
   deleteGroup,
   fetchGroup,
@@ -10,6 +11,7 @@ import {
   type GroupMemberSummary,
 } from '@/client-api/groups';
 import { ActionSheet } from '@/components/ActionSheet';
+import { Avatar } from '@/components/Avatar';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
@@ -177,7 +179,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
     const text = input.trim();
     if (!text || inputLocked || !selectedMember || !user) return;
 
-    const outbound = buildUserOutboundMessage(text, selectedMember.slug, user.nickname);
+    const outbound = buildUserOutboundMessage(text, selectedMember.slug, user);
     writeStoredMentionSlug(groupSessionId, selectedMember.slug);
     setInput('');
     turnCueHopCountRef.current = 0;
@@ -224,31 +226,27 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
         }
       />
 
-      <ActionSheet
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        items={[
-          {
-            key: 'members',
-            label: t('manageMembers'),
-            disabled: deleteDisabled,
-            onSelect: () => {
-              router.push(`/groups/${groupSessionId}/members`, {
-                transitionTypes: ['nav-forward'],
-              });
-            },
-          },
-          {
-            key: 'delete',
-            label: t('deleteGroup'),
-            variant: 'danger',
-            disabled: deleteDisabled,
-            onSelect: () => {
-              queueMicrotask(() => setConfirmDeleteOpen(true));
-            },
-          },
-        ]}
-      />
+      <ActionSheet open={menuOpen} onClose={() => setMenuOpen(false)}>
+        <ActionSheet.Item
+          disabled={deleteDisabled}
+          onSelect={() => {
+            router.push(`/groups/${groupSessionId}/members`, {
+              transitionTypes: ['nav-forward'],
+            });
+          }}
+        >
+          {t('manageMembers')}
+        </ActionSheet.Item>
+        <ActionSheet.Item
+          variant="danger"
+          disabled={deleteDisabled}
+          onSelect={() => {
+            queueMicrotask(() => setConfirmDeleteOpen(true));
+          }}
+        >
+          {t('deleteGroup')}
+        </ActionSheet.Item>
+      </ActionSheet>
 
       <ActionSheet
         open={mentionOpen}
@@ -258,17 +256,34 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
           e.preventDefault();
           setInputFocusKey((k) => (k ?? 0) + 1);
         }}
-        items={members.map((m) => ({
-          key: m.id,
-          label: selectedMember?.slug === m.slug
-            ? t('currentMember', { name: m.name })
-            : m.name,
-          description: `@${m.slug}`,
-          onSelect: () => {
-            handleSelectMention(m);
-          },
-        }))}
-      />
+      >
+        {members.map((m) => (
+          <ActionSheet.Item
+            key={m.id}
+            align="start"
+            onSelect={() => {
+              handleSelectMention(m);
+            }}
+          >
+            <Avatar
+              src={characterAvatarUrl(m.id, m.avatarUpdatedAt)}
+              hasAvatar={m.hasAvatar}
+              name={m.name}
+              size="xs"
+            />
+            <span className={cn('min-w-0 flex-1')}>
+              <span className={cn('block truncate')}>
+                {selectedMember?.slug === m.slug
+                  ? t('currentMember', { name: m.name })
+                  : m.name}
+              </span>
+              <span className={cn('block truncate text-xs text-muted-foreground')}>
+                @{m.slug}
+              </span>
+            </span>
+          </ActionSheet.Item>
+        ))}
+      </ActionSheet>
 
       <ConfirmDialog
         open={confirmDeleteOpen}

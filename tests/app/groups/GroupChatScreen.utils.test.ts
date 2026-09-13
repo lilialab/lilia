@@ -14,14 +14,35 @@ describe('groupMentionStorageKey', () => {
 });
 
 describe('buildUserOutboundMessage', () => {
+  const user = {
+    id: 'u1',
+    nickname: '阿明',
+    hasAvatar: true,
+    updatedAt: '2026-09-13T00:00:00.000Z',
+  };
+
   it('正文前拼 @slug，metadata 直接带 slug', () => {
-    expect(buildUserOutboundMessage('你好', 'einstein', '阿明')).toEqual({
+    expect(buildUserOutboundMessage('你好', 'einstein', user)).toEqual({
       text: '@einstein 你好',
-      metadata: { kind: null, slug: 'einstein', name: '阿明' },
+      metadata: {
+        kind: null,
+        slug: 'einstein',
+        name: '阿明',
+        speakerId: 'u1',
+        hasAvatar: true,
+        avatarUpdatedAt: '2026-09-13T00:00:00.000Z',
+      },
     });
-    expect(buildUserOutboundMessage('  hi  ', 'lilia', '阿明')).toEqual({
+    expect(buildUserOutboundMessage('  hi  ', 'lilia', user)).toEqual({
       text: '@lilia hi',
-      metadata: { kind: null, slug: 'lilia', name: '阿明' },
+      metadata: {
+        kind: null,
+        slug: 'lilia',
+        name: '阿明',
+        speakerId: 'u1',
+        hasAvatar: true,
+        avatarUpdatedAt: '2026-09-13T00:00:00.000Z',
+      },
     });
   });
 });
@@ -42,7 +63,14 @@ describe('sendTurnCueIfMentioned', () => {
     expect(sendMessage).toHaveBeenCalledWith({
       text:
         '[system] You (@einstein) were called on. Continue as yourself, based on the conversation above.',
-      metadata: { kind: MESSAGE_KIND_TURN_CUE, slug: 'einstein', name: null },
+      metadata: {
+        kind: MESSAGE_KIND_TURN_CUE,
+        slug: 'einstein',
+        name: null,
+        speakerId: null,
+        hasAvatar: false,
+        avatarUpdatedAt: '',
+      },
     });
   });
 

@@ -239,6 +239,9 @@ export async function streamGroupAssistantReply({
       kind: null,
       slug: speaker.slug,
       name: definition.name,
+      speakerId: speaker.characterId,
+      hasAvatar: definition.hasAvatar,
+      avatarUpdatedAt: definition.avatarUpdatedAt,
     },
   };
 }

@@ -3,7 +3,7 @@
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
 import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
 import { characterAvatarUrl, fetchCharacter } from '@/client-api/characters';
-import { AvatarCircle } from '@/components/AvatarCircle';
+import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -55,7 +55,7 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
             <div className={cn('flex-1 overflow-y-auto')}>
               <section className={cn('mt-3 bg-background px-4 py-4')}>
                 <div className={cn('flex items-start gap-4')}>
-                  <AvatarCircle
+                  <Avatar
                     src={characterAvatarUrl(character.id, character.avatarUpdatedAt)}
                     hasAvatar={character.hasAvatar}
                     name={character.name}

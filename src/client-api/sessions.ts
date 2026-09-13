@@ -7,6 +7,7 @@ const PAGE_SIZE = 10;
 /** 会话历史消息；METADATA 与 AI SDK UIMessage 对齐。 */
 export interface HistoryMessage<METADATA = MessageMetadata> extends UIMessage<METADATA> {
   createdAt?: string;
+  metadata: METADATA;
 }
 
 export interface MessageHistoryPage {

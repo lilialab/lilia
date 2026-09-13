@@ -6,7 +6,7 @@ import {
   characterAvatarUrl,
   fetchCharacters,
 } from '@/client-api/characters';
-import { AvatarCircle } from '@/components/AvatarCircle';
+import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -44,7 +44,7 @@ function ExploreList({ characters }: ExploreListProps) {
             transitionTypes={['nav-forward']}
             className={cn('flex min-w-0 flex-1 items-center gap-3')}
           >
-            <AvatarCircle
+            <Avatar
               src={characterAvatarUrl(character.id, character.avatarUpdatedAt)}
               hasAvatar={character.hasAvatar}
               name={character.name}

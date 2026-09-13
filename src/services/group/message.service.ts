@@ -1,6 +1,10 @@
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
-import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';
+import {
+  EMPTY_SPEAKER_AVATAR,
+  MESSAGE_KIND_TURN_CUE,
+  type MessageMetadata,
+} from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
@@ -36,8 +40,19 @@ type GroupHistoryRow = {
   kind: string | null;
   parts: unknown;
   createdAt: Date;
-  speakerCharacter: { slug: string; name: string };
-  speakerUser: { nickname: string };
+  speakerCharacter: {
+    id: string;
+    slug: string;
+    name: string;
+    avatarKey: string | null;
+    updatedAt: Date;
+  };
+  speakerUser: {
+    id: string;
+    nickname: string;
+    avatarKey: string | null;
+    updatedAt: Date;
+  };
 };
 
 function mapGroupMessageRow(row: GroupHistoryRow): {
@@ -49,17 +64,24 @@ function mapGroupMessageRow(row: GroupHistoryRow): {
 } {
   let metadata: MessageMetadata;
   if (row.role === 'assistant') {
-    const { slug, name } = row.speakerCharacter;
+    const { id, slug, name, avatarKey, updatedAt } = row.speakerCharacter;
     metadata = {
       kind: null,
       slug,
       name,
+      speakerId: id,
+      hasAvatar: Boolean(avatarKey),
+      avatarUpdatedAt: updatedAt.toISOString(),
     };
   } else {
+    const { id, nickname, avatarKey, updatedAt } = row.speakerUser;
     metadata = {
       kind: row.kind,
       slug: null,
-      name: row.speakerUser.nickname,
+      name: nickname,
+      speakerId: id,
+      hasAvatar: Boolean(avatarKey),
+      avatarUpdatedAt: updatedAt.toISOString(),
     };
   }
 
@@ -79,8 +101,10 @@ const groupMessageSelect = {
   kind: true,
   parts: true,
   createdAt: true,
-  speakerCharacter: { select: { slug: true, name: true } },
-  speakerUser: { select: { nickname: true } },
+  speakerCharacter: {
+    select: { id: true, slug: true, name: true, avatarKey: true, updatedAt: true },
+  },
+  speakerUser: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -197,6 +221,7 @@ export async function getGroupContextMessages(
         kind: null,
         slug,
         name: null,
+        ...EMPTY_SPEAKER_AVATAR,
       } satisfies MessageMetadata,
     };
   });

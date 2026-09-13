@@ -8,7 +8,7 @@ import {
   createCharacterComment,
   fetchCharacterComments,
 } from '@/client-api/characters';
-import { AvatarCircle } from '@/components/AvatarCircle';
+import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { translateApiError } from '@/i18n/client';
@@ -48,7 +48,7 @@ function CommentList({ comments }: CommentListProps) {
     <ul>
       {comments.map((comment) => (
         <li key={comment.id} className={cn('flex items-start gap-2 px-4 py-3')}>
-          <AvatarCircle
+          <Avatar
             src={userAvatarUrl(comment.userId, comment.avatarUpdatedAt)}
             hasAvatar={comment.hasAvatar}
             name={comment.nickname}

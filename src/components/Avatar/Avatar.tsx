@@ -6,21 +6,21 @@ const sizeClass = {
   lg: 'h-16 w-16 text-lg',
 } as const;
 
-interface AvatarCircleProps {
+interface AvatarProps {
   src: string;
   hasAvatar: boolean;
   name: string;
   size?: keyof typeof sizeClass;
 }
 
-/** 圆形头像：有头像显示图，否则名字首字。 */
-export function AvatarCircle({ src, hasAvatar, name, size = 'sm' }: AvatarCircleProps) {
+/** 圆角方头像：有头像显示图，否则名字首字。 */
+export function Avatar({ src, hasAvatar, name, size = 'sm' }: AvatarProps) {
   const initial = Array.from(name.trim())[0] ?? '';
 
   return (
     <span
       className={cn(
-        'flex shrink-0 items-center justify-center overflow-hidden rounded-full',
+        'flex shrink-0 items-center justify-center overflow-hidden rounded-lg',
         'bg-border font-medium text-foreground/80',
         sizeClass[size],
       )}

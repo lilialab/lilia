@@ -2,7 +2,7 @@
 
 import { characterAvatarUrl } from '@/client-api/characters';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
-import { AvatarCircle } from '@/components/AvatarCircle';
+import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -40,7 +40,7 @@ function ContactsList({ contacts }: ContactsListProps) {
               'hover:bg-row-hover',
             )}
           >
-            <AvatarCircle
+            <Avatar
               src={characterAvatarUrl(contact.id, contact.avatarUpdatedAt)}
               hasAvatar={contact.hasAvatar}
               name={contact.name}

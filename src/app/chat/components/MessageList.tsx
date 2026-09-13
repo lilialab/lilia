@@ -19,6 +19,7 @@ interface MessageListProps {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
+  hideSpeakerName?: boolean;
 }
 
 export function MessageList({
@@ -28,6 +29,7 @@ export function MessageList({
   hasMore = false,
   isLoadingMore = false,
   onLoadMore,
+  hideSpeakerName = false,
 }: MessageListProps) {
   /* -------------------------------------------------------------------------- */
   /* State & data                                                               */
@@ -151,7 +153,8 @@ export function MessageList({
             return (
               <AssistantLoadingBubble
                 key={message.id}
-                speakerName={message.metadata?.name ?? null}
+                message={message}
+                hideSpeakerName={hideSpeakerName}
               />
             );
           }
@@ -160,7 +163,7 @@ export function MessageList({
             <MessageBubble
               key={message.id}
               message={message}
-              speakerName={message.metadata?.name ?? null}
+              hideSpeakerName={hideSpeakerName}
             />
           );
         })}

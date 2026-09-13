@@ -1,4 +1,8 @@
-import { MESSAGE_KIND_TURN_CUE, type MessageMetadata } from '@/types/message-kind';
+import {
+  EMPTY_SPEAKER_AVATAR,
+  MESSAGE_KIND_TURN_CUE,
+  type MessageMetadata,
+} from '@/types/message-kind';
 import { extractTextFromParts } from '@/utils/message-parts';
 
 /** 一次用户发言后，自动 turn_cue 续聊最多轮次。 */
@@ -53,11 +57,18 @@ export function writeStoredMentionSlug(groupSessionId: string, slug: string): vo
 export function buildUserOutboundMessage(
   text: string,
   slug: string,
-  name: string,
+  user: { id: string; nickname: string; hasAvatar: boolean; updatedAt: string },
 ): { text: string; metadata: MessageMetadata } {
   return {
     text: `@${slug} ${text.trim()}`,
-    metadata: { kind: null, slug, name },
+    metadata: {
+      kind: null,
+      slug,
+      name: user.nickname,
+      speakerId: user.id,
+      hasAvatar: user.hasAvatar,
+      avatarUpdatedAt: user.updatedAt,
+    },
   };
 }
 
@@ -89,7 +100,7 @@ export function sendTurnCueIfMentioned(options: {
 
   void sendMessage({
     text: buildTurnCueText(slug),
-    metadata: { kind: MESSAGE_KIND_TURN_CUE, slug, name: null },
+    metadata: { kind: MESSAGE_KIND_TURN_CUE, slug, name: null, ...EMPTY_SPEAKER_AVATAR },
   });
   return 'sent';
 }

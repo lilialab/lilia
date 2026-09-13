@@ -143,7 +143,14 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
     try {
       await sendMessage({
         text: currentInput,
-        metadata: { kind: null, slug: null, name: user.nickname },
+        metadata: {
+          kind: null,
+          slug: null,
+          name: user.nickname,
+          speakerId: user.id,
+          hasAvatar: user.hasAvatar,
+          avatarUpdatedAt: user.updatedAt,
+        },
       }, { body: { sessionId } });
     } catch (err) {
       showErrorToast(translateApiError(err), 'chat-send');
@@ -167,30 +174,26 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
         }
       />
 
-      <ActionSheet
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        items={[
-          {
-            key: 'clear',
-            label: t('clearHistory'),
-            disabled: clearDisabled,
-            onSelect: () => {
-              // 等 ActionSheet 关闭后再开 Confirm，避免两个 Dialog 抢焦点
-              queueMicrotask(() => setConfirmClearOpen(true));
-            },
-          },
-          {
-            key: 'delete',
-            label: t('deleteAi'),
-            variant: 'danger',
-            disabled: deleteDisabled,
-            onSelect: () => {
-              queueMicrotask(() => setConfirmDeleteOpen(true));
-            },
-          },
-        ]}
-      />
+      <ActionSheet open={menuOpen} onClose={() => setMenuOpen(false)}>
+        <ActionSheet.Item
+          disabled={clearDisabled}
+          onSelect={() => {
+            // 等 ActionSheet 关闭后再开 Confirm，避免两个 Dialog 抢焦点
+            queueMicrotask(() => setConfirmClearOpen(true));
+          }}
+        >
+          {t('clearHistory')}
+        </ActionSheet.Item>
+        <ActionSheet.Item
+          variant="danger"
+          disabled={deleteDisabled}
+          onSelect={() => {
+            queueMicrotask(() => setConfirmDeleteOpen(true));
+          }}
+        >
+          {t('deleteAi')}
+        </ActionSheet.Item>
+      </ActionSheet>
 
       <ConfirmDialog
         open={confirmClearOpen}
@@ -227,6 +230,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => void loadMore()}
+          hideSpeakerName
         />
         <div className={cn('relative shrink-0')}>
           <SyncPendingReplyBanner visible={sessionQuery.isGenerating && !isStreaming} />

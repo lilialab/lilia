@@ -11,6 +11,8 @@ export const characterDefinitionSelect = {
   profile: true,
   skills: true,
   extract: true,
+  avatarKey: true,
+  updatedAt: true,
 } as const;
 
 export interface CharacterDefinition {
@@ -21,6 +23,8 @@ export interface CharacterDefinition {
   persona: JsonObject;
   skills: string[];
   extract: string;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
 }
 
 function mapCharacterDefinition(row: {
@@ -31,6 +35,8 @@ function mapCharacterDefinition(row: {
   profile: unknown;
   skills: unknown;
   extract: string;
+  avatarKey: string | null;
+  updatedAt: Date;
 }): CharacterDefinition {
   return {
     id: row.id,
@@ -40,6 +46,8 @@ function mapCharacterDefinition(row: {
     persona: parseCharacterProfile(row.profile),
     skills: parseCharacterSkills(row.skills),
     extract: row.extract,
+    hasAvatar: Boolean(row.avatarKey),
+    avatarUpdatedAt: row.updatedAt.toISOString(),
   };
 }
 

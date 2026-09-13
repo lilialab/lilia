@@ -1,5 +1,6 @@
 import { buildMessageItems } from '@/app/chat/utils/build-message-items';
 import type { HistoryMessage } from '@/client-api/sessions';
+import { EMPTY_SPEAKER_AVATAR } from '@/types/message-kind';
 import { describe, expect, it } from 'vitest';
 
 function makeMessage(id: string, createdAt: string): HistoryMessage {
@@ -8,6 +9,7 @@ function makeMessage(id: string, createdAt: string): HistoryMessage {
     role: 'user',
     parts: [{ type: 'text', text: 'hello' }],
     createdAt,
+    metadata: { kind: null, slug: null, name: null, ...EMPTY_SPEAKER_AVATAR },
   };
 }
 

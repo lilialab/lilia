@@ -35,6 +35,8 @@ export async function resolveSessionContext(sessionId: string): Promise<{
   characterId: string;
   characterSlug: string;
   characterName: string;
+  characterHasAvatar: boolean;
+  characterAvatarUpdatedAt: string;
   persona: JsonObject;
   skills: string[];
   locale: Locale;
@@ -44,7 +46,17 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     select: {
       userId: true,
       user: { select: { locale: true, nickname: true } },
-      character: { select: { id: true, slug: true, name: true, profile: true, skills: true } },
+      character: {
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          profile: true,
+          skills: true,
+          avatarKey: true,
+          updatedAt: true,
+        },
+      },
     },
   });
   if (!session) {
@@ -56,6 +68,8 @@ export async function resolveSessionContext(sessionId: string): Promise<{
     characterId: session.character.id,
     characterSlug: session.character.slug,
     characterName: session.character.name,
+    characterHasAvatar: Boolean(session.character.avatarKey),
+    characterAvatarUpdatedAt: session.character.updatedAt.toISOString(),
     persona: parseCharacterProfile(session.character.profile),
     skills: parseCharacterSkills(session.character.skills),
     locale: parseLocale(session.user.locale),

@@ -1,6 +1,8 @@
 'use client';
 
+import { characterAvatarUrl } from '@/client-api/characters';
 import type { ContactSummary } from '@/client-api/contacts';
+import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 
@@ -33,6 +35,11 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
               checked={checked}
               onChange={() => onToggle(contact)}
               className={cn('h-4 w-4 rounded border-border')}
+            />
+            <Avatar
+              src={characterAvatarUrl(contact.id, contact.avatarUpdatedAt)}
+              hasAvatar={contact.hasAvatar}
+              name={contact.name}
             />
             <span className={cn('min-w-0 flex-1')}>
               <span className={cn('block truncate text-sm text-foreground')}>

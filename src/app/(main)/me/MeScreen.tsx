@@ -1,7 +1,7 @@
 'use client';
 
 import { uploadUserAvatar, userAvatarUrl } from '@/client-api/auth';
-import { AvatarCircle } from '@/components/AvatarCircle';
+import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,10 +46,10 @@ function MeAvatarButton({ src, hasAvatar, name, uploading, onFile }: MeAvatarBut
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          'shrink-0 rounded-full hover:opacity-80 disabled:opacity-40',
+          'shrink-0 rounded-lg hover:opacity-80 disabled:opacity-40',
         )}
       >
-        <AvatarCircle src={src} hasAvatar={hasAvatar} name={name} size="lg" />
+        <Avatar src={src} hasAvatar={hasAvatar} name={name} size="lg" />
       </button>
       <input
         ref={inputRef}

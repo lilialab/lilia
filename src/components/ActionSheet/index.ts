@@ -1,1 +1,1 @@
-export { ActionSheet, type ActionSheetItem } from './ActionSheet';
+export { ActionSheet } from './ActionSheet';

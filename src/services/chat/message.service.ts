@@ -1,7 +1,7 @@
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { clearChatGeneration } from '@/services/session/generation-lock.service';
-import type { MessageMetadata } from '@/types/message-kind';
+import { type MessageMetadata } from '@/types/message-kind';
 import type { InputJsonValue } from '@prisma/client/runtime/client';
 import type { UIDataTypes, UIMessage } from 'ai';
 
@@ -24,8 +24,19 @@ type HistoryRow = {
   role: string;
   parts: unknown;
   createdAt: Date;
-  speakerCharacter: { slug: string; name: string };
-  speakerUser: { nickname: string };
+  speakerCharacter: {
+    id: string;
+    slug: string;
+    name: string;
+    avatarKey: string | null;
+    updatedAt: Date;
+  };
+  speakerUser: {
+    id: string;
+    nickname: string;
+    avatarKey: string | null;
+    updatedAt: Date;
+  };
 };
 
 /** 将数据库消息行映射为前端历史消息格式。 */
@@ -38,17 +49,24 @@ function mapMessageRow(row: HistoryRow): {
 } {
   let metadata: MessageMetadata;
   if (row.role === 'assistant') {
-    const { slug, name } = row.speakerCharacter;
+    const { id, slug, name, avatarKey, updatedAt } = row.speakerCharacter;
     metadata = {
       kind: null,
       slug,
       name,
+      speakerId: id,
+      hasAvatar: Boolean(avatarKey),
+      avatarUpdatedAt: updatedAt.toISOString(),
     };
   } else {
+    const { id, nickname, avatarKey, updatedAt } = row.speakerUser;
     metadata = {
       kind: null,
       slug: null,
-      name: row.speakerUser.nickname,
+      name: nickname,
+      speakerId: id,
+      hasAvatar: Boolean(avatarKey),
+      avatarUpdatedAt: updatedAt.toISOString(),
     };
   }
 
@@ -143,8 +161,10 @@ export async function getHistoryPage(
       role: true,
       parts: true,
       createdAt: true,
-      speakerCharacter: { select: { slug: true, name: true } },
-      speakerUser: { select: { nickname: true } },
+      speakerCharacter: {
+        select: { id: true, slug: true, name: true, avatarKey: true, updatedAt: true },
+      },
+      speakerUser: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
     },
   });
 

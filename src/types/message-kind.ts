@@ -11,7 +11,17 @@ export type MessageMetadata = {
   slug: string | null;
   /** 显示名：助手为当前角色名，用户为当前昵称 */
   name: string | null;
+  /** 用户消息为 user id，助手为 character id；turn_cue 为 null */
+  speakerId: string | null;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
 };
+
+export const EMPTY_SPEAKER_AVATAR = {
+  speakerId: null,
+  hasAvatar: false,
+  avatarUpdatedAt: '',
+} as const;
 
 /** streamText 结果 + 写入 UI 流 start 事件的 metadata。 */
 export type UIMessageStreamPayload = {

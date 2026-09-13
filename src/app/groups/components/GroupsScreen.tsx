@@ -74,7 +74,7 @@ function GroupsList({ groups }: GroupsListProps) {
           >
             <div
               className={cn(
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-border',
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-border',
                 'text-sm font-medium text-foreground/70',
               )}
               aria-hidden
