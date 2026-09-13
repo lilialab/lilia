@@ -1,6 +1,7 @@
 'use client';
 
 import { uploadUserAvatar, userAvatarUrl } from '@/client-api/auth';
+import { AvatarCircle } from '@/components/AvatarCircle';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,26 +18,17 @@ import { MeMenuLink } from './MeMenuLink';
 const AVATAR_ACCEPT = Object.values(AVATAR_CONTENT_TYPES).join(',');
 
 interface MeAvatarButtonProps {
-  userId: string;
-  nickname: string;
+  src: string;
   hasAvatar: boolean;
-  updatedAt: string;
+  name: string;
   uploading: boolean;
   onFile: (file: File) => void;
 }
 
 /** 「我」页头像：未上传显示昵称首字；点击选图上传/替换。 */
-function MeAvatarButton({
-  userId,
-  nickname,
-  hasAvatar,
-  updatedAt,
-  uploading,
-  onFile,
-}: MeAvatarButtonProps) {
+function MeAvatarButton({ src, hasAvatar, name, uploading, onFile }: MeAvatarButtonProps) {
   const t = useTranslations('me');
   const inputRef = useRef<HTMLInputElement>(null);
-  const initial = Array.from(nickname.trim())[0] ?? '';
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -54,21 +46,10 @@ function MeAvatarButton({
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          'flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full',
-          'bg-border text-lg font-medium text-foreground/80',
-          'hover:bg-row-hover disabled:opacity-40',
+          'shrink-0 rounded-full hover:opacity-80 disabled:opacity-40',
         )}
       >
-        {hasAvatar && (
-          // next/image 优化器不带 Cookie，本接口要登录才能读
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={userAvatarUrl(userId, updatedAt)}
-            alt=""
-            className={cn('h-full w-full object-cover')}
-          />
-        )}
-        {!hasAvatar && initial}
+        <AvatarCircle src={src} hasAvatar={hasAvatar} name={name} size="lg" />
       </button>
       <input
         ref={inputRef}
@@ -111,10 +92,9 @@ export function MeScreen() {
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 flex items-center gap-4 bg-background px-4 py-4')}>
           <MeAvatarButton
-            userId={user?.id ?? ''}
-            nickname={user?.nickname ?? ''}
+            src={user ? userAvatarUrl(user.id, user.updatedAt) : ''}
             hasAvatar={user?.hasAvatar ?? false}
-            updatedAt={user?.updatedAt ?? ''}
+            name={user?.nickname ?? ''}
             uploading={uploading}
             onFile={handleAvatarFile}
           />

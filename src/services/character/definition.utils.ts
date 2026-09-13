@@ -6,6 +6,8 @@ export interface CharacterCatalogItem {
   slug: string;
   name: string;
   shortBio: string;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
 }
 
 export const catalogCharacterSelect = {
@@ -13,6 +15,8 @@ export const catalogCharacterSelect = {
   slug: true,
   name: true,
   shortBio: true,
+  avatarKey: true,
+  updatedAt: true,
 } as const;
 
 /** 解析人设 JSON：须为对象，且不含已升列的 name/shortBio。 */
@@ -42,6 +46,15 @@ export function toCharacterCatalogItem(row: {
   slug: string;
   name: string;
   shortBio: string;
+  avatarKey: string | null;
+  updatedAt: Date;
 }): CharacterCatalogItem {
-  return { id: row.id, slug: row.slug, name: row.name, shortBio: row.shortBio };
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    shortBio: row.shortBio,
+    hasAvatar: Boolean(row.avatarKey),
+    avatarUpdatedAt: row.updatedAt.toISOString(),
+  };
 }

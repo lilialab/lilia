@@ -1,6 +1,8 @@
 'use client';
 
+import { characterAvatarUrl } from '@/client-api/characters';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
+import { AvatarCircle } from '@/components/AvatarCircle';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -38,14 +40,11 @@ function ContactsList({ contacts }: ContactsListProps) {
               'hover:bg-row-hover',
             )}
           >
-            <span
-              className={cn(
-                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-                'bg-border text-sm font-medium text-foreground/80',
-              )}
-            >
-              {contact.name.slice(0, 1)}
-            </span>
+            <AvatarCircle
+              src={characterAvatarUrl(contact.id, contact.avatarUpdatedAt)}
+              hasAvatar={contact.hasAvatar}
+              name={contact.name}
+            />
             <span className={cn('min-w-0')}>
               <span className={cn('block truncate text-sm font-medium text-foreground')}>
                 {contact.name}

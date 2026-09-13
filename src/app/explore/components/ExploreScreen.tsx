@@ -1,7 +1,12 @@
 'use client';
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
-import { type CatalogCharacter, fetchCharacters } from '@/client-api/characters';
+import {
+  type CatalogCharacter,
+  characterAvatarUrl,
+  fetchCharacters,
+} from '@/client-api/characters';
+import { AvatarCircle } from '@/components/AvatarCircle';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -37,12 +42,21 @@ function ExploreList({ characters }: ExploreListProps) {
           <Link
             href={`/explore/${character.id}`}
             transitionTypes={['nav-forward']}
-            className={cn('min-w-0 flex-1')}
+            className={cn('flex min-w-0 flex-1 items-center gap-3')}
           >
-            <p className={cn('truncate text-sm font-medium text-foreground')}>
-              {character.name}
-            </p>
-            <p className={cn('truncate text-xs text-muted-foreground')}>{character.shortBio}</p>
+            <AvatarCircle
+              src={characterAvatarUrl(character.id, character.avatarUpdatedAt)}
+              hasAvatar={character.hasAvatar}
+              name={character.name}
+            />
+            <span className={cn('min-w-0')}>
+              <p className={cn('truncate text-sm font-medium text-foreground')}>
+                {character.name}
+              </p>
+              <p className={cn('truncate text-xs text-muted-foreground')}>
+                {character.shortBio}
+              </p>
+            </span>
           </Link>
           <ExploreAddButton
             characterId={character.id}

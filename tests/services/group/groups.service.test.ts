@@ -31,7 +31,16 @@ describe('createGroup', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       generatingStartedAt: null,
-      members: [{ character: { id: 'char-rin', slug: 'rin', name: '凛', shortBio: '嘴毒' } }],
+      members: [{
+        character: {
+          id: 'char-rin',
+          slug: 'rin',
+          name: '凛',
+          shortBio: '嘴毒',
+          avatarKey: null,
+          updatedAt: new Date('2026-09-13T00:00:00.000Z'),
+        },
+      }],
     } as never);
 
     const group = await createGroup('user-1', {
@@ -40,7 +49,14 @@ describe('createGroup', () => {
     });
 
     expect(group.members).toEqual([
-      { id: 'char-rin', slug: 'rin', name: '凛', shortBio: '嘴毒' },
+      {
+        id: 'char-rin',
+        slug: 'rin',
+        name: '凛',
+        shortBio: '嘴毒',
+        hasAvatar: false,
+        avatarUpdatedAt: '2026-09-13T00:00:00.000Z',
+      },
     ]);
     expect(prisma.groupSession.create).toHaveBeenCalledOnce();
   });

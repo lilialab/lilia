@@ -2,7 +2,8 @@
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
 import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
-import { fetchCharacter } from '@/client-api/characters';
+import { characterAvatarUrl, fetchCharacter } from '@/client-api/characters';
+import { AvatarCircle } from '@/components/AvatarCircle';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -53,12 +54,22 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
           <div className={cn('flex min-h-0 flex-1 flex-col')}>
             <div className={cn('flex-1 overflow-y-auto')}>
               <section className={cn('mt-3 bg-background px-4 py-4')}>
-                <p className={cn('text-sm text-muted-foreground')}>{character.shortBio}</p>
-                <div className={cn('mt-4')}>
-                  <ExploreAddButton
-                    characterId={character.id}
-                    isContact={character.isContact}
+                <div className={cn('flex items-start gap-4')}>
+                  <AvatarCircle
+                    src={characterAvatarUrl(character.id, character.avatarUpdatedAt)}
+                    hasAvatar={character.hasAvatar}
+                    name={character.name}
+                    size="lg"
                   />
+                  <div className={cn('min-w-0 flex-1')}>
+                    <p className={cn('text-sm text-muted-foreground')}>{character.shortBio}</p>
+                    <div className={cn('mt-4')}>
+                      <ExploreAddButton
+                        characterId={character.id}
+                        isContact={character.isContact}
+                      />
+                    </div>
+                  </div>
                 </div>
               </section>
               <ExploreComments characterId={character.id} />

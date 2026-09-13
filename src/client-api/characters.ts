@@ -7,6 +7,8 @@ export interface CharacterSummary {
   slug: string;
   name: string;
   shortBio: string;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string;
 }
 
 export interface CatalogCharacter extends CharacterSummary {
@@ -59,4 +61,11 @@ export async function createCharacterComment(
     },
   );
   return data.comment;
+}
+
+/** 登录用户可读的角色头像地址（浏览器带 Cookie 拉字节）。 */
+export function characterAvatarUrl(characterId: string, updatedAt: string): string {
+  return `/api/characters/${encodeURIComponent(characterId)}/avatar?v=${
+    encodeURIComponent(updatedAt)
+  }`;
 }

@@ -51,6 +51,8 @@ model Character {
   name      String
   /// 简介（商店 / 通讯录）
   shortBio  String @map("short_bio")
+  /// 头像在对象存储中的 key；空表示未设置
+  avatarKey String? @map("avatar_key")
   /// 人设 JSON（可含 `{{name}}`）；不含 name/shortBio
   profile   Json
   /// skill id 列表（JSON 字符串数组）

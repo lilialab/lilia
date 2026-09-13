@@ -44,12 +44,29 @@ describe('toCharacterCatalogItem', () => {
         slug: 'lilia',
         name: '莉莉娅',
         shortBio: '朋友',
+        avatarKey: null,
+        updatedAt: new Date('2026-09-13T00:00:00.000Z'),
       }),
     ).toEqual({
       id: 'c1',
       slug: 'lilia',
       name: '莉莉娅',
       shortBio: '朋友',
+      hasAvatar: false,
+      avatarUpdatedAt: '2026-09-13T00:00:00.000Z',
     });
+  });
+
+  it('有 avatarKey 时 hasAvatar 为 true', () => {
+    expect(
+      toCharacterCatalogItem({
+        id: 'c1',
+        slug: 'lilia',
+        name: '莉莉娅',
+        shortBio: '朋友',
+        avatarKey: 'characters/c1/a.jpg',
+        updatedAt: new Date('2026-09-13T00:00:00.000Z'),
+      }).hasAvatar,
+    ).toBe(true);
   });
 });

@@ -47,7 +47,16 @@ function mapGroupDetail(row: {
   createdAt: Date;
   updatedAt: Date;
   generatingStartedAt: Date | null;
-  members: { character: { id: string; slug: string; name: string; shortBio: string } }[];
+  members: {
+    character: {
+      id: string;
+      slug: string;
+      name: string;
+      shortBio: string;
+      avatarKey: string | null;
+      updatedAt: Date;
+    };
+  }[];
 }): GroupDetail {
   return {
     id: row.id,
