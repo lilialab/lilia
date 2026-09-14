@@ -47,10 +47,9 @@ function parseConfidence(value: unknown): number | null {
 export function parseMaintainMemoryItem(item: unknown): MaintainMemoryItem | null {
   if (typeof item !== 'object' || item === null) return null;
 
-  const record = item as Record<string, unknown>;
-  const text = typeof record.text === 'string' ? record.text.trim() : '';
-  const type = isMemoryType(record.type) ? record.type : undefined;
-  const confidence = parseConfidence(record.confidence);
+  const text = 'text' in item && typeof item.text === 'string' ? item.text.trim() : '';
+  const type = 'type' in item && isMemoryType(item.type) ? item.type : undefined;
+  const confidence = 'confidence' in item ? parseConfidence(item.confidence) : null;
 
   if (!text || type === undefined || confidence === null) {
     return null;

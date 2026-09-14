@@ -1,4 +1,3 @@
-import type { InputJsonValue } from '@prisma/client/runtime/client';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,8 +35,8 @@ export async function seedCharacterCatalog(): Promise<void> {
       throw new Error(`角色 ${slug} 的 extract 须为字符串`);
     }
 
-    parseCharacterProfile(profile);
-    parseCharacterSkills(skills);
+    const profileJson = parseCharacterProfile(profile);
+    const skillsJson = parseCharacterSkills(skills);
 
     const existing = await prisma.character.findUnique({
       where: { slug },
@@ -50,8 +49,8 @@ export async function seedCharacterCatalog(): Promise<void> {
         slug,
         name: name.trim(),
         shortBio,
-        profile: profile as InputJsonValue,
-        skills: skills as InputJsonValue,
+        profile: profileJson,
+        skills: skillsJson,
         extract,
       },
     });

@@ -2,7 +2,7 @@ import { successResponse, withApiHandler } from '@/lib/server/api-handler';
 import { AppError } from '@/lib/server/app-error';
 import { parseRouteParams } from '@/lib/server/parse-schema';
 import { resolveRequestUserId } from '@/lib/server/request-user';
-import { contactCharacterParamsSchema } from '@/schemas/api/contacts/params';
+import { characterParamsSchema } from '@/schemas/api/characters/params';
 import { getCharacterAvatar, saveCharacterAvatar } from '@/services/character/avatar.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -10,7 +10,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 export const GET = withApiHandler(
   async (req: NextRequest, context: RouteContext<'/api/characters/[characterId]/avatar'>) => {
     await resolveRequestUserId(req);
-    const { characterId } = await parseRouteParams(contactCharacterParamsSchema, context.params);
+    const { characterId } = await parseRouteParams(characterParamsSchema, context.params);
     const avatar = await getCharacterAvatar(characterId);
     return new NextResponse(Buffer.from(avatar.body), {
       headers: {
@@ -23,8 +23,8 @@ export const GET = withApiHandler(
 
 export const POST = withApiHandler(
   async (req: NextRequest, context: RouteContext<'/api/characters/[characterId]/avatar'>) => {
-    await resolveRequestUserId(req);
-    const { characterId } = await parseRouteParams(contactCharacterParamsSchema, context.params);
+    const userId = await resolveRequestUserId(req);
+    const { characterId } = await parseRouteParams(characterParamsSchema, context.params);
     const form = await req.formData();
     const file = form.get('file');
     if (!(file instanceof File)) {
@@ -32,7 +32,7 @@ export const POST = withApiHandler(
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const character = await saveCharacterAvatar(characterId, bytes);
+    const character = await saveCharacterAvatar(userId, characterId, bytes);
     return successResponse({ character });
   },
 );

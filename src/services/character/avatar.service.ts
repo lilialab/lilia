@@ -2,27 +2,30 @@ import { AppError } from '@/lib/server/app-error';
 import { assertAvatarBytes } from '@/lib/server/avatar';
 import { prisma } from '@/lib/server/prisma';
 import { getS3Object, putS3Object } from '@/lib/server/s3';
+import { AVATAR_CONTENT_TYPES, buildAvatarObjectKey } from '@/utils/avatar';
 import {
+  assertCharacterOwner,
   catalogCharacterSelect,
   type CharacterCatalogItem,
   toCharacterCatalogItem,
-} from '@/services/character/definition.utils';
-import { AVATAR_CONTENT_TYPES, buildAvatarObjectKey } from '@/utils/avatar';
+} from './definition.utils';
 
-/** 写入角色头像并返回目录项。 */
+/** 创建者写入角色头像并返回目录项。 */
 export async function saveCharacterAvatar(
+  userId: string,
   characterId: string,
   bytes: Uint8Array,
 ): Promise<CharacterCatalogItem> {
-  const kind = assertAvatarBytes(bytes);
   const existing = await prisma.character.findUnique({
     where: { id: characterId },
-    select: { id: true },
+    select: { ownerId: true },
   });
   if (!existing) {
     throw AppError.notFound('角色不存在');
   }
+  assertCharacterOwner(existing.ownerId, userId);
 
+  const kind = assertAvatarBytes(bytes);
   const key = buildAvatarObjectKey(`avatars/characters/${characterId}`, kind);
   await putS3Object({
     key,

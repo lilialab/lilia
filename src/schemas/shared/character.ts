@@ -29,6 +29,6 @@ export const characterGenderSchema = z
   .trim()
   .min(1, API_ERROR_CODE.CHARACTER_GENDER_REQUIRED)
   .refine(
-    (value) => (CHARACTER_GENDERS as readonly string[]).includes(value),
+    (value) => CHARACTER_GENDERS.some((gender) => gender === value),
     API_ERROR_CODE.CHARACTER_GENDER_INVALID,
   );

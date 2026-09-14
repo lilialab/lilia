@@ -7,7 +7,7 @@ export interface CreateCharacterProfileInput {
   personality: string[] | undefined;
 }
 
-/** 组装创建用 profile：identity.name 固定占位；空选填不写入。 */
+/** 组装人设 JSON：identity.name 固定占位；空选填不写入。 */
 export function buildCreateCharacterProfile(input: CreateCharacterProfileInput): JsonObject {
   const identity: Record<string, string> = { name: '{{name}}', gender: input.gender };
   if (input.height) identity.height = input.height;

@@ -1,4 +1,5 @@
 import { isMemoryType, type MemoryType } from '@/types/memory';
+import { collectTextParts } from '@/utils/message-parts';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -55,9 +56,8 @@ export function extractSpeaker(role: string, assistantSlug?: string | null): str
 
 /** 从消息 parts 抽出纯文本。 */
 export function textFromMessageParts(parts: unknown): string {
-  const messageParts = parts as { type: string; text?: string }[];
-  return messageParts
-    .flatMap((part) => (part.type === 'text' && part.text ? [part.text] : []))
+  return collectTextParts(parts)
+    .map((part) => part.text)
     .join(' ')
     .trim();
 }
@@ -96,11 +96,12 @@ function parseConfidence(value: unknown): number | null {
 export function parseFinishedMemoryItem(item: unknown): FinishedMemory | null {
   if (typeof item !== 'object' || item === null) return null;
 
-  const record = item as Record<string, unknown>;
-  const text = typeof record.text === 'string' ? record.text.trim() : '';
-  const type = isMemoryType(record.type) ? record.type : undefined;
-  const sourceMessageIds = parseStringArray(record.source_message_ids);
-  const confidence = parseConfidence(record.confidence);
+  const text = 'text' in item && typeof item.text === 'string' ? item.text.trim() : '';
+  const type = 'type' in item && isMemoryType(item.type) ? item.type : undefined;
+  const sourceMessageIds = 'source_message_ids' in item
+    ? parseStringArray(item.source_message_ids)
+    : [];
+  const confidence = 'confidence' in item ? parseConfidence(item.confidence) : null;
 
   if (
     !text

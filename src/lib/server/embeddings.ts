@@ -28,7 +28,7 @@ export class CompatibleEmbeddingFunction implements EmbeddingFunction {
       model: embedProvider.embeddingModel(this.modelName),
       values: texts,
     });
-    return embeddings as number[][];
+    return embeddings;
   }
 
   getConfig(): CompatibleEmbeddingConfig {

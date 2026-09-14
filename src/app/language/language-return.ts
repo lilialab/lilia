@@ -3,7 +3,7 @@ export const LANGUAGE_RETURN_PATHS = ['/login', '/register', '/me/settings'] as 
 export type LanguageReturnPath = (typeof LANGUAGE_RETURN_PATHS)[number];
 
 export function isLanguageReturnPath(value: string): value is LanguageReturnPath {
-  return (LANGUAGE_RETURN_PATHS as readonly string[]).includes(value);
+  return LANGUAGE_RETURN_PATHS.some((path) => path === value);
 }
 
 /** 解析语言页回跳地址；非法或缺省时回落登录页。 */

@@ -201,7 +201,7 @@ export async function getGroupContextMessages(
   });
 
   return items.toReversed().map((row) => {
-    const role = row.role as UIMessage['role'];
+    const role = mapGroupMessageRole(row.role);
     if (role !== 'assistant') {
       return {
         id: row.id,

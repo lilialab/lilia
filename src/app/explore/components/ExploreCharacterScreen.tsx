@@ -6,11 +6,12 @@ import { characterAvatarUrl, fetchCharacter } from '@/client-api/characters';
 import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
+import { Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface ExploreCharacterScreenProps {
@@ -34,6 +35,9 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
 
   const character = characterQuery.data;
   const goBack = () => router.push('/explore', { transitionTypes: ['nav-back'] });
+  const goEdit = () => {
+    router.push(`/explore/${characterId}/edit`, { transitionTypes: ['nav-forward'] });
+  };
 
   /* -------------------------------------------------------------------------- */
   /* Render                                                                     */
@@ -41,7 +45,15 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
-      <ScreenHeader title={character?.name ?? t('title')} onBack={goBack} />
+      <ScreenHeader
+        title={character?.name ?? t('title')}
+        onBack={goBack}
+        right={character?.isOwner && (
+          <HeaderIconButton aria-label={t('edit')} onClick={goEdit}>
+            <Pencil className={cn('h-5 w-5')} aria-hidden />
+          </HeaderIconButton>
+        )}
+      />
 
       <PageStatus
         loading={characterQuery.isLoading}

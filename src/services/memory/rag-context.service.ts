@@ -2,6 +2,7 @@ import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import type { MemoryFragment } from '@/services/chat/format.utils';
 import { VectorService } from '@/services/memory/vector.service';
+import { isMemoryType } from '@/types/memory';
 
 const vectorService = new VectorService();
 
@@ -40,9 +41,13 @@ export async function fetchMemoryFragmentsForPrompt(
         logger.warn({ memoryId: hit.id }, '[RAG] Chroma 命中但 MySQL 无对应记忆，已跳过');
         continue;
       }
+      if (!isMemoryType(row.type)) {
+        logger.warn({ memoryId: hit.id, type: row.type }, '[RAG] 记忆类型无效，已跳过');
+        continue;
+      }
       fragments.push({
         text: hit.text,
-        type: row.type as MemoryFragment['type'],
+        type: row.type,
         recordedAt: row.createdAt,
         lastActiveAt: row.lastActiveAt,
       });

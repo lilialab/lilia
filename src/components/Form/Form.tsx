@@ -28,7 +28,7 @@ interface FormFieldProps {
 
 interface FormInputProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   type?: 'text' | 'password';
   autoComplete?: string;
@@ -36,6 +36,7 @@ interface FormInputProps {
   autoCorrect?: 'off';
   spellCheck?: boolean;
   autoFocus?: boolean;
+  readOnly?: boolean;
   className?: string;
 }
 
@@ -117,6 +118,7 @@ function FormInput({
   autoCorrect,
   spellCheck,
   autoFocus,
+  readOnly,
   className,
 }: FormInputProps) {
   const { required } = useFormField();
@@ -125,7 +127,7 @@ function FormInput({
     <input
       type={type}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={onChange ? (e) => onChange(e.target.value) : undefined}
       placeholder={placeholder}
       aria-required={required}
       autoComplete={autoComplete}
@@ -133,7 +135,12 @@ function FormInput({
       autoCorrect={autoCorrect}
       spellCheck={spellCheck}
       autoFocus={autoFocus}
-      className={cn(formControlClass, className)}
+      readOnly={readOnly}
+      className={cn(
+        formControlClass,
+        readOnly && 'cursor-default bg-surface text-muted-foreground focus:border-border',
+        className,
+      )}
     />
   );
 }

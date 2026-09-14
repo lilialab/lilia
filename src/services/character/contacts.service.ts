@@ -1,56 +1,11 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import {
-  catalogCharacterSelect,
-  toCharacterCatalogItem,
-} from '@/services/character/definition.utils';
 import { softDeleteSessionMessages } from '@/services/chat/message.service';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { createSession } from '@/services/session/sessions.service';
 import { API_ERROR_CODE } from '@/types/api-error';
-
-/* -------------------------------------------------------------------------- */
-/* Character catalog                                                          */
-/* -------------------------------------------------------------------------- */
-
-/** 列出全部 AI 角色目录，并标记当前用户是否已添加。 */
-export async function listCharacters(userId: string) {
-  const [rows, contacts] = await Promise.all([
-    prisma.character.findMany({
-      select: catalogCharacterSelect,
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.userCharacter.findMany({
-      where: { userId },
-      select: { characterId: true },
-    }),
-  ]);
-  const contactIds = new Set(contacts.map((row) => row.characterId));
-  return rows.map((row) => ({
-    ...toCharacterCatalogItem(row),
-    isContact: contactIds.has(row.id),
-  }));
-}
-
-/** 按 id 取目录角色，并标记当前用户是否已添加。 */
-export async function getCatalogCharacter(userId: string, characterId: string) {
-  const row = await prisma.character.findUnique({
-    where: { id: characterId },
-    select: catalogCharacterSelect,
-  });
-  if (!row) {
-    throw AppError.notFound('角色不存在');
-  }
-  const contact = await prisma.userCharacter.findUnique({
-    where: { userId_characterId: { userId, characterId } },
-    select: { id: true },
-  });
-  return {
-    ...toCharacterCatalogItem(row),
-    isContact: contact !== null,
-  };
-}
+import { catalogCharacterSelect, toCharacterCatalogItem } from './definition.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Contacts                                                                   */

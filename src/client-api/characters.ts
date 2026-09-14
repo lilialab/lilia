@@ -1,4 +1,5 @@
 import { apiFetchJson } from '@/lib/client/api-fetch';
+import type { UpdateCharacterBody } from '@/schemas/api/characters/patch';
 
 export { COMMENT_BODY_MAX_LENGTH } from '@/schemas/api/characters/comments-post';
 
@@ -13,6 +14,14 @@ export interface CharacterSummary {
 
 export interface CatalogCharacter extends CharacterSummary {
   isContact: boolean;
+  isOwner: boolean;
+}
+
+export interface CatalogCharacterDetail extends CatalogCharacter {
+  gender: string;
+  height: string | undefined;
+  relation: string | undefined;
+  personality: string[] | undefined;
 }
 
 export interface CharacterComment {
@@ -31,9 +40,9 @@ export async function fetchCharacters(): Promise<CatalogCharacter[]> {
   return data.characters;
 }
 
-/** 拉取单个目录角色（含是否已添加）。 */
-export async function fetchCharacter(characterId: string): Promise<CatalogCharacter> {
-  const data = await apiFetchJson<{ character: CatalogCharacter }>(
+/** 拉取单个目录角色（含是否已添加、可编辑人设）。 */
+export async function fetchCharacter(characterId: string): Promise<CatalogCharacterDetail> {
+  const data = await apiFetchJson<{ character: CatalogCharacterDetail }>(
     `/api/characters/${characterId}`,
   );
   return data.character;
@@ -58,6 +67,22 @@ export async function createCharacter(input: {
   });
   if (!avatar) return data.character;
   return uploadCharacterAvatar(data.character.id, avatar);
+}
+
+/** 更新目录角色（不含账号名）。 */
+export async function updateCharacter(
+  characterId: string,
+  input: UpdateCharacterBody,
+): Promise<CharacterSummary> {
+  const data = await apiFetchJson<{ character: CharacterSummary }>(
+    `/api/characters/${encodeURIComponent(characterId)}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+  return data.character;
 }
 
 /** 上传角色头像。 */

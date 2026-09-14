@@ -18,4 +18,10 @@ describe('AppError', () => {
     expect(AppError.tooManyRequests('太频繁').code).toBe(API_ERROR_CODE.RATE_LIMITED);
     expect(AppError.internal('boom').code).toBe(API_ERROR_CODE.INTERNAL_ERROR);
   });
+
+  it('forbidden 为 403', () => {
+    const error = AppError.forbidden('只有创建者可以修改', API_ERROR_CODE.CHARACTER_NOT_OWNER);
+    expect(error.status).toBe(403);
+    expect(error.code).toBe(API_ERROR_CODE.CHARACTER_NOT_OWNER);
+  });
 });

@@ -2,12 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/server/prisma', () => ({
   prisma: {
-    character: {
-      findUnique: vi.fn(),
-    },
     userCharacter: {
       findUnique: vi.fn(),
-      create: vi.fn(),
       delete: vi.fn(),
     },
     chatSession: {

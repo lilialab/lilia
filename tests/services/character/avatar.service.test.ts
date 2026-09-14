@@ -68,24 +68,38 @@ describe('saveCharacterAvatar', () => {
     putS3ObjectMock.mockResolvedValue(undefined);
   });
 
-  it('非法格式 400', async () => {
-    await expect(saveCharacterAvatar('char-1', Uint8Array.from([0x00]))).rejects.toMatchObject({
-      code: API_ERROR_CODE.AVATAR_INVALID_TYPE,
-    });
-    expect(putS3ObjectMock).not.toHaveBeenCalled();
-  });
-
   it('角色不存在 404', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue(null);
 
-    await expect(saveCharacterAvatar('missing', jpegBytes)).rejects.toMatchObject({
+    await expect(saveCharacterAvatar('user-1', 'missing', jpegBytes)).rejects.toMatchObject({
       status: 404,
     });
     expect(putS3ObjectMock).not.toHaveBeenCalled();
   });
 
+  it('非创建者 403', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'other' } as never);
+
+    await expect(saveCharacterAvatar('user-1', 'char-1', jpegBytes)).rejects.toMatchObject({
+      status: 403,
+      code: API_ERROR_CODE.CHARACTER_NOT_OWNER,
+    });
+    expect(putS3ObjectMock).not.toHaveBeenCalled();
+  });
+
+  it('非法格式 400', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'user-1' } as never);
+
+    await expect(
+      saveCharacterAvatar('user-1', 'char-1', Uint8Array.from([0x00])),
+    ).rejects.toMatchObject({
+      code: API_ERROR_CODE.AVATAR_INVALID_TYPE,
+    });
+    expect(putS3ObjectMock).not.toHaveBeenCalled();
+  });
+
   it('写入对象并更新 avatarKey', async () => {
-    vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'char-1' } as never);
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'user-1' } as never);
     vi.mocked(prisma.character.update).mockResolvedValue({
       id: 'char-1',
       slug: 'mybot',
@@ -95,7 +109,7 @@ describe('saveCharacterAvatar', () => {
       updatedAt: new Date('2026-09-14T00:00:00.000Z'),
     } as never);
 
-    const item = await saveCharacterAvatar('char-1', jpegBytes);
+    const item = await saveCharacterAvatar('user-1', 'char-1', jpegBytes);
 
     expect(putS3ObjectMock).toHaveBeenCalledWith(
       expect.objectContaining({ contentType: 'image/jpeg', body: jpegBytes }),

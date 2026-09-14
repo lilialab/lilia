@@ -48,6 +48,8 @@ export const en = {
     notFound: 'Character not found',
     backToList: 'Back to Explore',
     create: 'New character',
+    edit: 'Edit',
+    backToDetail: 'Back to character',
     noComments: 'No comments yet. Be the first to comment.',
     commentsLoadError: 'Could not load comments',
     commentPlaceholder: 'Write a comment...',
@@ -115,6 +117,9 @@ export const en = {
     avatarHintChange: 'Tap to change',
     submit: 'Create',
     submitting: 'Creating...',
+    editTitle: 'Edit character',
+    save: 'Save',
+    saving: 'Saving...',
   },
   groupMembers: {
     title: 'Manage members',
@@ -245,6 +250,7 @@ export const en = {
     CHARACTER_GENDER_REQUIRED: 'Gender is required',
     CHARACTER_GENDER_INVALID: 'Choose a valid gender',
     CHARACTER_HEIGHT_INVALID: 'Height must be a whole number from 1 to 300',
+    CHARACTER_NOT_OWNER: 'Only the creator can edit this character',
   } satisfies Record<ApiErrorCode | 'fallback', string>,
   register: {
     title: 'Create an account',

@@ -17,7 +17,7 @@ export function collectTextParts(parts: unknown): TextMessagePart[] {
   if (!Array.isArray(parts)) return [];
   return parts
     .filter(isTextPart)
-    .map((part) => ({ type: 'text' as const, text: part.text.trim() }))
+    .map((part): TextMessagePart => ({ type: 'text', text: part.text.trim() }))
     .filter((part) => part.text.length > 0);
 }
 

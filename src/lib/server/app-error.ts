@@ -23,6 +23,10 @@ export class AppError extends Error {
     return new AppError(401, message, code);
   }
 
+  static forbidden(message: string, code: ApiErrorCode) {
+    return new AppError(403, message, code);
+  }
+
   static conflict(message: string, code: ApiErrorCode = API_ERROR_CODE.CONFLICT) {
     return new AppError(409, message, code);
   }

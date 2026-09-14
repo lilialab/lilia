@@ -39,6 +39,11 @@ type HistoryRow = {
   };
 };
 
+function mapMessageRole(role: string): UIMessage['role'] {
+  if (role === 'user' || role === 'assistant' || role === 'system') return role;
+  return 'assistant';
+}
+
 /** 将数据库消息行映射为前端历史消息格式。 */
 function mapMessageRow(row: HistoryRow): {
   id: string;
@@ -72,7 +77,7 @@ function mapMessageRow(row: HistoryRow): {
 
   return {
     id: row.id,
-    role: row.role as UIMessage['role'],
+    role: mapMessageRole(row.role),
     parts: row.parts as UIMessage['parts'],
     createdAt: row.createdAt.toISOString(),
     metadata,
@@ -109,7 +114,7 @@ export async function getContextMessages(
 
   return items.toReversed().map((row) => ({
     id: row.id,
-    role: row.role as UIMessage['role'],
+    role: mapMessageRole(row.role),
     parts: row.parts as UIMessage['parts'],
   }));
 }

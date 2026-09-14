@@ -24,10 +24,11 @@ describe('parseInput', () => {
     try {
       parseInput(schema, { title: '' });
       expect.unreachable();
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(AppError);
-      expect((error as AppError).message).toMatch(/^title: /);
-      expect((error as AppError).code).toBe(API_ERROR_CODE.INVALID_REQUEST);
+      if (!(error instanceof AppError)) return;
+      expect(error.message).toMatch(/^title: /);
+      expect(error.code).toBe(API_ERROR_CODE.INVALID_REQUEST);
     }
   });
 });

@@ -48,6 +48,8 @@ export const zh = {
     notFound: '找不到该角色',
     backToList: '返回探索',
     create: '新建角色',
+    edit: '编辑',
+    backToDetail: '返回详情',
     noComments: '还没有评论，来说两句吧',
     commentsLoadError: '无法加载评论',
     commentPlaceholder: '写评论...',
@@ -114,6 +116,9 @@ export const zh = {
     avatarHintChange: '点击更换',
     submit: '创建',
     submitting: '创建中...',
+    editTitle: '编辑角色',
+    save: '保存',
+    saving: '保存中...',
   },
   groupMembers: {
     title: '管理成员',
@@ -242,6 +247,7 @@ export const zh = {
     CHARACTER_GENDER_REQUIRED: '请选择性别',
     CHARACTER_GENDER_INVALID: '请选择有效的性别',
     CHARACTER_HEIGHT_INVALID: '身高须为 1–300 的整数',
+    CHARACTER_NOT_OWNER: '只有创建者可以修改',
   },
   register: {
     title: '注册账号',

@@ -21,7 +21,7 @@ export const LOCALE_COOKIE_NAME = 'locale';
 export const LOCALE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 export function isLocale(value: string): value is Locale {
-  return (locales as readonly string[]).includes(value);
+  return locales.some((locale) => locale === value);
 }
 
 /** 解析 Cookie / 任意字符串；无效时回落默认语言。 */
