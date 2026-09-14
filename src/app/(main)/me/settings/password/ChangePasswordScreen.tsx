@@ -1,7 +1,7 @@
 'use client';
 
 import { changePassword } from '@/client-api/auth';
-import { AuthField } from '@/components/auth';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { translateApiError } from '@/i18n/client';
@@ -43,42 +43,35 @@ export function ChangePasswordScreen() {
       />
 
       <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
-        <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
-          <AuthField
-            id="currentPassword"
-            label={t('currentPassword')}
-            type="password"
-            value={currentPassword}
-            onChange={setCurrentPassword}
-            autoComplete="current-password"
-          />
-          <AuthField
-            id="newPassword"
-            label={t('newPassword')}
-            type="password"
-            value={newPassword}
-            onChange={setNewPassword}
-            autoComplete="new-password"
-          />
-          <AuthField
-            id="confirmNewPassword"
-            label={t('confirmNewPassword')}
-            type="password"
-            value={confirmNewPassword}
-            onChange={setConfirmNewPassword}
-            autoComplete="new-password"
-          />
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={cn(
-              'mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground',
-              'hover:bg-primary-hover disabled:opacity-40',
-            )}
-          >
+        <Form onSubmit={handleSubmit}>
+          <Form.Field label={t('currentPassword')}>
+            <Form.Input
+              type="password"
+              value={currentPassword}
+              onChange={setCurrentPassword}
+              autoComplete="current-password"
+            />
+          </Form.Field>
+          <Form.Field label={t('newPassword')}>
+            <Form.Input
+              type="password"
+              value={newPassword}
+              onChange={setNewPassword}
+              autoComplete="new-password"
+            />
+          </Form.Field>
+          <Form.Field label={t('confirmNewPassword')}>
+            <Form.Input
+              type="password"
+              value={confirmNewPassword}
+              onChange={setConfirmNewPassword}
+              autoComplete="new-password"
+            />
+          </Form.Field>
+          <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
             {isSubmitting ? t('submitting') : t('submit')}
-          </button>
-        </form>
+          </Form.Submit>
+        </Form>
       </div>
     </div>
   );

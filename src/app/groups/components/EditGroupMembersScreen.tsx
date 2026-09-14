@@ -3,6 +3,7 @@
 import { MemberPickerEmpty, MemberPickerList } from '@/app/groups/components/MemberPicker';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { fetchGroup, replaceGroupMembers } from '@/client-api/groups';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -103,7 +104,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
         actionLabel={t('backToChat')}
         onAction={goBackToChat}
       >
-        <form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
+        <Form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
           <div className={cn('min-h-0 flex-1 overflow-y-auto')}>
             <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>
               {t('selectMembers')}
@@ -123,18 +124,11 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
               'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
             )}
           >
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className={cn(
-                'w-full rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
-              )}
-            >
+            <Form.Submit disabled={!canSubmit}>
               {saveMutation.isPending ? t('saving') : t('save')}
-            </button>
+            </Form.Submit>
           </div>
-        </form>
+        </Form>
       </PageStatus>
     </div>
   );

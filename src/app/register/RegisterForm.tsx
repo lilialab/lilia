@@ -2,12 +2,8 @@
 
 import { privacyPageHref } from '@/app/privacy/privacy-return';
 import { register } from '@/client-api/auth';
-import {
-  AuthField,
-  AuthShell,
-  TurnstileWidget,
-  type TurnstileWidgetHandle,
-} from '@/components/auth';
+import { AuthShell, TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { translateApiError } from '@/i18n/client';
 import { localeFromBrowserLanguage } from '@/i18n/config';
@@ -92,53 +88,40 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
-        <AuthField
-          id="username"
-          label={tAuth('username')}
-          value={username}
-          onChange={setUsername}
-          autoComplete="username"
-        />
-        <AuthField
-          id="nickname"
-          label={t('nickname')}
-          value={nickname}
-          onChange={setNickname}
-          autoComplete="nickname"
-        />
-        <AuthField
-          id="password"
-          label={tAuth('password')}
-          type="password"
-          value={password}
-          onChange={setPassword}
-          autoComplete="new-password"
-        />
-        <AuthField
-          id="confirmPassword"
-          label={t('confirmPassword')}
-          type="password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-          autoComplete="new-password"
-        />
-        <TurnstileWidget
-          ref={turnstileRef}
-          siteKey={turnstileSiteKey}
-          onTokenChange={handleTurnstileTokenChange}
-        />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={cn(
-            'mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary-hover disabled:opacity-40',
-          )}
-        >
+      <Form onSubmit={handleSubmit}>
+        <Form.Field label={tAuth('username')}>
+          <Form.Input value={username} onChange={setUsername} autoComplete="username" />
+        </Form.Field>
+        <Form.Field label={t('nickname')}>
+          <Form.Input value={nickname} onChange={setNickname} autoComplete="nickname" />
+        </Form.Field>
+        <Form.Field label={tAuth('password')}>
+          <Form.Input
+            type="password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+          />
+        </Form.Field>
+        <Form.Field label={t('confirmPassword')}>
+          <Form.Input
+            type="password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            autoComplete="new-password"
+          />
+        </Form.Field>
+        <div className={cn('mt-4')}>
+          <TurnstileWidget
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            onTokenChange={handleTurnstileTokenChange}
+          />
+        </div>
+        <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
           {isSubmitting ? t('submitting') : t('submit')}
-        </button>
-      </form>
+        </Form.Submit>
+      </Form>
     </AuthShell>
   );
 }

@@ -30,6 +30,8 @@ interface FormInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  type?: 'text' | 'password';
+  autoComplete?: string;
   autoCapitalize?: 'off';
   autoCorrect?: 'off';
   spellCheck?: boolean;
@@ -59,6 +61,15 @@ interface FormNumberProps {
 }
 
 interface FormSubmitProps {
+  children: ReactNode;
+  disabled?: boolean;
+  variant?: 'default' | 'danger';
+  className?: string;
+}
+
+interface FormCheckboxProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
   children: ReactNode;
   disabled?: boolean;
   className?: string;
@@ -100,6 +111,8 @@ function FormInput({
   value,
   onChange,
   placeholder,
+  type = 'text',
+  autoComplete,
   autoCapitalize,
   autoCorrect,
   spellCheck,
@@ -110,11 +123,12 @@ function FormInput({
 
   return (
     <input
-      type="text"
+      type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       aria-required={required}
+      autoComplete={autoComplete}
       autoCapitalize={autoCapitalize}
       autoCorrect={autoCorrect}
       spellCheck={spellCheck}
@@ -180,19 +194,46 @@ function FormNumber({
 }
 
 /** 主操作提交按钮。 */
-function FormSubmit({ children, disabled, className }: FormSubmitProps) {
+function FormSubmit({ children, disabled, variant = 'default', className }: FormSubmitProps) {
   return (
     <button
       type="submit"
       disabled={disabled}
       className={cn(
-        'w-full rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground',
-        'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
+        'w-full rounded-md py-2.5 text-sm font-medium',
+        'disabled:cursor-not-allowed disabled:opacity-40',
+        variant === 'danger'
+          ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover'
+          : 'bg-primary text-primary-foreground hover:bg-primary-hover',
         className,
       )}
     >
       {children}
     </button>
+  );
+}
+
+/** 带文案的勾选。 */
+function FormCheckbox({
+  checked,
+  onChange,
+  children,
+  disabled,
+  className,
+}: FormCheckboxProps) {
+  return (
+    <label
+      className={cn('mt-4 flex items-start gap-3 text-sm text-foreground', className)}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className={cn('mt-0.5 h-4 w-4 shrink-0 rounded border-border')}
+      />
+      <span>{children}</span>
+    </label>
   );
 }
 
@@ -208,12 +249,13 @@ function FormRoot({ children, onSubmit, className, ...props }: FormProps) {
 /* Public API                                                                 */
 /* -------------------------------------------------------------------------- */
 
-/** 表单：字段用 Form.Field，控件用 Form.Input / Select / Number / StringList / Submit。 */
+/** 表单：字段用 Form.Field，控件用 Form.Input / Select / Number / Checkbox / StringList / Submit。 */
 export const Form = Object.assign(FormRoot, {
   Field: FormField,
   Input: FormInput,
   Select: FormSelect,
   Number: FormNumber,
+  Checkbox: FormCheckbox,
   StringList: FormStringList,
   Submit: FormSubmit,
 });

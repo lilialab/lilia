@@ -1,7 +1,8 @@
 'use client';
 
 import { login } from '@/client-api/auth';
-import { AuthField, AuthShell } from '@/components/auth';
+import { AuthShell } from '@/components/auth';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
@@ -47,33 +48,22 @@ export function LoginForm() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
-        <AuthField
-          id="username"
-          label={tAuth('username')}
-          value={username}
-          onChange={setUsername}
-          autoComplete="username"
-        />
-        <AuthField
-          id="password"
-          label={tAuth('password')}
-          type="password"
-          value={password}
-          onChange={setPassword}
-          autoComplete="current-password"
-        />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={cn(
-            'mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary-hover disabled:opacity-40',
-          )}
-        >
+      <Form onSubmit={handleSubmit}>
+        <Form.Field label={tAuth('username')}>
+          <Form.Input value={username} onChange={setUsername} autoComplete="username" />
+        </Form.Field>
+        <Form.Field label={tAuth('password')}>
+          <Form.Input
+            type="password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+          />
+        </Form.Field>
+        <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
           {isSubmitting ? t('submitting') : t('submit')}
-        </button>
-      </form>
+        </Form.Submit>
+      </Form>
     </AuthShell>
   );
 }

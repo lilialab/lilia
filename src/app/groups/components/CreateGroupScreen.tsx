@@ -3,6 +3,7 @@
 import { MemberPickerEmpty, MemberPickerList } from '@/app/groups/components/MemberPicker';
 import { type ContactSummary, fetchContacts } from '@/client-api/contacts';
 import { createGroup } from '@/client-api/groups';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -83,22 +84,16 @@ export function CreateGroupScreen() {
       />
 
       <PageStatus loading={isBootstrapping}>
-        <form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
+        <Form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
           <div className={cn('shrink-0 border-b border-border bg-background px-4 py-3')}>
-            <label className={cn('block text-xs font-medium text-muted-foreground')}>
-              {t('nameLabel')}
-              <input
-                type="text"
+            <Form.Field label={t('nameLabel')}>
+              <Form.Input
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={setTitle}
                 placeholder={t('namePlaceholder')}
-                className={cn(
-                  'mt-1.5 w-full rounded-md border border-border px-3 py-2 text-base text-foreground',
-                  'outline-none focus:border-muted-foreground',
-                )}
                 autoFocus
               />
-            </label>
+            </Form.Field>
           </div>
 
           <div className={cn('min-h-0 flex-1 overflow-y-auto')}>
@@ -120,18 +115,11 @@ export function CreateGroupScreen() {
               'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
             )}
           >
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className={cn(
-                'w-full rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
-              )}
-            >
+            <Form.Submit disabled={!canSubmit}>
               {createMutation.isPending ? t('creating') : t('createAndEnter')}
-            </button>
+            </Form.Submit>
           </div>
-        </form>
+        </Form>
       </PageStatus>
     </div>
   );

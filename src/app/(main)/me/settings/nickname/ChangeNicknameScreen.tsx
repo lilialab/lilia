@@ -1,7 +1,7 @@
 'use client';
 
 import { updateUserNickname } from '@/client-api/auth';
-import { AuthField } from '@/components/auth';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -48,25 +48,14 @@ export function ChangeNicknameScreen() {
       />
 
       <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
-        <form onSubmit={handleSubmit} className={cn('flex flex-col gap-4')}>
-          <AuthField
-            id="nickname"
-            label={t('nickname')}
-            value={nickname}
-            onChange={setDraftNickname}
-            autoComplete="nickname"
-          />
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={cn(
-              'mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground',
-              'hover:bg-primary-hover disabled:opacity-40',
-            )}
-          >
+        <Form onSubmit={handleSubmit}>
+          <Form.Field label={t('nickname')}>
+            <Form.Input value={nickname} onChange={setDraftNickname} autoComplete="nickname" />
+          </Form.Field>
+          <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
             {isSubmitting ? t('submitting') : t('submit')}
-          </button>
-        </form>
+          </Form.Submit>
+        </Form>
       </div>
     </div>
   );

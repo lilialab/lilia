@@ -7,44 +7,6 @@ import { Languages } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-interface AuthFieldProps {
-  id: string;
-  label: string;
-  type?: 'text' | 'password';
-  value: string;
-  onChange: (value: string) => void;
-  autoComplete?: string;
-  placeholder?: string;
-}
-
-export function AuthField({
-  id,
-  label,
-  type = 'text',
-  value,
-  onChange,
-  autoComplete,
-  placeholder,
-}: AuthFieldProps) {
-  return (
-    <label htmlFor={id} className={cn('flex flex-col gap-1.5')}>
-      <span className={cn('text-sm font-medium text-foreground/80')}>{label}</span>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          'rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground',
-          'outline-none focus:border-muted-foreground',
-        )}
-      />
-    </label>
-  );
-}
-
 interface AuthLocaleLinkProps {
   returnTo: LanguageReturnPath;
 }

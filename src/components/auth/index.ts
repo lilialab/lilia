@@ -1,2 +1,2 @@
-export { AuthField, AuthShell } from './AuthForm';
+export { AuthShell } from './AuthShell';
 export { TurnstileWidget, type TurnstileWidgetHandle } from './TurnstileWidget';

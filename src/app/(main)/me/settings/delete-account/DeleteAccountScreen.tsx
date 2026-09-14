@@ -1,7 +1,7 @@
 'use client';
 
 import { deleteAccount } from '@/client-api/auth';
-import { AuthField } from '@/components/auth';
+import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { translateApiError } from '@/i18n/client';
@@ -48,35 +48,26 @@ export function DeleteAccountScreen() {
       <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
         <p className={cn('text-sm text-muted-foreground')}>{t('warning')}</p>
 
-        <form onSubmit={handleSubmit} className={cn('mt-4 flex flex-col gap-4')}>
-          <AuthField
-            id="currentPassword"
-            label={t('currentPassword')}
-            type="password"
-            value={currentPassword}
-            onChange={setCurrentPassword}
-            autoComplete="current-password"
-          />
-          <label className={cn('flex items-start gap-3 text-sm text-foreground')}>
-            <input
-              type="checkbox"
-              checked={confirmDeletion}
-              onChange={(e) => setConfirmDeletion(e.target.checked)}
-              className={cn('mt-0.5 h-4 w-4 rounded border-border')}
+        <Form onSubmit={handleSubmit} className={cn('mt-4')}>
+          <Form.Field label={t('currentPassword')}>
+            <Form.Input
+              type="password"
+              value={currentPassword}
+              onChange={setCurrentPassword}
+              autoComplete="current-password"
             />
-            <span>{t('confirmLabel')}</span>
-          </label>
-          <button
-            type="submit"
+          </Form.Field>
+          <Form.Checkbox checked={confirmDeletion} onChange={setConfirmDeletion}>
+            {t('confirmLabel')}
+          </Form.Checkbox>
+          <Form.Submit
+            variant="danger"
             disabled={isSubmitting || !confirmDeletion}
-            className={cn(
-              'mt-2 rounded-md bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground',
-              'hover:opacity-90 disabled:opacity-40',
-            )}
+            className={cn('mt-4')}
           >
             {isSubmitting ? t('submitting') : t('submit')}
-          </button>
-        </form>
+          </Form.Submit>
+        </Form>
       </div>
     </div>
   );
