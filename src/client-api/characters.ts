@@ -39,6 +39,24 @@ export async function fetchCharacter(characterId: string): Promise<CatalogCharac
   return data.character;
 }
 
+/** 新建目录角色。 */
+export async function createCharacter(input: {
+  slug: string;
+  name: string;
+  shortBio?: string;
+  gender: string;
+  height?: string;
+  relation?: string;
+  personality?: string[];
+}): Promise<CharacterSummary> {
+  const data = await apiFetchJson<{ character: CharacterSummary }>('/api/characters', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return data.character;
+}
+
 /** 拉取角色详情评论（新到旧）。 */
 export async function fetchCharacterComments(characterId: string): Promise<CharacterComment[]> {
   const data = await apiFetchJson<{ comments: CharacterComment[] }>(

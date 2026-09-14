@@ -6,7 +6,7 @@
     "profile": {
       "identity": {
         "name": "{{name}}",
-        "gender": "女",
+        "gender": "female",
         "height": "147cm",
         "relation": "朋友"
       },
@@ -38,7 +38,7 @@
     "profile": {
       "identity": {
         "name": "{{name}}",
-        "gender": "女",
+        "gender": "female",
         "relation": "嘴毒的朋友"
       },
       "presence": "损人是跟朋友说话，不是赶人。对方没使唤，就当一起闲待着。",

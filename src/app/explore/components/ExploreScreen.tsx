@@ -9,12 +9,14 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 /* -------------------------------------------------------------------------- */
 /* Subcomponents                                                              */
@@ -73,6 +75,7 @@ export function ExploreScreen() {
   /* State & data                                                               */
   /* -------------------------------------------------------------------------- */
 
+  const router = useRouter();
   const { user } = useAuth();
   const t = useTranslations('explore');
 
@@ -84,13 +87,24 @@ export function ExploreScreen() {
 
   const characters = charactersQuery.data ?? [];
 
+  const openCreate = () => {
+    router.push('/explore/new', { transitionTypes: ['nav-forward'] });
+  };
+
   /* -------------------------------------------------------------------------- */
   /* Render                                                                     */
   /* -------------------------------------------------------------------------- */
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
-      <ScreenHeader title={t('title')} />
+      <ScreenHeader
+        title={t('title')}
+        right={
+          <HeaderIconButton aria-label={t('create')} onClick={openCreate}>
+            <Plus className={cn('h-5 w-5')} aria-hidden />
+          </HeaderIconButton>
+        }
+      />
 
       <PageStatus
         loading={charactersQuery.isLoading}
