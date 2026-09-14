@@ -48,11 +48,11 @@ export function sniffAvatarImage(bytes: Uint8Array): AvatarImageKind | null {
   return null;
 }
 
-/** 生成用户头像对象 key。 */
+/** 生成头像对象 key。dir 如 `avatars/${userId}`。 */
 export function buildAvatarObjectKey(
-  userId: string,
+  dir: string,
   kind: AvatarImageKind,
   id = crypto.randomUUID(),
 ): string {
-  return `avatars/${userId}/${id}.${AVATAR_EXTENSIONS[kind]}`;
+  return `${dir}/${id}.${AVATAR_EXTENSIONS[kind]}`;
 }

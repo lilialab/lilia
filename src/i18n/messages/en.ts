@@ -111,6 +111,8 @@ export const en = {
     personalityPlaceholder: 'One trait',
     personalityAdd: 'Add',
     personalityRemove: 'Remove',
+    avatarHintAdd: 'Tap to add a photo',
+    avatarHintChange: 'Tap to change',
     submit: 'Create',
     submitting: 'Creating...',
   },

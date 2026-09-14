@@ -48,12 +48,29 @@ export async function createCharacter(input: {
   height?: string;
   relation?: string;
   personality?: string[];
+  avatar?: File;
 }): Promise<CharacterSummary> {
+  const { avatar, ...body } = input;
   const data = await apiFetchJson<{ character: CharacterSummary }>('/api/characters', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    body: JSON.stringify(body),
   });
+  if (!avatar) return data.character;
+  return uploadCharacterAvatar(data.character.id, avatar);
+}
+
+/** 上传角色头像。 */
+export async function uploadCharacterAvatar(
+  characterId: string,
+  file: File,
+): Promise<CharacterSummary> {
+  const form = new FormData();
+  form.append('file', file);
+  const data = await apiFetchJson<{ character: CharacterSummary }>(
+    `/api/characters/${encodeURIComponent(characterId)}/avatar`,
+    { method: 'POST', body: form },
+  );
   return data.character;
 }
 

@@ -110,6 +110,8 @@ export const zh = {
     personalityPlaceholder: '一条性格',
     personalityAdd: '添加',
     personalityRemove: '删除',
+    avatarHintAdd: '点击添加头像',
+    avatarHintChange: '点击更换',
     submit: '创建',
     submitting: '创建中...',
   },

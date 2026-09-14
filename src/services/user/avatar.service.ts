@@ -1,29 +1,14 @@
 import { AppError } from '@/lib/server/app-error';
+import { assertAvatarBytes } from '@/lib/server/avatar';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
 import { deleteS3Object, getS3Object, putS3Object } from '@/lib/server/s3';
-import { API_ERROR_CODE } from '@/types/api-error';
-import {
-  AVATAR_CONTENT_TYPES,
-  AVATAR_MAX_BYTES,
-  buildAvatarObjectKey,
-  sniffAvatarImage,
-} from './avatar.utils';
+import { AVATAR_CONTENT_TYPES, buildAvatarObjectKey } from '@/utils/avatar';
 import { type PublicUser, publicUserSelect, toPublicUser } from './users.service';
 
 /** 校验并上传当前用户头像；替换时删除旧对象。 */
 export async function uploadUserAvatar(userId: string, bytes: Uint8Array): Promise<PublicUser> {
-  if (bytes.byteLength === 0) {
-    throw AppError.badRequest('请选择图片', API_ERROR_CODE.AVATAR_REQUIRED);
-  }
-  if (bytes.byteLength > AVATAR_MAX_BYTES) {
-    throw AppError.badRequest('图片不能超过 5MB', API_ERROR_CODE.AVATAR_TOO_LARGE);
-  }
-
-  const kind = sniffAvatarImage(bytes);
-  if (!kind) {
-    throw AppError.badRequest('仅支持 jpeg、png、webp', API_ERROR_CODE.AVATAR_INVALID_TYPE);
-  }
+  const kind = assertAvatarBytes(bytes);
 
   const current = await prisma.user.findUnique({
     where: { id: userId },
@@ -33,7 +18,7 @@ export async function uploadUserAvatar(userId: string, bytes: Uint8Array): Promi
     throw AppError.unauthorized('用户不存在');
   }
 
-  const key = buildAvatarObjectKey(userId, kind);
+  const key = buildAvatarObjectKey(`avatars/${userId}`, kind);
   await putS3Object({
     key,
     body: bytes,

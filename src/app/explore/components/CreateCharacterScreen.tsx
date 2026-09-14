@@ -1,6 +1,7 @@
 'use client';
 
 import { createCharacter } from '@/client-api/characters';
+import { AvatarPicker } from '@/components/Avatar';
 import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -14,7 +15,7 @@ import {
 } from '@/schemas/shared/character';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { type SubmitEvent, useState } from 'react';
+import { type SubmitEvent, useEffect, useState } from 'react';
 
 export function CreateCharacterScreen() {
   /* -------------------------------------------------------------------------- */
@@ -32,7 +33,15 @@ export function CreateCharacterScreen() {
   const [relation, setRelation] = useState('');
   const [personality, setPersonality] = useState<string[]>([]);
   const [personalityDraft, setPersonalityDraft] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
 
   const createMutation = useMutation({
     mutationFn: createCharacter,
@@ -76,6 +85,15 @@ export function CreateCharacterScreen() {
     clearError();
   };
 
+  const handleAvatarFile = (file: File) => {
+    clearError();
+    setAvatarPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setAvatarFile(file);
+  };
+
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -91,6 +109,7 @@ export function CreateCharacterScreen() {
       height: height.trim() || undefined,
       relation: relation.trim() || undefined,
       personality: traits.length > 0 ? traits : undefined,
+      avatar: avatarFile ?? undefined,
     });
   };
 
@@ -104,6 +123,21 @@ export function CreateCharacterScreen() {
 
       <Form onSubmit={handleSubmit} className={cn('flex min-h-0 flex-1 flex-col')}>
         <div className={cn('min-h-0 flex-1 overflow-y-auto bg-background px-4 py-3')}>
+          <div className={cn('flex flex-col items-center')}>
+            <AvatarPicker
+              src={avatarPreview ?? ''}
+              hasAvatar={Boolean(avatarPreview)}
+              name={name}
+              ariaLabel={avatarPreview ? t('avatarHintChange') : t('avatarHintAdd')}
+              onFile={handleAvatarFile}
+              onFileTooLarge={() => {
+                setFormError(translateApiError({ code: 'AVATAR_TOO_LARGE' }));
+              }}
+            />
+            <p className={cn('mt-2 text-xs text-muted-foreground')}>
+              {avatarPreview ? t('avatarHintChange') : t('avatarHintAdd')}
+            </p>
+          </div>
           <Form.Field label={t('slugLabel')} required>
             <Form.Input
               value={slug}

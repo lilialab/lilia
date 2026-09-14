@@ -1,8 +1,4 @@
-import {
-  AVATAR_MAX_BYTES,
-  buildAvatarObjectKey,
-  sniffAvatarImage,
-} from '@/services/user/avatar.utils';
+import { AVATAR_MAX_BYTES, buildAvatarObjectKey, sniffAvatarImage } from '@/utils/avatar';
 import { describe, expect, it } from 'vitest';
 
 function bytes(...values: number[]): Uint8Array {
@@ -41,10 +37,12 @@ describe('sniffAvatarImage', () => {
 });
 
 describe('buildAvatarObjectKey', () => {
-  it('按用户与扩展名拼 key', () => {
-    expect(buildAvatarObjectKey('user-1', 'jpeg', 'abc')).toBe('avatars/user-1/abc.jpg');
-    expect(buildAvatarObjectKey('user-1', 'png', 'abc')).toBe('avatars/user-1/abc.png');
-    expect(buildAvatarObjectKey('user-1', 'webp', 'abc')).toBe('avatars/user-1/abc.webp');
+  it('按目录与扩展名拼 key', () => {
+    expect(buildAvatarObjectKey('avatars/user-1', 'jpeg', 'abc')).toBe('avatars/user-1/abc.jpg');
+    expect(buildAvatarObjectKey('avatars/characters/char-1', 'png', 'abc')).toBe(
+      'avatars/characters/char-1/abc.png',
+    );
+    expect(buildAvatarObjectKey('avatars/user-1', 'webp', 'abc')).toBe('avatars/user-1/abc.webp');
   });
 });
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { uploadUserAvatar, userAvatarUrl } from '@/client-api/auth';
-import { Avatar } from '@/components/Avatar';
+import { AvatarPicker } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,58 +9,10 @@ import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast } from '@/lib/client/toast';
-import { AVATAR_CONTENT_TYPES, AVATAR_MAX_BYTES } from '@/services/user/avatar.utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { LogOut, Settings } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { MeMenuLink } from './MeMenuLink';
-
-const AVATAR_ACCEPT = Object.values(AVATAR_CONTENT_TYPES).join(',');
-
-interface MeAvatarButtonProps {
-  src: string;
-  hasAvatar: boolean;
-  name: string;
-  uploading: boolean;
-  onFile: (file: File) => void;
-}
-
-/** 「我」页头像：未上传显示昵称首字；点击选图上传/替换。 */
-function MeAvatarButton({ src, hasAvatar, name, uploading, onFile }: MeAvatarButtonProps) {
-  const t = useTranslations('me');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file || uploading) return;
-    onFile(file);
-  }
-
-  return (
-    <>
-      <button
-        type="button"
-        aria-label={t('changeAvatar')}
-        aria-busy={uploading}
-        disabled={uploading}
-        onClick={() => inputRef.current?.click()}
-        className={cn(
-          'shrink-0 rounded-lg hover:opacity-80 disabled:opacity-40',
-        )}
-      >
-        <Avatar src={src} hasAvatar={hasAvatar} name={name} size="lg" />
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept={AVATAR_ACCEPT}
-        className={cn('hidden')}
-        onChange={handleChange}
-      />
-    </>
-  );
-}
 
 export function MeScreen() {
   const { user, logout, isLoggingOut } = useAuth();
@@ -69,11 +21,6 @@ export function MeScreen() {
   const [uploading, setUploading] = useState(false);
 
   async function handleAvatarFile(file: File) {
-    if (file.size > AVATAR_MAX_BYTES) {
-      showErrorToast(translateApiError({ code: 'AVATAR_TOO_LARGE' }), 'upload-avatar');
-      return;
-    }
-
     setUploading(true);
     try {
       await uploadUserAvatar(file);
@@ -91,12 +38,16 @@ export function MeScreen() {
 
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 flex items-center gap-4 bg-background px-4 py-4')}>
-          <MeAvatarButton
+          <AvatarPicker
             src={user ? userAvatarUrl(user.id, user.updatedAt) : ''}
             hasAvatar={user?.hasAvatar ?? false}
             name={user?.nickname ?? ''}
-            uploading={uploading}
+            ariaLabel={t('changeAvatar')}
+            disabled={uploading}
             onFile={handleAvatarFile}
+            onFileTooLarge={() => {
+              showErrorToast(translateApiError({ code: 'AVATAR_TOO_LARGE' }), 'upload-avatar');
+            }}
           />
           <div className={cn('min-w-0')}>
             <p className={cn('text-base font-medium text-foreground')}>

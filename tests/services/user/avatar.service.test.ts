@@ -26,7 +26,7 @@ vi.mock('@/lib/server/logger', () => ({
 
 import { prisma } from '@/lib/server/prisma';
 import { getUserAvatar, uploadUserAvatar } from '@/services/user/avatar.service';
-import { AVATAR_MAX_BYTES } from '@/services/user/avatar.utils';
+import { AVATAR_MAX_BYTES } from '@/utils/avatar';
 
 const jpegBytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0]);
 
