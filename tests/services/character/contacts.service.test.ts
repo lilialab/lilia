@@ -2,8 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/server/prisma', () => ({
   prisma: {
+    character: {
+      findUnique: vi.fn(),
+    },
     userCharacter: {
       findUnique: vi.fn(),
+      create: vi.fn(),
       delete: vi.fn(),
     },
     chatSession: {
@@ -25,9 +29,56 @@ vi.mock('@/services/session/sessions.service', () => ({
 }));
 
 import { prisma } from '@/lib/server/prisma';
-import { removeContact } from '@/services/character/contacts.service';
+import { addContact, removeContact } from '@/services/character/contacts.service';
 import { softDeleteSessionMessages } from '@/services/chat/message.service';
 import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
+
+const listedCharacter = {
+  id: 'char-1',
+  slug: 'mybot',
+  name: '小明',
+  shortBio: '',
+  avatarKey: null,
+  ownerId: 'owner-1',
+  isListed: true,
+  updatedAt: new Date('2026-09-14T00:00:00.000Z'),
+};
+
+describe('addContact', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('下架且尚未添加时当不存在', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      ...listedCharacter,
+      isListed: false,
+    } as never);
+    vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue(null);
+
+    await expect(addContact('user-2', 'char-1')).rejects.toMatchObject({
+      status: 404,
+    });
+    expect(prisma.userCharacter.create).not.toHaveBeenCalled();
+  });
+
+  it('下架但已经添加时仍返回通讯录', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      ...listedCharacter,
+      isListed: false,
+    } as never);
+    vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue({
+      createdAt: new Date('2026-09-14T00:00:00.000Z'),
+      character: { ...listedCharacter, isListed: false },
+    } as never);
+
+    await expect(addContact('user-2', 'char-1')).resolves.toMatchObject({
+      id: 'char-1',
+      createdAt: new Date('2026-09-14T00:00:00.000Z'),
+    });
+    expect(prisma.userCharacter.create).not.toHaveBeenCalled();
+  });
+});
 
 describe('removeContact', () => {
   beforeEach(() => {

@@ -1,5 +1,9 @@
 import { parseApiResponse } from '@/lib/client/api-client';
 
+export type ApiFetchJsonInit = RequestInit & {
+  json?: unknown;
+};
+
 /** 带 Cookie 会话的 fetch 封装。 */
 export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   return fetch(input, {
@@ -38,12 +42,21 @@ async function handleUnauthorizedRedirect(): Promise<void> {
   window.location.assign('/login');
 }
 
-/** 带 Cookie 的 fetch，并解析标准 API JSON 响应的 data 字段。 */
+function toRequestInit(init?: ApiFetchJsonInit): RequestInit | undefined {
+  if (!init) return undefined;
+  const { json, ...rest } = init;
+  if (json === undefined) return rest;
+  const headers = new Headers(rest.headers);
+  headers.set('Content-Type', 'application/json');
+  return { ...rest, headers, body: JSON.stringify(json) };
+}
+
+/** 带 Cookie 的 fetch，并解析标准 API JSON 响应的 data 字段。`json` 会序列化为 JSON body。 */
 export async function apiFetchJson<T>(
   input: RequestInfo | URL,
-  init?: RequestInit,
+  init?: ApiFetchJsonInit,
 ): Promise<T> {
-  const res = await apiFetch(input, init);
+  const res = await apiFetch(input, toRequestInit(init));
 
   if (res.status === 401 && !shouldIgnoreUnauthorizedRedirect(input)) {
     void handleUnauthorizedRedirect();

@@ -27,7 +27,7 @@ describe('listCharacterComments', () => {
   it('角色不存在时 404', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue(null);
 
-    await expect(listCharacterComments('missing')).rejects.toMatchObject({
+    await expect(listCharacterComments('user-1', 'missing')).rejects.toMatchObject({
       status: AppError.notFound('').status,
     });
 
@@ -35,7 +35,10 @@ describe('listCharacterComments', () => {
   });
 
   it('只查楼主未软删，新到旧，join 当前作者信息', async () => {
-    vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'char-1' } as never);
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      isListed: true,
+      ownerId: null,
+    } as never);
     vi.mocked(prisma.characterComment.findMany).mockResolvedValue([
       {
         id: 'c-1',
@@ -50,7 +53,7 @@ describe('listCharacterComments', () => {
       },
     ] as never);
 
-    const comments = await listCharacterComments('char-1');
+    const comments = await listCharacterComments('user-1', 'char-1');
 
     expect(prisma.characterComment.findMany).toHaveBeenCalledWith({
       where: {
@@ -78,6 +81,18 @@ describe('listCharacterComments', () => {
       },
     ]);
   });
+
+  it('下架且非创建者当不存在', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      isListed: false,
+      ownerId: 'owner-1',
+    } as never);
+
+    await expect(listCharacterComments('user-2', 'char-1')).rejects.toMatchObject({
+      status: AppError.notFound('').status,
+    });
+    expect(prisma.characterComment.findMany).not.toHaveBeenCalled();
+  });
 });
 
 describe('createCharacterComment', () => {
@@ -96,7 +111,10 @@ describe('createCharacterComment', () => {
   });
 
   it('只写 characterId / userId / body，返回当前作者信息', async () => {
-    vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'char-1' } as never);
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      isListed: true,
+      ownerId: null,
+    } as never);
     vi.mocked(prisma.characterComment.create).mockResolvedValue({
       id: 'c-1',
       body: '好看',

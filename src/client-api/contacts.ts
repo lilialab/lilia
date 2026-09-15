@@ -24,8 +24,7 @@ export async function fetchContacts(): Promise<ContactSummary[]> {
 export async function addContact(characterId: string): Promise<ContactSummary> {
   const data = await apiFetchJson<{ contact: ContactSummary }>('/api/contacts', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ characterId }),
+    json: { characterId },
   });
   return data.contact;
 }

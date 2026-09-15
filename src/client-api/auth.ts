@@ -25,8 +25,7 @@ export async function fetchCurrentUser(): Promise<AuthUser> {
 export async function login(input: LoginBody): Promise<void> {
   await apiFetchJson('/api/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }
 
@@ -34,8 +33,7 @@ export async function login(input: LoginBody): Promise<void> {
 export async function register(input: RegisterBody): Promise<void> {
   await apiFetchJson('/api/auth/register', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }
 
@@ -50,8 +48,7 @@ export async function logout(): Promise<void> {
 export async function changePassword(input: ChangePasswordBody): Promise<void> {
   await apiFetchJson('/api/auth/change-password', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }
 
@@ -59,8 +56,7 @@ export async function changePassword(input: ChangePasswordBody): Promise<void> {
 export async function deleteAccount(input: DeleteAccountBody): Promise<void> {
   await apiFetchJson('/api/auth/delete-account', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }
 
@@ -68,8 +64,7 @@ export async function deleteAccount(input: DeleteAccountBody): Promise<void> {
 export async function updateUserLocale(locale: Locale): Promise<AuthUser> {
   const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ locale }),
+    json: { locale },
   });
   return data.user;
 }
@@ -78,8 +73,7 @@ export async function updateUserLocale(locale: Locale): Promise<AuthUser> {
 export async function updateUserNickname(nickname: string): Promise<AuthUser> {
   const data = await apiFetchJson<{ user: AuthUser }>('/api/auth/me', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nickname }),
+    json: { nickname },
   });
   return data.user;
 }

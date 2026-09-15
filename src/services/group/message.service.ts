@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import {
@@ -28,32 +29,32 @@ const excludeTurnCueFilter = {
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
+const groupMessageSelect = {
+  id: true,
+  role: true,
+  kind: true,
+  parts: true,
+  createdAt: true,
+  speakerCharacter: {
+    select: { id: true, slug: true, name: true, avatarKey: true, updatedAt: true },
+  },
+  speakerUser: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
+} satisfies Prisma.MessageSelect;
+
+type GroupHistoryPayload = Prisma.MessageGetPayload<{
+  select: typeof groupMessageSelect;
+}>;
+
+/** 写入保证：助手必有 speakerCharacter，用户必有 speakerUser。 */
+type GroupHistoryRow = GroupHistoryPayload & {
+  speakerCharacter: NonNullable<GroupHistoryPayload['speakerCharacter']>;
+  speakerUser: NonNullable<GroupHistoryPayload['speakerUser']>;
+};
+
 function mapGroupMessageRole(role: string): UIMessage['role'] {
   if (role === 'user' || role === 'assistant' || role === 'system') return role;
   return 'assistant';
 }
-
-/** 写入保证：助手必有 speakerCharacter，用户必有 speakerUser。 */
-type GroupHistoryRow = {
-  id: string;
-  role: string;
-  kind: string | null;
-  parts: unknown;
-  createdAt: Date;
-  speakerCharacter: {
-    id: string;
-    slug: string;
-    name: string;
-    avatarKey: string | null;
-    updatedAt: Date;
-  };
-  speakerUser: {
-    id: string;
-    nickname: string;
-    avatarKey: string | null;
-    updatedAt: Date;
-  };
-};
 
 function mapGroupMessageRow(row: GroupHistoryRow): {
   id: string;
@@ -94,18 +95,6 @@ function mapGroupMessageRow(row: GroupHistoryRow): {
     metadata,
   };
 }
-
-const groupMessageSelect = {
-  id: true,
-  role: true,
-  kind: true,
-  parts: true,
-  createdAt: true,
-  speakerCharacter: {
-    select: { id: true, slug: true, name: true, avatarKey: true, updatedAt: true },
-  },
-  speakerUser: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
-} as const;
 
 /* -------------------------------------------------------------------------- */
 /* Read                                                                       */

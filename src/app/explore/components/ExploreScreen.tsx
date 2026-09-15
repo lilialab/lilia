@@ -1,6 +1,7 @@
 'use client';
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
+import { ExploreUnlistedBadge } from '@/app/explore/components/ExploreListedButton';
 import {
   type CatalogCharacter,
   characterAvatarUrl,
@@ -51,19 +52,24 @@ function ExploreList({ characters }: ExploreListProps) {
               hasAvatar={character.hasAvatar}
               name={character.name}
             />
-            <span className={cn('min-w-0')}>
-              <p className={cn('truncate text-sm font-medium text-foreground')}>
-                {character.name}
-              </p>
+            <div className={cn('min-w-0')}>
+              <div className={cn('flex min-w-0 items-center gap-1.5')}>
+                <p className={cn('truncate text-sm font-medium text-foreground')}>
+                  {character.name}
+                </p>
+                {!character.isListed && <ExploreUnlistedBadge />}
+              </div>
               <p className={cn('truncate text-xs text-muted-foreground')}>
                 {character.shortBio}
               </p>
-            </span>
+            </div>
           </Link>
-          <ExploreAddButton
-            characterId={character.id}
-            isContact={character.isContact}
-          />
+          {character.isListed && (
+            <ExploreAddButton
+              characterId={character.id}
+              isContact={character.isContact}
+            />
+          )}
         </li>
       ))}
     </ul>

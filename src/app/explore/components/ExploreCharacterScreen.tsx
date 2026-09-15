@@ -2,6 +2,10 @@
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
 import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
+import {
+  ExploreListedButton,
+  ExploreUnlistedBadge,
+} from '@/app/explore/components/ExploreListedButton';
 import { characterAvatarUrl, fetchCharacter } from '@/client-api/characters';
 import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
@@ -74,12 +78,25 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
                     size="lg"
                   />
                   <div className={cn('min-w-0 flex-1')}>
+                    {!character.isListed && (
+                      <div className={cn('mb-2')}>
+                        <ExploreUnlistedBadge />
+                      </div>
+                    )}
                     <p className={cn('text-sm text-muted-foreground')}>{character.shortBio}</p>
-                    <div className={cn('mt-4')}>
-                      <ExploreAddButton
-                        characterId={character.id}
-                        isContact={character.isContact}
-                      />
+                    <div className={cn('mt-4 flex flex-wrap gap-2')}>
+                      {character.isListed && (
+                        <ExploreAddButton
+                          characterId={character.id}
+                          isContact={character.isContact}
+                        />
+                      )}
+                      {character.isOwner && (
+                        <ExploreListedButton
+                          characterId={character.id}
+                          isListed={character.isListed}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

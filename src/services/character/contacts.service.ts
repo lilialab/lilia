@@ -73,6 +73,10 @@ export async function addContact(userId: string, characterId: string) {
     };
   }
 
+  if (!character.isListed) {
+    throw AppError.notFound('角色不存在');
+  }
+
   const created = await prisma.userCharacter.create({
     data: { userId, characterId },
     select: {

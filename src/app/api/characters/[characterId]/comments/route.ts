@@ -11,9 +11,9 @@ import { type NextRequest } from 'next/server';
 
 export const GET = withApiHandler(
   async (req: NextRequest, context: RouteContext<'/api/characters/[characterId]/comments'>) => {
-    await resolveRequestUserId(req);
+    const userId = await resolveRequestUserId(req);
     const { characterId } = await parseRouteParams(characterParamsSchema, context.params);
-    const comments = await listCharacterComments(characterId);
+    const comments = await listCharacterComments(userId, characterId);
     return successResponse({ comments });
   },
 );

@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import {
   assertCharacterOwner,
+  isExploreVisible,
   parseCharacterProfile,
   parseCharacterSkills,
   readCharacterFormProfile,
@@ -94,6 +95,8 @@ describe('toCharacterCatalogItem', () => {
         name: '莉莉娅',
         shortBio: '朋友',
         avatarKey: null,
+        ownerId: null,
+        isListed: true,
         updatedAt: new Date('2026-09-13T00:00:00.000Z'),
       }),
     ).toEqual({
@@ -114,6 +117,8 @@ describe('toCharacterCatalogItem', () => {
         name: '莉莉娅',
         shortBio: '朋友',
         avatarKey: 'characters/c1/a.jpg',
+        ownerId: null,
+        isListed: true,
         updatedAt: new Date('2026-09-13T00:00:00.000Z'),
       }).hasAvatar,
     ).toBe(true);
@@ -144,5 +149,18 @@ describe('assertCharacterOwner', () => {
         code: API_ERROR_CODE.CHARACTER_NOT_OWNER,
       });
     }
+  });
+});
+
+describe('isExploreVisible', () => {
+  it('已上架对任何登录用户可见', () => {
+    expect(isExploreVisible(true, null, 'user-2')).toBe(true);
+    expect(isExploreVisible(true, 'user-1', 'user-2')).toBe(true);
+  });
+
+  it('下架仅创建者可见', () => {
+    expect(isExploreVisible(false, 'user-1', 'user-1')).toBe(true);
+    expect(isExploreVisible(false, 'user-1', 'user-2')).toBe(false);
+    expect(isExploreVisible(false, null, 'user-1')).toBe(false);
   });
 });

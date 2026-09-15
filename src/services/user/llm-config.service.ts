@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { decryptSecret, encryptSecret } from '@/lib/server/secret-crypto';
@@ -19,17 +20,15 @@ export interface UserLlmEndpoint {
   model: string;
 }
 
-type LlmConfigRow = {
-  llmBaseUrl: string | null;
-  llmModel: string | null;
-  llmApiKeyCipher: string | null;
-};
-
 const llmConfigSelect = {
   llmBaseUrl: true,
   llmModel: true,
   llmApiKeyCipher: true,
-} as const;
+} satisfies Prisma.UserSelect;
+
+type LlmConfigRow = Prisma.UserGetPayload<{
+  select: typeof llmConfigSelect;
+}>;
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */

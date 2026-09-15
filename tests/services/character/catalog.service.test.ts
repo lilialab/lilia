@@ -5,6 +5,7 @@ vi.mock('@/lib/server/prisma', () => ({
     character: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
     },
     userCharacter: {
       findUnique: vi.fn(),
@@ -14,7 +15,12 @@ vi.mock('@/lib/server/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/server/prisma';
-import { getCatalogCharacter, listCharacters } from '@/services/character/catalog.service';
+import {
+  getCatalogCharacter,
+  listCharacters,
+  setCharacterListed,
+} from '@/services/character/catalog.service';
+import { API_ERROR_CODE } from '@/types/api-error';
 
 const catalogRow = {
   id: 'char-1',
@@ -23,6 +29,7 @@ const catalogRow = {
   shortBio: '',
   avatarKey: null,
   ownerId: 'user-1',
+  isListed: true,
   updatedAt: new Date('2026-09-14T00:00:00.000Z'),
 };
 
@@ -31,7 +38,7 @@ describe('listCharacters', () => {
     vi.clearAllMocks();
   });
 
-  it('标记是否通讯录与是否创建者', async () => {
+  it('只查已上架或自己的角色，并标记通讯录与创建者', async () => {
     vi.mocked(prisma.character.findMany).mockResolvedValue([
       catalogRow,
       { ...catalogRow, id: 'seed-1', slug: 'lilia', ownerId: null },
@@ -48,6 +55,7 @@ describe('listCharacters', () => {
         shortBio: '',
         hasAvatar: false,
         avatarUpdatedAt: '2026-09-14T00:00:00.000Z',
+        isListed: true,
         isContact: false,
         isOwner: true,
       },
@@ -58,10 +66,18 @@ describe('listCharacters', () => {
         shortBio: '',
         hasAvatar: false,
         avatarUpdatedAt: '2026-09-14T00:00:00.000Z',
+        isListed: true,
         isContact: true,
         isOwner: false,
       },
     ]);
+    expect(prisma.character.findMany).toHaveBeenCalledWith({
+      where: {
+        OR: [{ isListed: true }, { ownerId: 'user-1' }],
+      },
+      select: expect.any(Object),
+      orderBy: { createdAt: 'asc' },
+    });
   });
 });
 
@@ -80,6 +96,7 @@ describe('getCatalogCharacter', () => {
     await expect(getCatalogCharacter('user-1', 'char-1')).resolves.toMatchObject({
       isOwner: true,
       isContact: false,
+      isListed: true,
       gender: 'female',
     });
   });
@@ -118,6 +135,67 @@ describe('getCatalogCharacter', () => {
       height: '160',
       relation: '朋友',
       personality: ['话少'],
+    });
+  });
+
+  it('下架且非创建者当不存在', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      ...catalogRow,
+      isListed: false,
+      profile: { identity: { name: '{{name}}', gender: 'female' } },
+    } as never);
+
+    await expect(getCatalogCharacter('user-2', 'char-1')).rejects.toMatchObject({
+      status: 404,
+    });
+    expect(prisma.userCharacter.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('下架后创建者仍可读', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      ...catalogRow,
+      isListed: false,
+      profile: { identity: { name: '{{name}}', gender: 'female' } },
+    } as never);
+    vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue(null);
+
+    await expect(getCatalogCharacter('user-1', 'char-1')).resolves.toMatchObject({
+      isListed: false,
+      isOwner: true,
+    });
+  });
+});
+
+describe('setCharacterListed', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('非创建者 403', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'other' } as never);
+
+    await expect(setCharacterListed('user-1', 'char-1', false)).rejects.toMatchObject({
+      status: 403,
+      code: API_ERROR_CODE.CHARACTER_NOT_OWNER,
+    });
+    expect(prisma.character.update).not.toHaveBeenCalled();
+  });
+
+  it('创建者可下架', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'user-1' } as never);
+    vi.mocked(prisma.character.update).mockResolvedValue({
+      ...catalogRow,
+      isListed: false,
+    } as never);
+
+    await expect(setCharacterListed('user-1', 'char-1', false)).resolves.toMatchObject({
+      isListed: false,
+      isOwner: true,
+    });
+    expect(prisma.character.update).toHaveBeenCalledWith({
+      where: { id: 'char-1' },
+      data: { isListed: false },
+      select: expect.any(Object),
     });
   });
 });

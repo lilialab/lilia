@@ -17,8 +17,7 @@ export async function fetchUserLlmConfig(): Promise<UserLlmConfig> {
 export async function updateUserLlmConfig(input: PutLlmConfigBody): Promise<UserLlmConfig> {
   const data = await apiFetchJson<{ config: UserLlmConfig }>('/api/auth/llm-config', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
   return data.config;
 }

@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { type Locale, parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { hashPassword, verifyPassword } from '@/lib/server/password';
@@ -33,17 +34,11 @@ export const publicUserSelect = {
   locale: true,
   createdAt: true,
   updatedAt: true,
-} as const;
+} satisfies Prisma.UserSelect;
 
-type PublicUserRow = {
-  id: string;
-  username: string;
-  nickname: string;
-  avatarKey: string | null;
-  locale: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+type PublicUserRow = Prisma.UserGetPayload<{
+  select: typeof publicUserSelect;
+}>;
 
 /** 把库行转成公开用户（不暴露 avatarKey）。 */
 export function toPublicUser(row: PublicUserRow): PublicUser {

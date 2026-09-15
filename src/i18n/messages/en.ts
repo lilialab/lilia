@@ -55,6 +55,11 @@ export const en = {
     commentPlaceholder: 'Write a comment...',
     commentSubmit: 'Post',
     commentsTitle: '{count} comments',
+    unlisted: 'Unlisted',
+    unlist: 'Unlist',
+    relist: 'List again',
+    unlistedToast: 'Unlisted from Explore',
+    listedToast: 'Listed on Explore again',
   },
   chat: {
     moreActions: 'More actions',

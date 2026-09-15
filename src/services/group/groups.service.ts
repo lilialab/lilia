@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import {
@@ -34,30 +35,18 @@ const groupDetailSelect = {
   updatedAt: true,
   generatingStartedAt: true,
   members: {
-    orderBy: { createdAt: 'asc' as const },
+    orderBy: { createdAt: 'asc' },
     select: {
       character: { select: catalogCharacterSelect },
     },
   },
-} as const;
+} satisfies Prisma.GroupSessionSelect;
 
-function mapGroupDetail(row: {
-  id: string;
-  title: string;
-  createdAt: Date;
-  updatedAt: Date;
-  generatingStartedAt: Date | null;
-  members: {
-    character: {
-      id: string;
-      slug: string;
-      name: string;
-      shortBio: string;
-      avatarKey: string | null;
-      updatedAt: Date;
-    };
-  }[];
-}): GroupDetail {
+type GroupDetailRow = Prisma.GroupSessionGetPayload<{
+  select: typeof groupDetailSelect;
+}>;
+
+function mapGroupDetail(row: GroupDetailRow): GroupDetail {
   return {
     id: row.id,
     title: row.title,

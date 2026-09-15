@@ -15,6 +15,7 @@ export interface CharacterSummary {
 export interface CatalogCharacter extends CharacterSummary {
   isContact: boolean;
   isOwner: boolean;
+  isListed: boolean;
 }
 
 export interface CatalogCharacterDetail extends CatalogCharacter {
@@ -62,8 +63,7 @@ export async function createCharacter(input: {
   const { avatar, ...body } = input;
   const data = await apiFetchJson<{ character: CharacterSummary }>('/api/characters', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    json: body,
   });
   if (!avatar) return data.character;
   return uploadCharacterAvatar(data.character.id, avatar);
@@ -78,8 +78,22 @@ export async function updateCharacter(
     `/api/characters/${encodeURIComponent(characterId)}`,
     {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      json: input,
+    },
+  );
+  return data.character;
+}
+
+/** 创建者上架或下架角色。 */
+export async function setCharacterListed(
+  characterId: string,
+  isListed: boolean,
+): Promise<CatalogCharacter> {
+  const data = await apiFetchJson<{ character: CatalogCharacter }>(
+    `/api/characters/${encodeURIComponent(characterId)}/listed`,
+    {
+      method: 'PATCH',
+      json: { isListed },
     },
   );
   return data.character;
@@ -116,8 +130,7 @@ export async function createCharacterComment(
     `/api/characters/${characterId}/comments`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body }),
+      json: { body },
     },
   );
   return data.comment;

@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import { clearChatGeneration } from '@/services/session/generation-lock.service';
@@ -18,25 +19,25 @@ const activeMessageFilter = { isDeleted: false };
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-/** 写入保证：助手必有 speakerCharacter，用户必有 speakerUser。 */
-type HistoryRow = {
-  id: string;
-  role: string;
-  parts: unknown;
-  createdAt: Date;
+const historySelect = {
+  id: true,
+  role: true,
+  parts: true,
+  createdAt: true,
   speakerCharacter: {
-    id: string;
-    slug: string;
-    name: string;
-    avatarKey: string | null;
-    updatedAt: Date;
-  };
-  speakerUser: {
-    id: string;
-    nickname: string;
-    avatarKey: string | null;
-    updatedAt: Date;
-  };
+    select: { id: true, slug: true, name: true, avatarKey: true, updatedAt: true },
+  },
+  speakerUser: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
+} satisfies Prisma.MessageSelect;
+
+type HistoryPayload = Prisma.MessageGetPayload<{
+  select: typeof historySelect;
+}>;
+
+/** 写入保证：助手必有 speakerCharacter，用户必有 speakerUser。 */
+type HistoryRow = HistoryPayload & {
+  speakerCharacter: NonNullable<HistoryPayload['speakerCharacter']>;
+  speakerUser: NonNullable<HistoryPayload['speakerUser']>;
 };
 
 function mapMessageRole(role: string): UIMessage['role'] {
@@ -161,16 +162,7 @@ export async function getHistoryPage(
     },
     orderBy: { createdAt: 'desc' },
     take: limit,
-    select: {
-      id: true,
-      role: true,
-      parts: true,
-      createdAt: true,
-      speakerCharacter: {
-        select: { id: true, slug: true, name: true, avatarKey: true, updatedAt: true },
-      },
-      speakerUser: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
-    },
+    select: historySelect,
   });
 
   const rows = items.toReversed();

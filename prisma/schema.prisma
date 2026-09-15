@@ -56,6 +56,8 @@ model Character {
   avatarKey String? @map("avatar_key")
   /// 创建者；seed / 删号后为空，无人可改
   ownerId   String? @map("owner_id")
+  /// 是否上架到探索目录；创建者仍能看到自己的下架角色
+  isListed  Boolean @default(true) @map("is_listed")
   /// 人设 JSON（可含 `{{name}}`）；不含 name/shortBio
   profile   Json
   /// skill id 列表（JSON 字符串数组）

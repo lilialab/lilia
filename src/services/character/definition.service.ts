@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { type JsonObject } from '@/utils/json-yaml';
@@ -13,7 +14,11 @@ export const characterDefinitionSelect = {
   extract: true,
   avatarKey: true,
   updatedAt: true,
-} as const;
+} satisfies Prisma.CharacterSelect;
+
+type CharacterDefinitionRow = Prisma.CharacterGetPayload<{
+  select: typeof characterDefinitionSelect;
+}>;
 
 export interface CharacterDefinition {
   id: string;
@@ -27,17 +32,7 @@ export interface CharacterDefinition {
   avatarUpdatedAt: string;
 }
 
-function mapCharacterDefinition(row: {
-  id: string;
-  slug: string;
-  name: string;
-  shortBio: string;
-  profile: unknown;
-  skills: unknown;
-  extract: string;
-  avatarKey: string | null;
-  updatedAt: Date;
-}): CharacterDefinition {
+function mapCharacterDefinition(row: CharacterDefinitionRow): CharacterDefinition {
   return {
     id: row.id,
     slug: row.slug,

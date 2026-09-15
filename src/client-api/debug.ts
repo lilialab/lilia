@@ -45,8 +45,7 @@ export function previewExtract(input: {
 }): Promise<ExtractPreviewResult> {
   return apiFetchJson<ExtractPreviewResult>('/api/debug/extract', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }
 
@@ -82,8 +81,7 @@ export function previewMaintain(input: {
 }): Promise<MaintainPreviewResult> {
   return apiFetchJson<MaintainPreviewResult>('/api/debug/maintain', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }
 
@@ -123,7 +121,6 @@ export function previewProfile(input: {
 }): Promise<ProfilePreviewResult> {
   return apiFetchJson<ProfilePreviewResult>('/api/debug/profile', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    json: input,
   });
 }

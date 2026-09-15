@@ -1,5 +1,7 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
+import { isExploreVisible } from './definition.utils';
 
 export type CharacterCommentItem = {
   id: string;
@@ -16,14 +18,11 @@ const commentSelect = {
   body: true,
   createdAt: true,
   user: { select: { id: true, nickname: true, avatarKey: true, updatedAt: true } },
-} as const;
+} satisfies Prisma.CharacterCommentSelect;
 
-type CommentRow = {
-  id: string;
-  body: string;
-  createdAt: Date;
-  user: { id: string; nickname: string; avatarKey: string | null; updatedAt: Date };
-};
+type CommentRow = Prisma.CharacterCommentGetPayload<{
+  select: typeof commentSelect;
+}>;
 
 function toCommentItem(row: CommentRow): CharacterCommentItem {
   return {
@@ -37,19 +36,22 @@ function toCommentItem(row: CommentRow): CharacterCommentItem {
   };
 }
 
-async function assertCharacterExists(characterId: string): Promise<void> {
+async function assertExploreReadable(userId: string, characterId: string): Promise<void> {
   const character = await prisma.character.findUnique({
     where: { id: characterId },
-    select: { id: true },
+    select: { isListed: true, ownerId: true },
   });
-  if (!character) {
+  if (!character || !isExploreVisible(character.isListed, character.ownerId, userId)) {
     throw AppError.notFound('角色不存在');
   }
 }
 
 /** 列出角色详情评论：仅楼主、未软删，新到旧；作者信息 join 当前用户。 */
-export async function listCharacterComments(characterId: string): Promise<CharacterCommentItem[]> {
-  await assertCharacterExists(characterId);
+export async function listCharacterComments(
+  userId: string,
+  characterId: string,
+): Promise<CharacterCommentItem[]> {
+  await assertExploreReadable(userId, characterId);
 
   const rows = await prisma.characterComment.findMany({
     where: {
@@ -70,7 +72,7 @@ export async function createCharacterComment(
   characterId: string,
   body: string,
 ): Promise<CharacterCommentItem> {
-  await assertCharacterExists(characterId);
+  await assertExploreReadable(userId, characterId);
 
   const row = await prisma.characterComment.create({
     data: { characterId, userId, body },

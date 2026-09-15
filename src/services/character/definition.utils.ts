@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { AppError } from '@/lib/server/app-error';
 import { API_ERROR_CODE } from '@/types/api-error';
 import { type JsonObject } from '@/utils/json-yaml';
@@ -18,14 +19,19 @@ export const catalogCharacterSelect = {
   shortBio: true,
   avatarKey: true,
   ownerId: true,
+  isListed: true,
   updatedAt: true,
-} as const;
+} satisfies Prisma.CharacterSelect;
+
+export type CatalogCharacterRow = Prisma.CharacterGetPayload<{
+  select: typeof catalogCharacterSelect;
+}>;
 
 /** 探索详情 / 编辑回填：目录字段 + profile。 */
 export const catalogCharacterDetailSelect = {
   ...catalogCharacterSelect,
   profile: true,
-} as const;
+} satisfies Prisma.CharacterSelect;
 
 export interface CharacterFormProfile {
   gender: string;
@@ -74,14 +80,7 @@ export function parseCharacterSkills(raw: unknown): string[] {
 }
 
 /** 目录/通讯录对外字段（不含人设正文）。 */
-export function toCharacterCatalogItem(row: {
-  id: string;
-  slug: string;
-  name: string;
-  shortBio: string;
-  avatarKey: string | null;
-  updatedAt: Date;
-}): CharacterCatalogItem {
+export function toCharacterCatalogItem(row: CatalogCharacterRow): CharacterCatalogItem {
   return {
     id: row.id,
     slug: row.slug,
@@ -97,4 +96,13 @@ export function assertCharacterOwner(ownerId: string | null, userId: string): vo
   if (ownerId !== userId) {
     throw AppError.forbidden('只有创建者可以修改', API_ERROR_CODE.CHARACTER_NOT_OWNER);
   }
+}
+
+/** 探索目录可见：已上架，或当前用户是创建者。 */
+export function isExploreVisible(
+  isListed: boolean,
+  ownerId: string | null,
+  userId: string,
+): boolean {
+  return isListed || ownerId === userId;
 }

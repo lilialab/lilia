@@ -42,8 +42,7 @@ export async function createGroup(options: {
 }): Promise<GroupDetail> {
   const data = await apiFetchJson<{ group: GroupDetail }>('/api/groups', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(options),
+    json: options,
   });
   return data.group;
 }
@@ -64,8 +63,7 @@ export async function replaceGroupMembers(
     `/api/groups/${groupSessionId}/members`,
     {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(options),
+      json: options,
     },
   );
   return data.group;
