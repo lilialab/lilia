@@ -1,6 +1,6 @@
 import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { buildCreateCharacterProfile } from './create.utils';
+import { buildCreateCharacterProfile, mergeCharacterProfile } from './create.utils';
 import {
   assertCharacterOwner,
   catalogCharacterSelect,
@@ -14,16 +14,21 @@ export async function updateCharacter(
   characterId: string,
   input: {
     name: string;
-    shortBio?: string;
+    shortBio: string;
     gender: string;
+    age?: string;
     height?: string;
+    occupation?: string;
     relation?: string;
+    attitude?: string;
     personality?: string[];
+    values?: string[];
+    dislikes?: string[];
   },
 ): Promise<CharacterCatalogItem> {
   const existing = await prisma.character.findUnique({
     where: { id: characterId },
-    select: { ownerId: true },
+    select: { ownerId: true, profile: true },
   });
   if (!existing) {
     throw AppError.notFound('角色不存在');
@@ -34,13 +39,21 @@ export async function updateCharacter(
     where: { id: characterId },
     data: {
       name: input.name,
-      shortBio: input.shortBio ?? '',
-      profile: buildCreateCharacterProfile({
-        gender: input.gender,
-        height: input.height,
-        relation: input.relation,
-        personality: input.personality,
-      }),
+      shortBio: input.shortBio,
+      profile: mergeCharacterProfile(
+        existing.profile,
+        buildCreateCharacterProfile({
+          gender: input.gender,
+          age: input.age,
+          height: input.height,
+          occupation: input.occupation,
+          relation: input.relation,
+          attitude: input.attitude,
+          personality: input.personality,
+          values: input.values,
+          dislikes: input.dislikes,
+        }),
+      ),
     },
     select: catalogCharacterSelect,
   });

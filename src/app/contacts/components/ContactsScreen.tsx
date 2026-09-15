@@ -17,8 +17,24 @@ import { useRouter } from 'next/navigation';
 /* -------------------------------------------------------------------------- */
 
 function ContactsEmpty() {
+  const router = useRouter();
   const t = useTranslations('contacts');
-  return <p className={cn('px-4 py-6 text-sm text-muted-foreground')}>{t('empty')}</p>;
+
+  return (
+    <div className={cn('flex flex-1 flex-col items-center justify-center gap-4 px-6')}>
+      <p className={cn('text-sm text-muted-foreground')}>{t('empty')}</p>
+      <button
+        type="button"
+        onClick={() => router.push('/explore', { transitionTypes: ['tab'] })}
+        className={cn(
+          'rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground',
+          'hover:bg-primary-hover',
+        )}
+      >
+        {t('goExplore')}
+      </button>
+    </div>
+  );
 }
 
 interface ContactsListProps {
@@ -89,14 +105,16 @@ export function ContactsScreen() {
         error={contactsQuery.isError}
         errorMessage={t('loadError')}
       >
-        <div className={cn('flex-1 overflow-y-auto')}>
-          <section className={cn('bg-background')}>
-            <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>
-              {t('sectionMyAi')}
-            </h2>
-            {contacts.length === 0 ? <ContactsEmpty /> : <ContactsList contacts={contacts} />}
-          </section>
-        </div>
+        {contacts.length === 0 ? <ContactsEmpty /> : (
+          <div className={cn('flex-1 overflow-y-auto')}>
+            <section className={cn('bg-background')}>
+              <h2 className={cn('px-4 py-2 text-xs font-medium text-muted-foreground')}>
+                {t('sectionMyAi')}
+              </h2>
+              <ContactsList contacts={contacts} />
+            </section>
+          </div>
+        )}
       </PageStatus>
     </div>
   );

@@ -21,9 +21,14 @@ export interface CatalogCharacter extends CharacterSummary {
 
 export interface CatalogCharacterDetail extends CatalogCharacter {
   gender: string;
+  age: string | undefined;
   height: string | undefined;
+  occupation: string | undefined;
   relation: string | undefined;
+  attitude: string | undefined;
   personality: string[] | undefined;
+  values: string[] | undefined;
+  dislikes: string[] | undefined;
 }
 
 export interface CharacterComment {
@@ -54,11 +59,16 @@ export async function fetchCharacter(characterId: string): Promise<CatalogCharac
 export async function createCharacter(input: {
   slug: string;
   name: string;
-  shortBio?: string;
+  shortBio: string;
   gender: string;
+  age?: string;
   height?: string;
+  occupation?: string;
   relation?: string;
+  attitude?: string;
   personality?: string[];
+  values?: string[];
+  dislikes?: string[];
   avatar?: File;
 }): Promise<CharacterSummary> {
   const { avatar, ...body } = input;

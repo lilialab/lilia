@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 describe('usernameSchema', () => {
   it('合法账号通过', () => {
-    expect(usernameSchema.safeParse('tom_user').success).toBe(true);
+    expect(usernameSchema.safeParse('tomuser').success).toBe(true);
+    expect(usernameSchema.safeParse('tom123').success).toBe(true);
   });
 
   it('过长为 USERNAME_TOO_LONG', () => {
@@ -15,7 +16,8 @@ describe('usernameSchema', () => {
   });
 
   it('非法字符为 USERNAME_INVALID', () => {
-    const result = usernameSchema.safeParse('tom-1');
+    expect(usernameSchema.safeParse('tom-1').success).toBe(false);
+    const result = usernameSchema.safeParse('tom_user');
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.USERNAME_INVALID);

@@ -17,16 +17,23 @@ describe('readCharacterFormProfile', () => {
         identity: {
           name: '{{name}}',
           gender: 'female',
+          age: '17',
           height: '160',
+          occupation: '学生',
           relation: '朋友',
         },
         personality: ['话短'],
       }),
     ).toEqual({
       gender: 'female',
+      age: '17',
       height: '160',
+      occupation: '学生',
       relation: '朋友',
+      attitude: undefined,
       personality: ['话短'],
+      values: undefined,
+      dislikes: undefined,
     });
   });
 
@@ -37,9 +44,14 @@ describe('readCharacterFormProfile', () => {
       }),
     ).toEqual({
       gender: '',
+      age: undefined,
       height: undefined,
+      occupation: undefined,
       relation: undefined,
+      attitude: undefined,
       personality: undefined,
+      values: undefined,
+      dislikes: undefined,
     });
   });
 
@@ -51,8 +63,29 @@ describe('readCharacterFormProfile', () => {
     ).toBe('147cm');
   });
 
+  it('读出 attitude / values / dislikes', () => {
+    expect(
+      readCharacterFormProfile({
+        identity: { name: '{{name}}', gender: 'female' },
+        attitude: '对人冷淡。',
+        values: ['有话直说'],
+        dislikes: ['被说教'],
+      }),
+    ).toEqual({
+      gender: 'female',
+      age: undefined,
+      height: undefined,
+      occupation: undefined,
+      relation: undefined,
+      attitude: '对人冷淡。',
+      personality: undefined,
+      values: ['有话直说'],
+      dislikes: ['被说教'],
+    });
+  });
+
   it('无 identity 时抛内部错误', () => {
-    expect(() => readCharacterFormProfile({ presence: 'x' })).toThrow(AppError);
+    expect(() => readCharacterFormProfile({ attitude: 'x' })).toThrow(AppError);
   });
 });
 

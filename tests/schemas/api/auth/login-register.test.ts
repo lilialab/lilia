@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 describe('loginBodySchema', () => {
   it('合法登录 body 通过校验', () => {
     const result = loginBodySchema.safeParse({
-      username: 'tom_user',
+      username: 'tomuser',
       password: 'password123',
     });
     expect(result.success).toBe(true);
@@ -33,7 +33,7 @@ describe('loginBodySchema', () => {
 describe('registerBodySchema', () => {
   it('合法注册 body 通过校验', () => {
     const result = registerBodySchema.safeParse({
-      username: 'tom_user',
+      username: 'tomuser',
       nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
@@ -46,7 +46,7 @@ describe('registerBodySchema', () => {
 
   it('缺少 turnstileToken 为 TURNSTILE_TOKEN_REQUIRED', () => {
     const result = registerBodySchema.safeParse({
-      username: 'tom_user',
+      username: 'tomuser',
       nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
@@ -60,7 +60,7 @@ describe('registerBodySchema', () => {
 
   it('两次密码不一致解析失败', () => {
     const result = registerBodySchema.safeParse({
-      username: 'tom_user',
+      username: 'tomuser',
       nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password456',

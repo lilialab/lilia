@@ -35,9 +35,14 @@ export const catalogCharacterDetailSelect = {
 
 export interface CharacterFormProfile {
   gender: string;
+  age: string | undefined;
   height: string | undefined;
+  occupation: string | undefined;
   relation: string | undefined;
+  attitude: string | undefined;
   personality: string[] | undefined;
+  values: string[] | undefined;
+  dislikes: string[] | undefined;
 }
 
 /** 解析人设 JSON：须为对象，且不含已升列的 name/shortBio。 */
@@ -51,6 +56,13 @@ export function parseCharacterProfile(raw: unknown): JsonObject {
   return raw as JsonObject;
 }
 
+function readStringList(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw) || raw.some((item) => typeof item !== 'string')) {
+    return undefined;
+  }
+  return raw;
+}
+
 /** 从人设 JSON 读出编辑表单字段。 */
 export function readCharacterFormProfile(raw: unknown): CharacterFormProfile {
   const profile = parseCharacterProfile(raw);
@@ -60,14 +72,16 @@ export function readCharacterFormProfile(raw: unknown): CharacterFormProfile {
   }
   const identity = identityRaw as JsonObject;
 
-  const personalityRaw = profile.personality;
-  const personality = Array.isArray(personalityRaw) ? personalityRaw as string[] : undefined;
-
   return {
     gender: typeof identity.gender === 'string' ? identity.gender : '',
+    age: typeof identity.age === 'string' ? identity.age : undefined,
     height: typeof identity.height === 'string' ? identity.height : undefined,
+    occupation: typeof identity.occupation === 'string' ? identity.occupation : undefined,
     relation: typeof identity.relation === 'string' ? identity.relation : undefined,
-    personality,
+    attitude: typeof profile.attitude === 'string' ? profile.attitude : undefined,
+    personality: readStringList(profile.personality),
+    values: readStringList(profile.values),
+    dislikes: readStringList(profile.dislikes),
   };
 }
 

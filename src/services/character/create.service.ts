@@ -17,11 +17,16 @@ export async function createCharacter(
   input: {
     slug: string;
     name: string;
-    shortBio?: string;
+    shortBio: string;
     gender: string;
+    age?: string;
     height?: string;
+    occupation?: string;
     relation?: string;
+    attitude?: string;
     personality?: string[];
+    values?: string[];
+    dislikes?: string[];
   },
 ): Promise<CharacterCatalogItem> {
   const existing = await prisma.character.findUnique({
@@ -36,13 +41,18 @@ export async function createCharacter(
     data: {
       slug: input.slug,
       name: input.name,
-      shortBio: input.shortBio ?? '',
+      shortBio: input.shortBio,
       ownerId: ownerUserId,
       profile: buildCreateCharacterProfile({
         gender: input.gender,
+        age: input.age,
         height: input.height,
+        occupation: input.occupation,
         relation: input.relation,
+        attitude: input.attitude,
         personality: input.personality,
+        values: input.values,
+        dislikes: input.dislikes,
       }),
       skills: [],
       extract: DEFAULT_EXTRACT,

@@ -11,9 +11,10 @@ function firstIssue(input: unknown): string | undefined {
 describe('updateCharacterBodySchema', () => {
   it('接受与创建相同的可改字段，不含 slug', () => {
     expect(
-      updateCharacterBodySchema.parse({ name: ' 小明 ', gender: 'female' }),
+      updateCharacterBodySchema.parse({ name: ' 小明 ', shortBio: ' 短句 ', gender: 'female' }),
     ).toEqual({
       name: '小明',
+      shortBio: '短句',
       gender: 'female',
     });
   });
@@ -23,19 +24,24 @@ describe('updateCharacterBodySchema', () => {
       updateCharacterBodySchema.parse({
         slug: 'hijack',
         name: '小明',
+        shortBio: '短句',
         gender: 'female',
       }),
     ).toEqual({
       name: '小明',
+      shortBio: '短句',
       gender: 'female',
     });
   });
 
   it('拒绝空姓名或非法性别', () => {
-    expect(firstIssue({ name: '  ', gender: 'female' })).toBe(
+    expect(firstIssue({ name: '  ', shortBio: '短句', gender: 'female' })).toBe(
       API_ERROR_CODE.CHARACTER_NAME_REQUIRED,
     );
-    expect(firstIssue({ name: '小明', gender: 'other' })).toBe(
+    expect(firstIssue({ name: '小明', shortBio: '  ', gender: 'female' })).toBe(
+      API_ERROR_CODE.CHARACTER_SHORT_BIO_REQUIRED,
+    );
+    expect(firstIssue({ name: '小明', shortBio: '短句', gender: 'other' })).toBe(
       API_ERROR_CODE.CHARACTER_GENDER_INVALID,
     );
   });

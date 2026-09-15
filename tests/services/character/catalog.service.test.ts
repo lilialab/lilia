@@ -136,7 +136,9 @@ describe('getCatalogCharacter', () => {
         identity: {
           name: '{{name}}',
           gender: 'female',
+          age: '17',
           height: '160',
+          occupation: '学生',
           relation: '朋友',
         },
         personality: ['话少'],
@@ -146,9 +148,14 @@ describe('getCatalogCharacter', () => {
 
     await expect(getCatalogCharacter('user-1', 'char-1')).resolves.toMatchObject({
       gender: 'female',
+      age: '17',
       height: '160',
+      occupation: '学生',
       relation: '朋友',
       personality: ['话少'],
+      attitude: undefined,
+      values: undefined,
+      dislikes: undefined,
     });
   });
 

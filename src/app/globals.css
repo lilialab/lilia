@@ -8,9 +8,9 @@
   /* Zinc 800 为主色锚点，全文灰阶对齐 */
   --background: #ffffff;
   --foreground: #27272a;
-  --surface: #fafafa;
+  --surface: #f4f4f5;
   --chat: #f4f4f5;
-  --row-hover: #f4f4f5;
+  --row-hover: #fafafa;
   --border: #e4e4e7;
   --muted-foreground: #71717a;
   --primary: #27272a;
@@ -19,8 +19,8 @@
   --destructive: #dc2626;
   --destructive-hover: #b91c1c;
   --destructive-foreground: #ffffff;
-  /* 弹窗遮罩：跟主色同色相 */
-  --overlay: color-mix(in srgb, var(--primary) 40%, transparent);
+  /* 弹窗遮罩：中性黑，不跟强调主色 */
+  --overlay: color-mix(in srgb, var(--foreground) 40%, transparent);
   --duration-exit: 150ms;
   --duration-enter: 210ms;
   --duration-move: 400ms;

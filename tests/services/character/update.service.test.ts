@@ -32,7 +32,7 @@ describe('updateCharacter', () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue(null);
 
     await expect(
-      updateCharacter('user-1', 'missing', { name: '小明', gender: 'female' }),
+      updateCharacter('user-1', 'missing', { name: '小明', shortBio: '短句', gender: 'female' }),
     ).rejects.toMatchObject({
       status: 404,
     });
@@ -43,7 +43,7 @@ describe('updateCharacter', () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'other' } as never);
 
     await expect(
-      updateCharacter('user-1', 'char-1', { name: '小明', gender: 'female' }),
+      updateCharacter('user-1', 'char-1', { name: '小明', shortBio: '短句', gender: 'female' }),
     ).rejects.toMatchObject({
       status: 403,
       code: API_ERROR_CODE.CHARACTER_NOT_OWNER,
@@ -55,7 +55,7 @@ describe('updateCharacter', () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: null } as never);
 
     await expect(
-      updateCharacter('user-1', 'char-1', { name: '小明', gender: 'female' }),
+      updateCharacter('user-1', 'char-1', { name: '小明', shortBio: '短句', gender: 'female' }),
     ).rejects.toMatchObject({
       status: 403,
       code: API_ERROR_CODE.CHARACTER_NOT_OWNER,
@@ -64,7 +64,10 @@ describe('updateCharacter', () => {
   });
 
   it('创建者更新姓名与人设，不改 slug', async () => {
-    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'user-1' } as never);
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      ownerId: 'user-1',
+      profile: { identity: { name: '{{name}}', gender: 'female' } },
+    } as never);
     vi.mocked(prisma.character.update).mockResolvedValue(catalogRow as never);
 
     const character = await updateCharacter('user-1', 'char-1', {
@@ -102,5 +105,29 @@ describe('updateCharacter', () => {
       hasAvatar: false,
       avatarUpdatedAt: '2026-09-14T00:00:00.000Z',
     });
+  });
+
+  it('未写入的第一层 key 保留原 profile', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({
+      ownerId: 'user-1',
+      profile: {
+        identity: { name: '{{name}}', gender: 'female' },
+        speech: { do: ['只接眼前这句。'] },
+      },
+    } as never);
+    vi.mocked(prisma.character.update).mockResolvedValue(catalogRow as never);
+
+    await updateCharacter('user-1', 'char-1', { name: '新名', shortBio: '新简介', gender: 'male' });
+
+    expect(prisma.character.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          profile: {
+            identity: { name: '{{name}}', gender: 'male' },
+            speech: { do: ['只接眼前这句。'] },
+          },
+        }),
+      }),
+    );
   });
 });

@@ -6,4 +6,4 @@ export const usernameSchema = z
   .trim()
   .min(3, API_ERROR_CODE.USERNAME_TOO_SHORT)
   .max(32, API_ERROR_CODE.USERNAME_TOO_LONG)
-  .regex(/^[a-zA-Z0-9_]+$/, API_ERROR_CODE.USERNAME_INVALID);
+  .regex(/^[a-zA-Z0-9]+$/, API_ERROR_CODE.USERNAME_INVALID);

@@ -22,20 +22,25 @@ describe('createCharacter', () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'c1' } as never);
 
     await expect(
-      createCharacter('user-1', { slug: 'lilia', name: '莉莉娅', gender: 'female' }),
+      createCharacter('user-1', {
+        slug: 'lilia',
+        name: '莉莉娅',
+        shortBio: '短句',
+        gender: 'female',
+      }),
     ).rejects.toMatchObject({
       code: API_ERROR_CODE.CHARACTER_SLUG_TAKEN,
     });
     expect(prisma.character.create).not.toHaveBeenCalled();
   });
 
-  it('写入 identity.name 占位、空简介与空 skills', async () => {
+  it('写入 identity.name 占位与简介', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.character.create).mockResolvedValue({
       id: 'c-new',
       slug: 'mybot',
       name: '小明',
-      shortBio: '',
+      shortBio: '短句',
       avatarKey: null,
       ownerId: 'user-1',
       updatedAt: new Date('2026-09-14T00:00:00.000Z'),
@@ -44,6 +49,7 @@ describe('createCharacter', () => {
     const character = await createCharacter('user-1', {
       slug: 'mybot',
       name: '小明',
+      shortBio: '短句',
       gender: 'female',
     });
 
@@ -52,7 +58,7 @@ describe('createCharacter', () => {
         data: {
           slug: 'mybot',
           name: '小明',
-          shortBio: '',
+          shortBio: '短句',
           ownerId: 'user-1',
           profile: { identity: { name: '{{name}}', gender: 'female' } },
           skills: [],
@@ -64,7 +70,7 @@ describe('createCharacter', () => {
       id: 'c-new',
       slug: 'mybot',
       name: '小明',
-      shortBio: '',
+      shortBio: '短句',
       hasAvatar: false,
       avatarUpdatedAt: '2026-09-14T00:00:00.000Z',
     });

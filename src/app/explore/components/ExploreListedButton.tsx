@@ -40,8 +40,8 @@ export function ExploreListedButton({ characterId, isListed }: ExploreListedButt
       disabled={listedMutation.isPending}
       onClick={() => listedMutation.mutate(!isListed)}
       className={cn(
-        'inline-flex shrink-0 items-center gap-1 rounded-md border border-border',
-        'px-2.5 py-1.5 text-xs text-foreground/80 hover:bg-row-hover disabled:opacity-40',
+        'shrink-0 py-2 text-sm text-muted-foreground hover:text-foreground',
+        'disabled:cursor-not-allowed disabled:opacity-40',
       )}
     >
       {isListed ? t('unlist') : t('relist')}

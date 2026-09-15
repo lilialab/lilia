@@ -12,9 +12,16 @@ import { UserPlus } from 'lucide-react';
 interface ExploreAddButtonProps {
   characterId: string;
   isContact: boolean;
+  variant?: 'compact' | 'primary';
+  className?: string;
 }
 
-export function ExploreAddButton({ characterId, isContact }: ExploreAddButtonProps) {
+export function ExploreAddButton({
+  characterId,
+  isContact,
+  variant = 'compact',
+  className,
+}: ExploreAddButtonProps) {
   const queryClient = useQueryClient();
   const t = useTranslations('explore');
 
@@ -38,8 +45,12 @@ export function ExploreAddButton({ characterId, isContact }: ExploreAddButtonPro
       disabled={isContact || addMutation.isPending}
       onClick={() => addMutation.mutate(characterId)}
       className={cn(
-        'inline-flex shrink-0 items-center gap-1 rounded-md border border-border',
-        'px-2.5 py-1.5 text-xs text-foreground/80 hover:bg-row-hover disabled:opacity-40',
+        'inline-flex shrink-0 items-center gap-1 rounded-md',
+        'disabled:cursor-not-allowed disabled:opacity-40',
+        variant === 'primary'
+          ? 'justify-center gap-1.5 bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover'
+          : 'border border-border px-2.5 py-1.5 text-xs text-foreground/80 hover:bg-row-hover',
+        className,
       )}
     >
       <UserPlus className={cn('h-3.5 w-3.5')} aria-hidden />

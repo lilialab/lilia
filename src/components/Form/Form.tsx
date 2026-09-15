@@ -24,6 +24,23 @@ interface FormFieldProps {
   label: string;
   required?: boolean;
   children: ReactNode;
+  className?: string;
+}
+
+interface FormSectionProps {
+  title: string;
+  children: ReactNode;
+}
+
+interface FormRowProps {
+  children: ReactNode;
+}
+
+interface FormSegmentedProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: FormSelectOption[];
+  className?: string;
 }
 
 interface FormInputProps {
@@ -61,6 +78,14 @@ interface FormNumberProps {
   className?: string;
 }
 
+interface FormTextareaProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  rows?: number;
+  className?: string;
+}
+
 interface FormSubmitProps {
   children: ReactNode;
   disabled?: boolean;
@@ -91,10 +116,15 @@ function useFormField(): FormFieldContextValue {
 /* -------------------------------------------------------------------------- */
 
 /** 表单字段：标签 + 控件。 */
-function FormField({ label, required, children }: FormFieldProps) {
+function FormField({ label, required, children, className }: FormFieldProps) {
   return (
     <FormFieldContext.Provider value={{ required }}>
-      <label className={cn('mt-4 block text-xs font-medium text-muted-foreground first:mt-0')}>
+      <label
+        className={cn(
+          'mt-4 block text-xs font-medium text-muted-foreground first:mt-0',
+          className,
+        )}
+      >
         {required && (
           <span className={cn('mr-0.5 text-destructive')} aria-hidden>
             *
@@ -104,6 +134,61 @@ function FormField({ label, required, children }: FormFieldProps) {
         {children}
       </label>
     </FormFieldContext.Provider>
+  );
+}
+
+/** 表单分段：横向铺满，段与段之间留缝。 */
+function FormSection({ title, children }: FormSectionProps) {
+  return (
+    <section className={cn('mt-3 bg-background px-4 pb-4 pt-3 first:mt-0')}>
+      <h2
+        className={cn(
+          '-mx-4 border-b border-border px-4 pb-3 text-sm font-medium text-foreground',
+        )}
+      >
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/** 并排两个字段。 */
+function FormRow({ children }: FormRowProps) {
+  return <div className={cn('mt-4 grid grid-cols-2 gap-3 [&>label]:mt-0')}>{children}</div>;
+}
+
+/** 互斥选项按钮。 */
+function FormSegmented({ value, onChange, options, className }: FormSegmentedProps) {
+  const { required } = useFormField();
+
+  return (
+    <div
+      role="radiogroup"
+      aria-required={required}
+      className={cn('mt-1.5 grid grid-cols-2 gap-2', className)}
+    >
+      {options.map((option) => {
+        const selected = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              'rounded-md border py-2 text-sm font-medium',
+              selected
+                ? 'border-foreground bg-foreground text-background'
+                : 'border-border text-foreground hover:bg-row-hover',
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -169,6 +254,28 @@ function FormSelect({
         </option>
       ))}
     </select>
+  );
+}
+
+/** 多行文本。 */
+function FormTextarea({
+  value,
+  onChange,
+  placeholder,
+  rows = 3,
+  className,
+}: FormTextareaProps) {
+  const { required } = useFormField();
+
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      aria-required={required}
+      className={cn(formControlClass, 'resize-y', className)}
+    />
   );
 }
 
@@ -256,12 +363,16 @@ function FormRoot({ children, onSubmit, className, ...props }: FormProps) {
 /* Public API                                                                 */
 /* -------------------------------------------------------------------------- */
 
-/** 表单：字段用 Form.Field，控件用 Form.Input / Select / Number / Checkbox / StringList / Submit。 */
+/** 表单：字段用 Form.Field，控件用 Form.Input / Select / Number / Textarea / Checkbox / StringList / Segmented / Submit。 */
 export const Form = Object.assign(FormRoot, {
   Field: FormField,
+  Section: FormSection,
+  Row: FormRow,
   Input: FormInput,
   Select: FormSelect,
+  Segmented: FormSegmented,
   Number: FormNumber,
+  Textarea: FormTextarea,
   Checkbox: FormCheckbox,
   StringList: FormStringList,
   Submit: FormSubmit,
