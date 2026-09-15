@@ -11,6 +11,9 @@ vi.mock('@/lib/server/prisma', () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -33,11 +36,12 @@ const catalogRow = {
   updatedAt: new Date('2026-09-14T00:00:00.000Z'),
 };
 
-describe('listCharacters', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'official-1' } as never);
+});
 
+describe('listCharacters', () => {
   it('只查已上架或自己的角色，并标记通讯录与创建者', async () => {
     vi.mocked(prisma.character.findMany).mockResolvedValue([
       catalogRow,
@@ -58,6 +62,7 @@ describe('listCharacters', () => {
         isListed: true,
         isContact: false,
         isOwner: true,
+        isOfficial: false,
       },
       {
         id: 'seed-1',
@@ -69,6 +74,7 @@ describe('listCharacters', () => {
         isListed: true,
         isContact: true,
         isOwner: false,
+        isOfficial: false,
       },
     ]);
     expect(prisma.character.findMany).toHaveBeenCalledWith({
@@ -79,13 +85,20 @@ describe('listCharacters', () => {
       orderBy: { createdAt: 'asc' },
     });
   });
+
+  it('官方账号创建的角色 isOfficial 为 true', async () => {
+    vi.mocked(prisma.character.findMany).mockResolvedValue([
+      { ...catalogRow, ownerId: 'official-1' },
+    ] as never);
+    vi.mocked(prisma.userCharacter.findMany).mockResolvedValue([]);
+
+    await expect(listCharacters('user-1')).resolves.toMatchObject([
+      { id: 'char-1', isOfficial: true, isOwner: false },
+    ]);
+  });
 });
 
 describe('getCatalogCharacter', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('创建者 isOwner 为 true', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
       ...catalogRow,
@@ -112,6 +125,7 @@ describe('getCatalogCharacter', () => {
     await expect(getCatalogCharacter('user-2', 'char-1')).resolves.toMatchObject({
       isOwner: false,
       isContact: true,
+      isOfficial: false,
     });
   });
 
@@ -167,10 +181,6 @@ describe('getCatalogCharacter', () => {
 });
 
 describe('setCharacterListed', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('非创建者 403', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'other' } as never);
 

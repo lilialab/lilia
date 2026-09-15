@@ -1,4 +1,5 @@
 import { AppError } from '@/lib/server/app-error';
+import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import {
   assertCharacterOwner,
@@ -10,7 +11,23 @@ import {
   toCharacterCatalogItem,
 } from './definition.utils';
 
-function toCatalogCharacter(
+/** 官方角色：创建者是官方账号。进程内只查一次官方 userId。 */
+let officialUserId: string | undefined;
+async function isOfficialCharacter(ownerId: string | null): Promise<boolean> {
+  if (ownerId === null) {
+    return false;
+  }
+  if (!officialUserId) {
+    const row = await prisma.user.findUnique({
+      where: { username: env.OFFICIAL_USERNAME },
+      select: { id: true },
+    });
+    officialUserId = row?.id;
+  }
+  return ownerId === officialUserId;
+}
+
+async function toCatalogCharacter(
   row: CatalogCharacterRow,
   userId: string,
   isContact: boolean,
@@ -20,6 +37,7 @@ function toCatalogCharacter(
     isListed: row.isListed,
     isContact,
     isOwner: row.ownerId === userId,
+    isOfficial: await isOfficialCharacter(row.ownerId),
   };
 }
 
@@ -39,7 +57,9 @@ export async function listCharacters(userId: string) {
     }),
   ]);
   const contactIds = new Set(contacts.map((row) => row.characterId));
-  return rows.map((row) => toCatalogCharacter(row, userId, contactIds.has(row.id)));
+  return Promise.all(
+    rows.map((row) => toCatalogCharacter(row, userId, contactIds.has(row.id))),
+  );
 }
 
 /** 按 id 取目录角色；未上架且非创建者当不存在。 */
@@ -56,7 +76,7 @@ export async function getCatalogCharacter(userId: string, characterId: string) {
     select: { id: true },
   });
   return {
-    ...toCatalogCharacter(row, userId, contact !== null),
+    ...await toCatalogCharacter(row, userId, contact !== null),
     ...readCharacterFormProfile(row.profile),
   };
 }

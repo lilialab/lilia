@@ -56,6 +56,7 @@ export const zh = {
     commentSubmit: '发表',
     commentsTitle: '{count} 条评论',
     unlisted: '已下架',
+    official: '官方',
     unlist: '下架',
     relist: '上架',
     unlistedToast: '已从探索下架',

@@ -10,7 +10,7 @@ import {
 const CATALOG_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), 'characters.json');
 
 /** 按 slug 插入尚不存在的官方角色（id 由 Prisma 生成）；已有行不改。 */
-export async function seedCharacterCatalog(): Promise<void> {
+export async function seedCharacterCatalog(officialUserId: string): Promise<void> {
   const parsed: unknown = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
   if (!Array.isArray(parsed)) {
     throw new Error('prisma/characters.json 须为数组');
@@ -52,6 +52,7 @@ export async function seedCharacterCatalog(): Promise<void> {
         profile: profileJson,
         skills: skillsJson,
         extract,
+        ownerId: officialUserId,
       },
     });
   }

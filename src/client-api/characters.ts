@@ -16,6 +16,7 @@ export interface CatalogCharacter extends CharacterSummary {
   isContact: boolean;
   isOwner: boolean;
   isListed: boolean;
+  isOfficial: boolean;
 }
 
 export interface CatalogCharacterDetail extends CatalogCharacter {

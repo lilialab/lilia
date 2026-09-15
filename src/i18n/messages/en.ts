@@ -56,6 +56,7 @@ export const en = {
     commentSubmit: 'Post',
     commentsTitle: '{count} comments',
     unlisted: 'Unlisted',
+    official: 'Official',
     unlist: 'Unlist',
     relist: 'List again',
     unlistedToast: 'Unlisted from Explore',

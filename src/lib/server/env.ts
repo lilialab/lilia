@@ -161,4 +161,7 @@ export const env = {
   ),
   TURNSTILE_SITE_KEY: requireStringEnv('TURNSTILE_SITE_KEY'),
   TURNSTILE_SECRET_KEY: requireStringEnv('TURNSTILE_SECRET_KEY'),
+
+  OFFICIAL_USERNAME: requireStringEnv('OFFICIAL_USERNAME'),
+  OFFICIAL_PASSWORD: requireStringEnv('OFFICIAL_PASSWORD'),
 } as const;

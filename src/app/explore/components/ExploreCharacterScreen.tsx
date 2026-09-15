@@ -1,11 +1,9 @@
 'use client';
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
+import { ExploreBadge } from '@/app/explore/components/ExploreBadge';
 import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
-import {
-  ExploreListedButton,
-  ExploreUnlistedBadge,
-} from '@/app/explore/components/ExploreListedButton';
+import { ExploreListedButton } from '@/app/explore/components/ExploreListedButton';
 import { characterAvatarUrl, fetchCharacter } from '@/client-api/characters';
 import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
@@ -78,9 +76,10 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
                     size="lg"
                   />
                   <div className={cn('min-w-0 flex-1')}>
-                    {!character.isListed && (
-                      <div className={cn('mb-2')}>
-                        <ExploreUnlistedBadge />
+                    {(character.isOfficial || !character.isListed) && (
+                      <div className={cn('mb-2 flex flex-wrap gap-1.5')}>
+                        {character.isOfficial && <ExploreBadge>{t('official')}</ExploreBadge>}
+                        {!character.isListed && <ExploreBadge>{t('unlisted')}</ExploreBadge>}
                       </div>
                     )}
                     <p className={cn('text-sm text-muted-foreground')}>{character.shortBio}</p>

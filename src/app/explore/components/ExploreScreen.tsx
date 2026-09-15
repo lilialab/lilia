@@ -1,7 +1,7 @@
 'use client';
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
-import { ExploreUnlistedBadge } from '@/app/explore/components/ExploreListedButton';
+import { ExploreBadge } from '@/app/explore/components/ExploreBadge';
 import {
   type CatalogCharacter,
   characterAvatarUrl,
@@ -33,6 +33,7 @@ interface ExploreListProps {
 }
 
 function ExploreList({ characters }: ExploreListProps) {
+  const t = useTranslations('explore');
   return (
     <ul>
       {characters.map((character) => (
@@ -57,7 +58,8 @@ function ExploreList({ characters }: ExploreListProps) {
                 <p className={cn('truncate text-sm font-medium text-foreground')}>
                   {character.name}
                 </p>
-                {!character.isListed && <ExploreUnlistedBadge />}
+                {character.isOfficial && <ExploreBadge>{t('official')}</ExploreBadge>}
+                {!character.isListed && <ExploreBadge>{t('unlisted')}</ExploreBadge>}
               </div>
               <p className={cn('truncate text-xs text-muted-foreground')}>
                 {character.shortBio}

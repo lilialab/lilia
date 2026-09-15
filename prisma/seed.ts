@@ -1,10 +1,10 @@
 import { prisma } from '../src/lib/server/prisma';
 import { seedCharacterCatalog } from './seed-catalog';
-import { seedDevUser } from './seed-dev-user';
+import { seedOfficialUser } from './seed-official-user';
 
 async function main() {
-  await seedCharacterCatalog();
-  await seedDevUser();
+  const officialUserId = await seedOfficialUser();
+  await seedCharacterCatalog(officialUserId);
 }
 
 main()
