@@ -30,11 +30,29 @@ services:
     volumes:
       - ./docker-volumes/chroma-data:/data
 
+  # bind mount 目录默认属主是宿主机用户；Loki=10001、Grafana=472 写不进去。
+  # 每次 up 前先 mkdir + chown，避免新机手动建目录。
+  loki-grafana-init:
+    image: busybox:1.36
+    container_name: lilia-loki-grafana-init
+    user: root
+    volumes:
+      - ./docker-volumes/loki-data:/loki
+      - ./docker-volumes/grafana-data:/grafana
+    command: >
+      sh -c "mkdir -p /loki /grafana
+      && chown -R 10001:10001 /loki
+      && chown -R 472:472 /grafana"
+    restart: 'no'
+
   # 日志接收：pino → Loki；配置见 docker/loki-config.yml
   loki:
     image: grafana/loki:3.7
     container_name: lilia-loki
     restart: unless-stopped
+    depends_on:
+      loki-grafana-init:
+        condition: service_completed_successfully
     environment:
       <<: *timezone
     ports:
@@ -50,7 +68,10 @@ services:
     container_name: lilia-grafana
     restart: unless-stopped
     depends_on:
-      - loki
+      loki-grafana-init:
+        condition: service_completed_successfully
+      loki:
+        condition: service_started
     ports:
       - '127.0.0.1:3001:3000'
     environment:

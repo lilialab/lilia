@@ -4,6 +4,7 @@ CREATE TABLE `users` (
     `username` VARCHAR(191) NOT NULL,
     `password_hash` VARCHAR(191) NOT NULL,
     `nickname` VARCHAR(191) NOT NULL,
+    `avatar_key` VARCHAR(191) NULL,
     `locale` VARCHAR(191) NOT NULL DEFAULT 'zh',
     `time_zone` VARCHAR(191) NOT NULL,
     `llm_base_url` VARCHAR(191) NULL,
@@ -20,10 +21,19 @@ CREATE TABLE `users` (
 CREATE TABLE `characters` (
     `id` VARCHAR(191) NOT NULL,
     `slug` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `short_bio` VARCHAR(191) NOT NULL,
+    `avatar_key` VARCHAR(191) NULL,
+    `owner_id` VARCHAR(191) NULL,
+    `is_listed` BOOLEAN NOT NULL DEFAULT true,
+    `profile` JSON NOT NULL,
+    `skills` JSON NOT NULL,
+    `extract` TEXT NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `characters_slug_key`(`slug`),
+    INDEX `characters_owner_id_idx`(`owner_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -94,11 +104,27 @@ CREATE TABLE `group_members` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `character_comments` (
+    `id` VARCHAR(191) NOT NULL,
+    `character_id` VARCHAR(191) NOT NULL,
+    `user_id` VARCHAR(191) NOT NULL,
+    `parent_id` VARCHAR(191) NULL,
+    `body` TEXT NOT NULL,
+    `deleted_at` DATETIME(3) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `character_comments_character_id_created_at_idx`(`character_id`, `created_at`),
+    INDEX `character_comments_parent_id_idx`(`parent_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `messages` (
     `id` VARCHAR(191) NOT NULL,
     `session_id` VARCHAR(191) NULL,
     `group_session_id` VARCHAR(191) NULL,
     `speaker_character_id` VARCHAR(191) NULL,
+    `speaker_user_id` VARCHAR(191) NULL,
     `role` VARCHAR(191) NOT NULL,
     `kind` VARCHAR(191) NULL,
     `parts` JSON NOT NULL,
@@ -166,6 +192,9 @@ CREATE TABLE `memory_jobs` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
+ALTER TABLE `characters` ADD CONSTRAINT `characters_owner_id_fkey` FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `user_characters` ADD CONSTRAINT `user_characters_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -190,6 +219,15 @@ ALTER TABLE `group_members` ADD CONSTRAINT `group_members_group_session_id_fkey`
 ALTER TABLE `group_members` ADD CONSTRAINT `group_members_character_id_fkey` FOREIGN KEY (`character_id`) REFERENCES `characters`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `character_comments` ADD CONSTRAINT `character_comments_character_id_fkey` FOREIGN KEY (`character_id`) REFERENCES `characters`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `character_comments` ADD CONSTRAINT `character_comments_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `character_comments` ADD CONSTRAINT `character_comments_parent_id_fkey` FOREIGN KEY (`parent_id`) REFERENCES `character_comments`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `messages` ADD CONSTRAINT `messages_session_id_fkey` FOREIGN KEY (`session_id`) REFERENCES `chat_sessions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -197,6 +235,9 @@ ALTER TABLE `messages` ADD CONSTRAINT `messages_group_session_id_fkey` FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE `messages` ADD CONSTRAINT `messages_speaker_character_id_fkey` FOREIGN KEY (`speaker_character_id`) REFERENCES `characters`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `messages` ADD CONSTRAINT `messages_speaker_user_id_fkey` FOREIGN KEY (`speaker_user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `user_memories` ADD CONSTRAINT `user_memories_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

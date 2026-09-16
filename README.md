@@ -59,7 +59,7 @@ docker compose up -d
 | Loki | 3100 | 日志接收 API（无 Web UI，应用往这里推送） |
 | Grafana | 3001 | 日志查询界面（admin / password） |
 
-本地和生产用同一份 `docker-compose.yml`，`docker compose up -d` 会起上表全部服务。
+本地和生产用同一份 `docker-compose.yml`，`docker compose up -d` 会起上表全部服务。Loki / Grafana 的数据目录权限由一次性服务 `loki-grafana-init` 在启动前自动 `chown`（Loki=10001、Grafana=472），新机不必再手动建目录。
 
 端口不对公网开放。从本机连 VPS 上的 Grafana / MySQL / Redis 时，用 SSH 本地转发。
 

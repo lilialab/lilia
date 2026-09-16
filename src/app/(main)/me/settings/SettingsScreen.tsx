@@ -60,7 +60,7 @@ export function SettingsScreen({ version }: SettingsScreenProps) {
       />
 
       <div className={cn('flex-1 overflow-y-auto')}>
-        <section className={cn('mt-3 bg-background')}>
+        <section className={cn('mt-3 divide-y divide-border/50 bg-background')}>
           <SettingsRow href="/me/settings/nickname" label={t('changeNickname')} />
           <SettingsRow href="/me/settings/password" label={t('changePassword')} />
           <SettingsRow href="/me/settings/llm" label={t('llmConfig')} />
