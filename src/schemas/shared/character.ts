@@ -25,9 +25,9 @@ export const characterShortBioSchema = z
   .min(1, API_ERROR_CODE.CHARACTER_SHORT_BIO_REQUIRED)
   .max(CHARACTER_SHORT_BIO_MAX_LENGTH, API_ERROR_CODE.CHARACTER_SHORT_BIO_TOO_LONG);
 
-export const PERSONALITY_MAX_ITEMS = 5;
+export const PERSONALITY_MAX_ITEMS = 8;
 export const PERSONALITY_ITEM_MAX_LENGTH = 64;
-export const PROFILE_LIST_MAX_ITEMS = 5;
+export const PROFILE_LIST_MAX_ITEMS = 8;
 export const PROFILE_LINE_MAX_LENGTH = 80;
 export const PROFILE_TEXT_MAX_LENGTH = 80;
 export const CHARACTER_GENDERS = ['female', 'male'] as const;

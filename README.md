@@ -174,6 +174,8 @@ pnpm dev
     ```bash
     pnpm exec prisma generate
     pnpm exec prisma migrate deploy
+    pnpm build
+    sudo systemctl restart lilia
     ```
 
 ## 常用命令

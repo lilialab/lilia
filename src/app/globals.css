@@ -103,22 +103,18 @@ body {
 
 @keyframes fade {
   from {
-    filter: blur(3px);
     opacity: 0;
   }
   to {
-    filter: blur(0);
     opacity: 1;
   }
 }
 
 @keyframes fade-out {
   from {
-    filter: blur(0);
     opacity: 1;
   }
   to {
-    filter: blur(3px);
     opacity: 0;
   }
 }
@@ -173,7 +169,7 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Modal：淡入淡出 + blur（关闭须不同 animation-name）                          */
+/* Modal：淡入淡出（关闭须不同 animation-name）                                */
 /* -------------------------------------------------------------------------- */
 
 .modal-fade[data-state='open'] {
