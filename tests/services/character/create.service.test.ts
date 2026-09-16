@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const { assertRateLimitsMock } = vi.hoisted(() => ({
+  assertRateLimitsMock: vi.fn(),
+}));
+
 vi.mock('@/lib/server/prisma', () => ({
   prisma: {
     character: {
@@ -9,6 +13,10 @@ vi.mock('@/lib/server/prisma', () => ({
   },
 }));
 
+vi.mock('@/lib/server/rate-limit', () => ({
+  assertRateLimits: assertRateLimitsMock,
+}));
+
 import { prisma } from '@/lib/server/prisma';
 import { createCharacter } from '@/services/character/create.service';
 import { API_ERROR_CODE } from '@/types/api-error';
@@ -16,9 +24,10 @@ import { API_ERROR_CODE } from '@/types/api-error';
 describe('createCharacter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    assertRateLimitsMock.mockResolvedValue(undefined);
   });
 
-  it('slug 已存在时抛 CHARACTER_SLUG_TAKEN', async () => {
+  it('slug 已存在时抛 CHARACTER_SLUG_TAKEN，不扣配额', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({ id: 'c1' } as never);
 
     await expect(
@@ -31,10 +40,11 @@ describe('createCharacter', () => {
     ).rejects.toMatchObject({
       code: API_ERROR_CODE.CHARACTER_SLUG_TAKEN,
     });
+    expect(assertRateLimitsMock).not.toHaveBeenCalled();
     expect(prisma.character.create).not.toHaveBeenCalled();
   });
 
-  it('写入 identity.name 占位与简介', async () => {
+  it('写入 identity.name 占位与简介，并按 UTC 日扣配额', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.character.create).mockResolvedValue({
       id: 'c-new',
@@ -53,6 +63,14 @@ describe('createCharacter', () => {
       gender: 'female',
     });
 
+    expect(assertRateLimitsMock).toHaveBeenCalledWith([
+      expect.objectContaining({
+        key: expect.stringMatching(/^ratelimit:character:create:daily:user-1:\d{4}-\d{2}-\d{2}$/),
+        limit: expect.any(Number),
+        message: '今日新建角色次数已用完，请明天再试',
+        code: API_ERROR_CODE.CHARACTER_CREATE_DAILY_LIMIT,
+      }),
+    ]);
     expect(prisma.character.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: {

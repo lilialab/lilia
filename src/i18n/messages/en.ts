@@ -234,6 +234,7 @@ export const en = {
     CONFLICT: 'Conflict',
     RATE_LIMITED: 'Too many attempts. Please try again later',
     CHAT_DAILY_TURN_LIMIT: 'Daily chat limit reached. Try again tomorrow',
+    CHARACTER_CREATE_DAILY_LIMIT: 'Daily character creation limit reached. Try again tomorrow',
     TURNSTILE_TOKEN_REQUIRED: 'Please complete the verification',
     TURNSTILE_VERIFICATION_FAILED: 'Verification failed. Please try again',
     INTERNAL_ERROR: 'Server error',
