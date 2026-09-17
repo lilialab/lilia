@@ -26,7 +26,7 @@ export function Avatar({ src, hasAvatar, name, size = 'sm' }: AvatarProps) {
       )}
     >
       {hasAvatar && (
-        // next/image 优化器不带 Cookie，本接口要登录才能读
+        // next/image 优化器不带 Cookie；用户头像接口仍需登录
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt="" className={cn('h-full w-full object-cover')} />
       )}

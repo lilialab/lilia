@@ -53,7 +53,7 @@ describe('changeUserPassword', () => {
     expect(revokeAllAuthSessionsMock).toHaveBeenCalledWith('user-1');
   });
 
-  it('当前密码错误时抛 401', async () => {
+  it('当前密码错误时抛 400', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: 'user-1',
       passwordHash: 'old-hash',
@@ -63,7 +63,7 @@ describe('changeUserPassword', () => {
     await expect(
       changeUserPassword('user-1', { currentPassword: 'wrong', newPassword: 'new-password' }),
     ).rejects.toMatchObject({
-      status: 401,
+      status: 400,
       code: API_ERROR_CODE.INVALID_CURRENT_PASSWORD,
     });
 

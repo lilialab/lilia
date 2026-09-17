@@ -7,15 +7,15 @@ import { getCharacterAvatar, saveCharacterAvatar } from '@/services/character/av
 import { API_ERROR_CODE } from '@/types/api-error';
 import { type NextRequest, NextResponse } from 'next/server';
 
+/** 公开：角色头像可读，无需登录（上传仍须登录且为创建者）。 */
 export const GET = withApiHandler(
-  async (req: NextRequest, context: RouteContext<'/api/characters/[characterId]/avatar'>) => {
-    await resolveRequestUserId(req);
+  async (_req: NextRequest, context: RouteContext<'/api/characters/[characterId]/avatar'>) => {
     const { characterId } = await parseRouteParams(characterParamsSchema, context.params);
     const avatar = await getCharacterAvatar(characterId);
     return new NextResponse(Buffer.from(avatar.body), {
       headers: {
         'Content-Type': avatar.contentType,
-        'Cache-Control': 'private, max-age=3600',
+        'Cache-Control': 'public, max-age=3600',
       },
     });
   },

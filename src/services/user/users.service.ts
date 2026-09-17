@@ -98,14 +98,14 @@ async function findUserForAuth(username: string) {
   });
 }
 
-/** 校验账号密码；失败统一 401，成功返回 userId。 */
+/** 校验账号密码；失败 400，成功返回 userId。 */
 export async function authenticateUser(
   username: string,
   password: string,
 ): Promise<{ id: string }> {
   const user = await findUserForAuth(username);
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    throw AppError.unauthorized('账号或密码错误', API_ERROR_CODE.INVALID_CREDENTIALS);
+    throw AppError.badRequest('账号或密码错误', API_ERROR_CODE.INVALID_CREDENTIALS);
   }
 
   return { id: user.id };
@@ -190,7 +190,7 @@ export async function changeUserPassword(
   }
 
   if (!(await verifyPassword(input.currentPassword, user.passwordHash))) {
-    throw AppError.unauthorized('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
+    throw AppError.badRequest('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
   }
 
   if (await verifyPassword(input.newPassword, user.passwordHash)) {
@@ -220,7 +220,7 @@ export async function deleteUserAccount(userId: string, currentPassword: string)
   }
 
   if (!(await verifyPassword(currentPassword, user.passwordHash))) {
-    throw AppError.unauthorized('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
+    throw AppError.badRequest('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
   }
 
   if (user.avatarKey) {

@@ -57,7 +57,7 @@ describe('deleteUserAccount', () => {
     expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'user-1' } });
   });
 
-  it('当前密码错误时抛 401', async () => {
+  it('当前密码错误时抛 400', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: 'user-1',
       passwordHash: 'hash',
@@ -65,7 +65,7 @@ describe('deleteUserAccount', () => {
     vi.mocked(verifyPassword).mockResolvedValue(false);
 
     await expect(deleteUserAccount('user-1', 'wrong')).rejects.toMatchObject({
-      status: 401,
+      status: 400,
       code: API_ERROR_CODE.INVALID_CURRENT_PASSWORD,
     });
 

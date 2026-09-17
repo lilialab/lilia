@@ -12,18 +12,6 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   });
 }
 
-function requestUrl(input: RequestInfo | URL): string {
-  if (typeof input === 'string') return input;
-  if (input instanceof URL) return input.href;
-  return input.url;
-}
-
-/** 登录/注册的 401 表示凭证错误，不触发踢登录。 */
-function shouldIgnoreUnauthorizedRedirect(input: RequestInfo | URL): boolean {
-  const url = requestUrl(input);
-  return url.includes('/api/auth/login') || url.includes('/api/auth/register');
-}
-
 let handlingUnauthorized = false;
 
 /** 清会话 Cookie 后硬跳 /login；并发 401 只处理一次。 */
@@ -58,7 +46,8 @@ export async function apiFetchJson<T>(
 ): Promise<T> {
   const res = await apiFetch(input, toRequestInit(init));
 
-  if (res.status === 401 && !shouldIgnoreUnauthorizedRedirect(input)) {
+  // 401 只表示正式会话失效；业务失败（密码错、缺试聊凭证等）用其它状态码。
+  if (res.status === 401) {
     void handleUnauthorizedRedirect();
     throw new Error('未登录');
   }

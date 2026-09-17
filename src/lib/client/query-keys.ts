@@ -13,4 +13,6 @@ export const queryKeys = {
   debugExtractMeta: ['debug', 'extract', 'meta'] as const,
   debugMaintainMeta: ['debug', 'maintain', 'meta'] as const,
   debugProfileMeta: ['debug', 'profile', 'meta'] as const,
+  guestCharacters: ['guest', 'characters'] as const,
+  guestChatBoot: (characterId: string) => ['guest', 'chat', characterId, 'boot'] as const,
 };

@@ -235,6 +235,7 @@ export async function streamChatFlow(
   await persistUserTimeZone(userId, timeZone);
 
   const chatLlm = await resolveChatLlm(userId);
+
   if (!chatLlm.usesUserEndpoint) {
     await assertChatDailyTurnQuota(userId);
   }

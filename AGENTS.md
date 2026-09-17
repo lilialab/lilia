@@ -21,7 +21,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | 浏览器 HTTP 封装 | `src/client-api/`（auth、sessions、groups…） |
 | 客户端基础设施 | `src/lib/client/`（`api-fetch`、`query-keys`、cn、toast） |
 | 同构纯函数 | `src/utils/`（无 I/O、不依赖 Next/Prisma/env；前后端可共用） |
-| 前端页面 | `src/app/(main)/`、`src/app/chat/`、`src/app/groups/`、`login/`、`register/` |
+| 前端页面 | `src/app/(main)/`、`src/app/chat/`、`src/app/groups/`、`src/app/guest/`、`login/`、`register/` |
 | 路由保护 | `src/proxy.ts`（Next.js 16；**不是** `middleware.ts`） |
 | 通用组件 | `src/components/` |
 | 单测 | `tests/` 镜像 `src/`；**不**在 `src/` 内 co-locate |
@@ -36,6 +36,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | `session/` | 会话 |
 | `character/` | AI 角色、通讯录、联系人 session |
 | `debug/` | 本地调试（Chroma、提取/维护/画像试运行） |
+| `guest/` | 访客试聊（凭证、日限额、公开目录、独立消息表；不跑记忆） |
 | `user/` | 注册登录、账号资料（改密/昵称/删号）、`resolveUserIdByUsername` |
 
 - 同域 import：`./`；跨域：`@/services/{domain}/...`。**不要**恢复 `src/services/` 根目录平铺旧路径。
@@ -134,4 +135,5 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / nickname / `delete-account`；`/me/settings` |
 | 聊天 UI / 流 | `ChatScreen.tsx` + `api/chat` |
 | 探索 / 角色目录 | `catalog.service.ts`；`create.service.ts`；`/explore`、`/explore/[characterId]` |
+| 访客试聊 | `services/guest/`；`app/guest/`；`api/guest/`；`client-api/guest`；定稿 `.scratch/requirements/guest-trial-requirements.md` |
 | 通讯录 | `contacts.service.ts`；`/contacts`、`/chat/[characterId]` |

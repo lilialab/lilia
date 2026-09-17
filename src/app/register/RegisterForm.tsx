@@ -77,6 +77,11 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
             </Link>
           </p>
           <p>
+            <Link href="/guest" className={cn('text-primary underline')}>
+              {t('tryWithoutAccount')}
+            </Link>
+          </p>
+          <p>
             <Link
               href={privacyPageHref('/register')}
               transitionTypes={['nav-forward']}

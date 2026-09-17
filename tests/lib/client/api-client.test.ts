@@ -10,7 +10,7 @@ describe('parseApiResponse', () => {
         error: API_ERROR_CODE.INVALID_CREDENTIALS,
         code: API_ERROR_CODE.INVALID_CREDENTIALS,
       }),
-      { status: 401 },
+      { status: 400 },
     );
 
     await expect(parseApiResponse(res)).rejects.toMatchObject({

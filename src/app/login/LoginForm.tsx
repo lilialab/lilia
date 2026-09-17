@@ -41,10 +41,17 @@ export function LoginForm() {
       returnTo="/login"
       footer={
         <>
-          {t('noAccount')}{' '}
-          <Link href="/register" className={cn('text-primary underline')}>
-            {t('goRegister')}
-          </Link>
+          <p>
+            <Link href="/guest" className={cn('text-primary underline')}>
+              {t('tryWithoutAccount')}
+            </Link>
+          </p>
+          <p className={cn('mt-3')}>
+            {t('noAccount')}{' '}
+            <Link href="/register" className={cn('text-primary underline')}>
+              {t('goRegister')}
+            </Link>
+          </p>
         </>
       }
     >

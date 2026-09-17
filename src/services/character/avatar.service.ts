@@ -40,7 +40,7 @@ export async function saveCharacterAvatar(
   return toCharacterCatalogItem(row);
 }
 
-/** 读取指定角色头像；未设置或不存在时 404。需登录（由 route 校验）。 */
+/** 读取指定角色头像；未设置或不存在时 404。公开可读（route 不强制登录）。 */
 export async function getCharacterAvatar(
   characterId: string,
 ): Promise<{ body: Uint8Array; contentType: string }> {

@@ -73,6 +73,7 @@ model Character {
   memories       UserMemory[]
   profiles       UserProfile[]
   comments       CharacterComment[]
+  guestTrialMessages GuestTrialMessage[]
   owner          User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   @@index([ownerId])
@@ -298,4 +299,23 @@ model MemoryJob {
 
   @@index([startedAt])
   @@map("memory_jobs")
+}
+
+/**
+ * 访客试聊消息（独立表，便于整功能删除；不写正式 User / ChatSession / Message）。
+ */
+model GuestTrialMessage {
+  id          String   @id @default(uuid())
+  guestId     String   @map("guest_id") @db.VarChar(32)
+  characterId String   @map("character_id")
+  role        String
+  parts       Json
+  /// 客户端 IP（可选；风控审计）
+  clientIp    String?  @map("client_ip") @db.VarChar(64)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([guestId, characterId, createdAt])
+  @@map("guest_trial_messages")
 }

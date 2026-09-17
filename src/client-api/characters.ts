@@ -138,7 +138,7 @@ export async function createCharacterComment(
   return data.comment;
 }
 
-/** 登录用户可读的角色头像地址（浏览器带 Cookie 拉字节）。 */
+/** 角色头像地址（公开可读，无需登录 Cookie）。 */
 export function characterAvatarUrl(characterId: string, updatedAt: string): string {
   return `/api/characters/${encodeURIComponent(characterId)}/avatar?v=${
     encodeURIComponent(updatedAt)

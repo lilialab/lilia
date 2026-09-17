@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 describe('AppError', () => {
   it('静态方法可同时带中文 message 和稳定 code', () => {
-    const error = AppError.unauthorized('账号或密码错误', API_ERROR_CODE.INVALID_CREDENTIALS);
-    expect(error.status).toBe(401);
+    const error = AppError.badRequest('账号或密码错误', API_ERROR_CODE.INVALID_CREDENTIALS);
+    expect(error.status).toBe(400);
     expect(error.message).toBe('账号或密码错误');
     expect(error.code).toBe(API_ERROR_CODE.INVALID_CREDENTIALS);
   });
