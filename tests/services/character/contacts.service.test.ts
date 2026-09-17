@@ -40,7 +40,7 @@ const listedCharacter = {
   shortBio: '',
   avatarKey: null,
   ownerId: 'owner-1',
-  isListed: true,
+  deletedAt: null,
   updatedAt: new Date('2026-09-14T00:00:00.000Z'),
 };
 
@@ -49,10 +49,10 @@ describe('addContact', () => {
     vi.clearAllMocks();
   });
 
-  it('下架且尚未添加时当不存在', async () => {
+  it('已软删且尚未添加时当不存在', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
       ...listedCharacter,
-      isListed: false,
+      deletedAt: new Date('2026-09-16T00:00:00.000Z'),
     } as never);
     vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue(null);
 
@@ -62,20 +62,16 @@ describe('addContact', () => {
     expect(prisma.userCharacter.create).not.toHaveBeenCalled();
   });
 
-  it('下架但已经添加时仍返回通讯录', async () => {
+  it('已软删即使已添加也当不存在', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
       ...listedCharacter,
-      isListed: false,
-    } as never);
-    vi.mocked(prisma.userCharacter.findUnique).mockResolvedValue({
-      createdAt: new Date('2026-09-14T00:00:00.000Z'),
-      character: { ...listedCharacter, isListed: false },
+      deletedAt: new Date('2026-09-16T00:00:00.000Z'),
     } as never);
 
-    await expect(addContact('user-2', 'char-1')).resolves.toMatchObject({
-      id: 'char-1',
-      createdAt: new Date('2026-09-14T00:00:00.000Z'),
+    await expect(addContact('user-2', 'char-1')).rejects.toMatchObject({
+      status: 404,
     });
+    expect(prisma.userCharacter.findUnique).not.toHaveBeenCalled();
     expect(prisma.userCharacter.create).not.toHaveBeenCalled();
   });
 });

@@ -1,7 +1,7 @@
-import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
 import { buildCreateCharacterProfile, mergeCharacterProfile } from './create.utils';
 import {
+  assertCharacterActive,
   assertCharacterOwner,
   catalogCharacterSelect,
   type CharacterCatalogItem,
@@ -28,11 +28,9 @@ export async function updateCharacter(
 ): Promise<CharacterCatalogItem> {
   const existing = await prisma.character.findUnique({
     where: { id: characterId },
-    select: { ownerId: true, profile: true },
+    select: { ownerId: true, deletedAt: true, profile: true },
   });
-  if (!existing) {
-    throw AppError.notFound('角色不存在');
-  }
+  assertCharacterActive(existing);
   assertCharacterOwner(existing.ownerId, userId);
 
   const row = await prisma.character.update({

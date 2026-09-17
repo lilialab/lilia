@@ -4,6 +4,7 @@ import { prisma } from '@/lib/server/prisma';
 import { getS3Object, putS3Object } from '@/lib/server/s3';
 import { AVATAR_CONTENT_TYPES, buildAvatarObjectKey } from '@/utils/avatar';
 import {
+  assertCharacterActive,
   assertCharacterOwner,
   catalogCharacterSelect,
   type CharacterCatalogItem,
@@ -18,11 +19,9 @@ export async function saveCharacterAvatar(
 ): Promise<CharacterCatalogItem> {
   const existing = await prisma.character.findUnique({
     where: { id: characterId },
-    select: { ownerId: true },
+    select: { ownerId: true, deletedAt: true },
   });
-  if (!existing) {
-    throw AppError.notFound('角色不存在');
-  }
+  assertCharacterActive(existing);
   assertCharacterOwner(existing.ownerId, userId);
 
   const kind = assertAvatarBytes(bytes);

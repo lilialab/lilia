@@ -15,7 +15,6 @@ export interface CharacterSummary {
 export interface CatalogCharacter extends CharacterSummary {
   isContact: boolean;
   isOwner: boolean;
-  isListed: boolean;
   isOfficial: boolean;
 }
 
@@ -95,19 +94,11 @@ export async function updateCharacter(
   return data.character;
 }
 
-/** 创建者上架或下架角色。 */
-export async function setCharacterListed(
-  characterId: string,
-  isListed: boolean,
-): Promise<CatalogCharacter> {
-  const data = await apiFetchJson<{ character: CatalogCharacter }>(
-    `/api/characters/${encodeURIComponent(characterId)}/listed`,
-    {
-      method: 'PATCH',
-      json: { isListed },
-    },
-  );
-  return data.character;
+/** 创建者软删角色。 */
+export async function deleteCharacter(characterId: string): Promise<void> {
+  await apiFetchJson(`/api/characters/${encodeURIComponent(characterId)}`, {
+    method: 'DELETE',
+  });
 }
 
 /** 上传角色头像。 */

@@ -5,7 +5,11 @@ import { cancelMemoryExtract } from '@/services/memory/extract-queue.service';
 import { isGenerationBusy } from '@/services/session/generation-lock.utils';
 import { createSession } from '@/services/session/sessions.service';
 import { API_ERROR_CODE } from '@/types/api-error';
-import { catalogCharacterSelect, toCharacterCatalogItem } from './definition.utils';
+import {
+  assertCharacterActive,
+  catalogCharacterSelect,
+  toCharacterCatalogItem,
+} from './definition.utils';
 
 /* -------------------------------------------------------------------------- */
 /* Contacts                                                                   */
@@ -51,10 +55,7 @@ export async function addContact(userId: string, characterId: string) {
     where: { id: characterId },
     select: catalogCharacterSelect,
   });
-
-  if (!character) {
-    throw AppError.notFound('角色不存在');
-  }
+  assertCharacterActive(character);
 
   const existing = await prisma.userCharacter.findUnique({
     where: {
@@ -71,10 +72,6 @@ export async function addContact(userId: string, characterId: string) {
       ...toCharacterCatalogItem(existing.character),
       createdAt: existing.createdAt,
     };
-  }
-
-  if (!character.isListed) {
-    throw AppError.notFound('角色不存在');
   }
 
   const created = await prisma.userCharacter.create({

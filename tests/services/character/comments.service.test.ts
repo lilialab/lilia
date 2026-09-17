@@ -36,8 +36,7 @@ describe('listCharacterComments', () => {
 
   it('只查楼主未软删，新到旧，join 当前作者信息', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
-      isListed: true,
-      ownerId: null,
+      deletedAt: null,
     } as never);
     vi.mocked(prisma.characterComment.findMany).mockResolvedValue([
       {
@@ -82,10 +81,9 @@ describe('listCharacterComments', () => {
     ]);
   });
 
-  it('下架且非创建者当不存在', async () => {
+  it('已软删当不存在', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
-      isListed: false,
-      ownerId: 'owner-1',
+      deletedAt: new Date('2026-09-16T00:00:00.000Z'),
     } as never);
 
     await expect(listCharacterComments('user-2', 'char-1')).rejects.toMatchObject({
@@ -112,8 +110,7 @@ describe('createCharacterComment', () => {
 
   it('只写 characterId / userId / body，返回当前作者信息', async () => {
     vi.mocked(prisma.character.findUnique).mockResolvedValue({
-      isListed: true,
-      ownerId: null,
+      deletedAt: null,
     } as never);
     vi.mocked(prisma.characterComment.create).mockResolvedValue({
       id: 'c-1',

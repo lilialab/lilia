@@ -1,7 +1,6 @@
 import type { Prisma } from '@/generated/prisma/client';
-import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
-import { isExploreVisible } from './definition.utils';
+import { assertCharacterActive } from './definition.utils';
 
 export type CharacterCommentItem = {
   id: string;
@@ -36,14 +35,12 @@ function toCommentItem(row: CommentRow): CharacterCommentItem {
   };
 }
 
-async function assertExploreReadable(userId: string, characterId: string): Promise<void> {
+async function assertExploreReadable(characterId: string): Promise<void> {
   const character = await prisma.character.findUnique({
     where: { id: characterId },
-    select: { isListed: true, ownerId: true },
+    select: { deletedAt: true },
   });
-  if (!character || !isExploreVisible(character.isListed, character.ownerId, userId)) {
-    throw AppError.notFound('角色不存在');
-  }
+  assertCharacterActive(character);
 }
 
 /** 列出角色详情评论：仅楼主、未软删，新到旧；作者信息 join 当前用户。 */
@@ -51,7 +48,7 @@ export async function listCharacterComments(
   userId: string,
   characterId: string,
 ): Promise<CharacterCommentItem[]> {
-  await assertExploreReadable(userId, characterId);
+  await assertExploreReadable(characterId);
 
   const rows = await prisma.characterComment.findMany({
     where: {
@@ -72,7 +69,7 @@ export async function createCharacterComment(
   characterId: string,
   body: string,
 ): Promise<CharacterCommentItem> {
-  await assertExploreReadable(userId, characterId);
+  await assertExploreReadable(characterId);
 
   const row = await prisma.characterComment.create({
     data: { characterId, userId, body },

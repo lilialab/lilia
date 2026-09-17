@@ -79,19 +79,16 @@ function ExploreList({ characters }: ExploreListProps) {
                   {character.name}
                 </p>
                 {character.isOfficial && <Badge color="blue">{t('official')}</Badge>}
-                {!character.isListed && <Badge>{t('unlisted')}</Badge>}
               </div>
               <p className={cn('truncate text-xs text-muted-foreground')}>
                 {character.shortBio}
               </p>
             </div>
           </Link>
-          {character.isListed && (
-            <ExploreAddButton
-              characterId={character.id}
-              isContact={character.isContact}
-            />
-          )}
+          <ExploreAddButton
+            characterId={character.id}
+            isContact={character.isContact}
+          />
         </li>
       ))}
     </ul>

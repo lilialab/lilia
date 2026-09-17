@@ -56,12 +56,12 @@ export const zh = {
     commentPlaceholder: '写评论...',
     commentSubmit: '发表',
     commentsTitle: '{count} 条评论',
-    unlisted: '已下架',
     official: '官方',
-    unlist: '下架',
-    relist: '上架',
-    unlistedToast: '已从探索下架',
-    listedToast: '已重新上架',
+    delete: '删除',
+    deleteConfirm: '删除',
+    deleteDescription:
+      '删除「{name}」后将从探索消失，其他人无法再添加。已添加的用户仍可继续聊天，直到他们自行移除。此操作不可撤销。',
+    deletedToast: '角色已删除',
   },
   chat: {
     moreActions: '更多操作',

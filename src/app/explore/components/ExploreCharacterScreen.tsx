@@ -2,18 +2,17 @@
 
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
 import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
-import { ExploreListedButton } from '@/app/explore/components/ExploreListedButton';
+import { ExploreDeleteButton } from '@/app/explore/components/ExploreDeleteButton';
 import { characterAvatarUrl, fetchCharacter } from '@/client-api/characters';
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
-import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
-import { Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface ExploreCharacterScreenProps {
@@ -47,15 +46,7 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
-      <ScreenHeader
-        title={character?.name ?? t('title')}
-        onBack={goBack}
-        right={character?.isOwner && (
-          <HeaderIconButton aria-label={t('edit')} onClick={goEdit}>
-            <Pencil className={cn('h-5 w-5')} aria-hidden />
-          </HeaderIconButton>
-        )}
-      />
+      <ScreenHeader title={character?.name ?? t('title')} onBack={goBack} />
 
       <PageStatus
         loading={characterQuery.isLoading}
@@ -80,33 +71,35 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
                       {character.name}
                     </p>
                     {character.isOfficial && <Badge color="blue">{t('official')}</Badge>}
-                    {!character.isListed && <Badge>{t('unlisted')}</Badge>}
                   </div>
                 </div>
                 <p className={cn('mt-3 text-sm text-muted-foreground')}>{character.shortBio}</p>
-                {(character.isListed || character.isOwner) && (
-                  <div
-                    className={cn(
-                      'mt-4 flex items-center gap-3 border-t border-border pt-3',
-                      !character.isListed && 'justify-end',
-                    )}
-                  >
-                    {character.isListed && (
-                      <ExploreAddButton
+                <div className={cn('mt-4 flex items-center gap-3 border-t border-border pt-3')}>
+                  <ExploreAddButton
+                    characterId={character.id}
+                    isContact={character.isContact}
+                    variant="primary"
+                    className={cn('min-w-0 flex-1')}
+                  />
+                  {character.isOwner && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={goEdit}
+                        className={cn(
+                          'inline-flex shrink-0 items-center justify-center rounded-md border border-border px-4 py-2',
+                          'text-sm font-medium text-foreground hover:bg-row-hover',
+                        )}
+                      >
+                        {t('edit')}
+                      </button>
+                      <ExploreDeleteButton
                         characterId={character.id}
-                        isContact={character.isContact}
-                        variant="primary"
-                        className={cn('min-w-0 flex-1')}
+                        characterName={character.name}
                       />
-                    )}
-                    {character.isOwner && (
-                      <ExploreListedButton
-                        characterId={character.id}
-                        isListed={character.isListed}
-                      />
-                    )}
-                  </div>
-                )}
+                    </>
+                  )}
+                </div>
               </section>
               <ExploreComments characterId={character.id} />
             </div>

@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/server/app-error';
 import {
+  assertCharacterActive,
   assertCharacterOwner,
-  isExploreVisible,
   parseCharacterProfile,
   parseCharacterSkills,
   readCharacterFormProfile,
@@ -129,7 +129,7 @@ describe('toCharacterCatalogItem', () => {
         shortBio: '朋友',
         avatarKey: null,
         ownerId: null,
-        isListed: true,
+        deletedAt: null,
         updatedAt: new Date('2026-09-13T00:00:00.000Z'),
       }),
     ).toEqual({
@@ -151,7 +151,7 @@ describe('toCharacterCatalogItem', () => {
         shortBio: '朋友',
         avatarKey: 'characters/c1/a.jpg',
         ownerId: null,
-        isListed: true,
+        deletedAt: null,
         updatedAt: new Date('2026-09-13T00:00:00.000Z'),
       }).hasAvatar,
     ).toBe(true);
@@ -185,15 +185,28 @@ describe('assertCharacterOwner', () => {
   });
 });
 
-describe('isExploreVisible', () => {
-  it('已上架对任何登录用户可见', () => {
-    expect(isExploreVisible(true, null, 'user-2')).toBe(true);
-    expect(isExploreVisible(true, 'user-1', 'user-2')).toBe(true);
+describe('assertCharacterActive', () => {
+  it('存在且未删通过', () => {
+    expect(() => assertCharacterActive({ deletedAt: null })).not.toThrow();
   });
 
-  it('下架仅创建者可见', () => {
-    expect(isExploreVisible(false, 'user-1', 'user-1')).toBe(true);
-    expect(isExploreVisible(false, 'user-1', 'user-2')).toBe(false);
-    expect(isExploreVisible(false, null, 'user-1')).toBe(false);
+  it('不存在 404', () => {
+    try {
+      assertCharacterActive(null);
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(AppError);
+      expect(error).toMatchObject({ status: 404 });
+    }
+  });
+
+  it('已软删 404', () => {
+    try {
+      assertCharacterActive({ deletedAt: new Date('2026-09-16T00:00:00.000Z') });
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(AppError);
+      expect(error).toMatchObject({ status: 404 });
+    }
   });
 });

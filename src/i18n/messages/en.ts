@@ -56,12 +56,12 @@ export const en = {
     commentPlaceholder: 'Write a comment...',
     commentSubmit: 'Post',
     commentsTitle: '{count} comments',
-    unlisted: 'Unlisted',
     official: 'Official',
-    unlist: 'Unlist',
-    relist: 'List again',
-    unlistedToast: 'Unlisted from Explore',
-    listedToast: 'Listed on Explore again',
+    delete: 'Delete',
+    deleteConfirm: 'Delete',
+    deleteDescription:
+      'Delete {name}? It will leave Explore and others can no longer add it. People who already added it can keep chatting until they remove it. This cannot be undone.',
+    deletedToast: 'Character deleted',
   },
   chat: {
     moreActions: 'More actions',

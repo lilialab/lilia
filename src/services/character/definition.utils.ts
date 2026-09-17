@@ -19,7 +19,7 @@ export const catalogCharacterSelect = {
   shortBio: true,
   avatarKey: true,
   ownerId: true,
-  isListed: true,
+  deletedAt: true,
   updatedAt: true,
 } satisfies Prisma.CharacterSelect;
 
@@ -112,11 +112,11 @@ export function assertCharacterOwner(ownerId: string | null, userId: string): vo
   }
 }
 
-/** 探索目录可见：已上架，或当前用户是创建者。 */
-export function isExploreVisible(
-  isListed: boolean,
-  ownerId: string | null,
-  userId: string,
-): boolean {
-  return isListed || ownerId === userId;
+/** 角色须存在且未软删；否则当不存在。 */
+export function assertCharacterActive<T extends { deletedAt?: Date | null }>(
+  character: T | null | undefined,
+): asserts character is T {
+  if (!character || character.deletedAt) {
+    throw AppError.notFound('角色不存在');
+  }
 }
