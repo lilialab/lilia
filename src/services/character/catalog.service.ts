@@ -1,4 +1,3 @@
-import { env } from '@/lib/server/env';
 import { prisma } from '@/lib/server/prisma';
 import {
   assertCharacterActive,
@@ -9,22 +8,7 @@ import {
   readCharacterFormProfile,
   toCharacterCatalogItem,
 } from './definition.utils';
-
-/** 官方角色：创建者是官方账号。进程内只查一次官方 userId。 */
-let officialUserId: string | undefined;
-async function isOfficialCharacter(ownerId: string | null): Promise<boolean> {
-  if (ownerId === null) {
-    return false;
-  }
-  if (!officialUserId) {
-    const row = await prisma.user.findUnique({
-      where: { username: env.OFFICIAL_USERNAME },
-      select: { id: true },
-    });
-    officialUserId = row?.id;
-  }
-  return ownerId === officialUserId;
-}
+import { isOfficialCharacter } from './official.service';
 
 async function toCatalogCharacter(
   row: CatalogCharacterRow,

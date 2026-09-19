@@ -9,7 +9,10 @@ import {
 
 const CATALOG_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), 'characters.json');
 
-/** 按 slug 插入尚不存在的官方角色（id 由 Prisma 生成）；已有行不改。 */
+/**
+ * 按 slug 对齐官方角色目录：缺失则新建，已有且属官方则覆盖人设，属用户自建则跳过。
+ * 只覆盖 JSON 里有的列（name / shortBio / profile / skills / extract），不动 ownerId / deletedAt / avatarKey。
+ */
 export async function seedCharacterCatalog(officialUserId: string): Promise<void> {
   const parsed: unknown = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
   if (!Array.isArray(parsed)) {
@@ -35,25 +38,28 @@ export async function seedCharacterCatalog(officialUserId: string): Promise<void
       throw new Error(`角色 ${slug} 的 extract 须为字符串`);
     }
 
-    const profileJson = parseCharacterProfile(profile);
-    const skillsJson = parseCharacterSkills(skills);
+    const data = {
+      name: name.trim(),
+      shortBio,
+      profile: parseCharacterProfile(profile),
+      skills: parseCharacterSkills(skills),
+      extract,
+    };
 
     const existing = await prisma.character.findUnique({
       where: { slug },
-      select: { id: true },
+      select: { ownerId: true },
     });
-    if (existing) continue;
+
+    if (existing) {
+      // 同 slug 已被用户自建占用时跳过，避免 seed 覆盖用户内容。
+      if (existing.ownerId !== officialUserId) continue;
+      await prisma.character.update({ where: { slug }, data });
+      continue;
+    }
 
     await prisma.character.create({
-      data: {
-        slug,
-        name: name.trim(),
-        shortBio,
-        profile: profileJson,
-        skills: skillsJson,
-        extract,
-        ownerId: officialUserId,
-      },
+      data: { slug, ...data, ownerId: officialUserId },
     });
   }
 }

@@ -127,7 +127,8 @@ function EditCharacterForm({ character, onBack }: EditCharacterFormProps) {
       avatar: File | undefined;
     }) => {
       const { avatar, ...body } = input;
-      await updateCharacter(character.id, body);
+      // 官方角色人设由 characters.json + seed 管，服务端也会拒改；这里跳过内容、只提交头像。
+      if (!character.isOfficial) await updateCharacter(character.id, body);
       if (avatar) await uploadCharacterAvatar(character.id, avatar);
     },
     onSuccess: async () => {

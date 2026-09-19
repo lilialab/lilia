@@ -9,7 +9,12 @@ vi.mock('@/lib/server/prisma', () => ({
   },
 }));
 
+vi.mock('@/services/character/official.service', () => ({
+  isOfficialCharacter: vi.fn(),
+}));
+
 import { prisma } from '@/lib/server/prisma';
+import { isOfficialCharacter } from '@/services/character/official.service';
 import { updateCharacter } from '@/services/character/update.service';
 import { API_ERROR_CODE } from '@/types/api-error';
 
@@ -26,6 +31,7 @@ const catalogRow = {
 describe('updateCharacter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(isOfficialCharacter).mockResolvedValue(false);
   });
 
   it('角色不存在 404', async () => {
@@ -59,6 +65,19 @@ describe('updateCharacter', () => {
     ).rejects.toMatchObject({
       status: 403,
       code: API_ERROR_CODE.CHARACTER_NOT_OWNER,
+    });
+    expect(prisma.character.update).not.toHaveBeenCalled();
+  });
+
+  it('官方角色 403：人设由 characters.json + seed 管，不在 app 内改', async () => {
+    vi.mocked(prisma.character.findUnique).mockResolvedValue({ ownerId: 'official-1' } as never);
+    vi.mocked(isOfficialCharacter).mockResolvedValue(true);
+
+    await expect(
+      updateCharacter('official-1', 'char-1', { name: '小明', shortBio: '短句', gender: 'female' }),
+    ).rejects.toMatchObject({
+      status: 403,
+      code: API_ERROR_CODE.CHARACTER_OFFICIAL_READONLY,
     });
     expect(prisma.character.update).not.toHaveBeenCalled();
   });

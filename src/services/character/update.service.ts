@@ -1,4 +1,6 @@
+import { AppError } from '@/lib/server/app-error';
 import { prisma } from '@/lib/server/prisma';
+import { API_ERROR_CODE } from '@/types/api-error';
 import { buildCreateCharacterProfile, mergeCharacterProfile } from './create.utils';
 import {
   assertCharacterActive,
@@ -7,8 +9,9 @@ import {
   type CharacterCatalogItem,
   toCharacterCatalogItem,
 } from './definition.utils';
+import { isOfficialCharacter } from './official.service';
 
-/** 创建者更新展示/人设字段（不含账号名）。 */
+/** 创建者更新展示/人设字段（不含账号名）；官方角色人设由 seed 管，拒改。 */
 export async function updateCharacter(
   userId: string,
   characterId: string,
@@ -32,6 +35,13 @@ export async function updateCharacter(
   });
   assertCharacterActive(existing);
   assertCharacterOwner(existing.ownerId, userId);
+
+  if (await isOfficialCharacter(existing.ownerId)) {
+    throw AppError.forbidden(
+      '官方角色由角色库维护，请在 characters.json 中修改后重跑 seed',
+      API_ERROR_CODE.CHARACTER_OFFICIAL_READONLY,
+    );
+  }
 
   const row = await prisma.character.update({
     where: { id: characterId },

@@ -240,7 +240,8 @@ export const en = {
     turnstileHint: 'Complete the check to start chatting.',
     completeVerification: 'Please complete the verification',
     startChat: 'Start chatting',
-    quotaReached: 'Daily trial limit reached. Sign up to chat freely, create characters, and unlock the full app.',
+    quotaReached:
+      'Daily trial limit reached. Sign up to chat freely, create characters, and unlock the full app.',
     goRegister: 'Sign up',
     hasAccount: 'Already have an account?',
     goLogin: 'Log in',
@@ -298,6 +299,8 @@ export const en = {
     CHARACTER_HEIGHT_INVALID: 'Height must be a whole number from 1 to 300',
     CHARACTER_AGE_INVALID: 'Age must be a whole number from 1 to 150',
     CHARACTER_NOT_OWNER: 'Only the creator can edit this character',
+    CHARACTER_OFFICIAL_READONLY:
+      'Official characters are managed by the catalog; edit characters.json',
   } satisfies Record<ApiErrorCode | 'fallback', string>,
   register: {
     title: 'Create an account',

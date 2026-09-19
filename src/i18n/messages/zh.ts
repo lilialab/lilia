@@ -294,6 +294,7 @@ export const zh = {
     CHARACTER_HEIGHT_INVALID: '身高须为 1–300 的整数',
     CHARACTER_AGE_INVALID: '年龄须为 1–150 的整数',
     CHARACTER_NOT_OWNER: '只有创建者可以修改',
+    CHARACTER_OFFICIAL_READONLY: '官方角色由角色库维护，请在 characters.json 中修改',
   },
   register: {
     title: '注册账号',

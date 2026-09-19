@@ -10,6 +10,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **读代码**：Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止全仓 explore、整目录 Read、全仓 subagent，或一次串读 chat + memory + group 全链路。
 
+## 协作方式
+
+- **讨论 ≠ 执行**：用户提问、比较方案、问「麻不麻烦 / 好不好实现 / 你觉得呢」时，只回答，不改文件、不跑有副作用的命令。哪怕方案已聊得很具体、看起来可以直接做，也先停下等一句确认。
+- **明确的动作指令才落盘**：用户说「改 / 做 / 实现 / 开干 / 帮我加上」这类才是开工信号。
+- **不确定就先问**：拿不准是讨论还是让做，先问一句，不要默认开工。
+- **只读排查不受限**：为回答问题而读代码、搜索、查日志、看文档，随时可做。
+
 ## 代码导航
 
 | 层级 | 路径 |
@@ -50,7 +57,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 生产同机联调：先 `pnpm build`，再 `pnpm start:all`
 - 单测需完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等）；无 fallback
 - Prisma schema 变更：`pnpm exec prisma generate`；必要时 `pnpm exec prisma db push`
-- **未上线**：不写旧数据兼容（读路径别名、双写、历史枚举映射等）。破坏性变更改完后只在回复里提醒用户清库（MySQL，必要时 Chroma）；不要自己 `db push --force-reset` 或动 `docker-volumes/`。上线后删本条，改为迁移
+- **已上线**：schema 变更必须留迁移（`pnpm exec prisma migrate dev` 生成并随代码提交，生产 `pnpm exec prisma migrate deploy`），不写读路径别名等旧数据兼容；破坏性变更也走迁移，不要 `db push --force-reset` 或动 `docker-volumes/`
 - **禁止**：改 `docker-volumes/`；提交 `.env`；用户未要求时 `git commit` / 扩 scope 的无关重构；编辑 `.cursor/plans/` 下的 plan
 
 ## 前后端约定
