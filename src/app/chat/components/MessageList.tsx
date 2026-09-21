@@ -136,37 +136,42 @@ export function MessageList({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className={cn('flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4')}
+        className={cn('flex-1 overflow-y-auto p-4 md:p-6')}
       >
-        {isLoadingMore && (
-          <div className={cn('py-2 text-center text-sm text-muted-foreground')}>
-            {tCommon('loading')}
-          </div>
-        )}
-        {messageItems.map((item) => {
-          if (item.type === 'divider') {
-            return <Divider key={item.key} label={item.label} />;
-          }
+        {/* 不满一屏时贴底（消息从输入框往上排）；内容超出后 justify-end 自然失效 */}
+        <div className={cn('flex min-h-full flex-col justify-end space-y-3 md:space-y-4')}>
+          {isLoadingMore && (
+            <div className={cn('py-2 text-center text-sm text-muted-foreground')}>
+              {tCommon('loading')}
+            </div>
+          )}
+          {messageItems.map((item) => {
+            if (item.type === 'divider') {
+              return <Divider key={item.key} label={item.label} />;
+            }
 
-          const message = item.message;
-          if (awaitingAssistant && message.id === lastMessage?.id && message.role === 'assistant') {
+            const message = item.message;
+            if (
+              awaitingAssistant && message.id === lastMessage?.id && message.role === 'assistant'
+            ) {
+              return (
+                <AssistantLoadingBubble
+                  key={message.id}
+                  message={message}
+                  hideSpeakerName={hideSpeakerName}
+                />
+              );
+            }
+
             return (
-              <AssistantLoadingBubble
+              <MessageBubble
                 key={message.id}
                 message={message}
                 hideSpeakerName={hideSpeakerName}
               />
             );
-          }
-
-          return (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              hideSpeakerName={hideSpeakerName}
-            />
-          );
-        })}
+          })}
+        </div>
       </div>
       <ScrollToBottomButton scrollRef={scrollRef} onScrollToBottom={handleScrollToBottom} />
     </div>
