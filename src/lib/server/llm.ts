@@ -7,10 +7,6 @@ function createCompatibleProvider(baseURL: string, apiKey: string) {
     baseURL,
     apiKey,
     supportsStructuredOutputs: true,
-    transformRequestBody: (args) => ({
-      ...args,
-      thinking: { type: 'disabled' },
-    }),
   });
 }
 
