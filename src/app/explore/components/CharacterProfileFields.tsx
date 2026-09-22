@@ -6,8 +6,11 @@ import {
   CHARACTER_AGE_MAX,
   CHARACTER_GENDERS,
   CHARACTER_HEIGHT_MAX,
+  PERSONALITY_ITEM_MAX_LENGTH,
   PERSONALITY_MAX_ITEMS,
+  PROFILE_LINE_MAX_LENGTH,
   PROFILE_LIST_MAX_ITEMS,
+  PROFILE_TEXT_MAX_LENGTH,
 } from '@/schemas/shared/character';
 import { useState } from 'react';
 
@@ -203,7 +206,10 @@ export function CharacterProfileFields({ fields, onClearError }: CharacterProfil
         </Form.Field>
       </Form.Section>
       <Form.Section title={t('sectionPersona')}>
-        <Form.Field label={t('attitudeLabel')}>
+        <Form.Field
+          label={t('attitudeLabel')}
+          hint={t('attitudeHint', { max: PROFILE_TEXT_MAX_LENGTH })}
+        >
           <Form.Textarea
             value={fields.attitude}
             placeholder={t('attitudePlaceholder')}
@@ -215,6 +221,10 @@ export function CharacterProfileFields({ fields, onClearError }: CharacterProfil
         </Form.Field>
         <Form.StringList
           label={t('personalityLabel')}
+          hint={t('listHint', {
+            itemMax: PERSONALITY_ITEM_MAX_LENGTH,
+            max: PERSONALITY_MAX_ITEMS,
+          })}
           placeholder={t('personalityPlaceholder')}
           addLabel={t('personalityAdd')}
           removeLabel={t('personalityRemove')}
@@ -222,6 +232,7 @@ export function CharacterProfileFields({ fields, onClearError }: CharacterProfil
         />
         <Form.StringList
           label={t('valuesLabel')}
+          hint={t('listHint', { itemMax: PROFILE_LINE_MAX_LENGTH, max: PROFILE_LIST_MAX_ITEMS })}
           placeholder={t('valuesPlaceholder')}
           addLabel={t('personalityAdd')}
           removeLabel={t('personalityRemove')}
@@ -229,6 +240,7 @@ export function CharacterProfileFields({ fields, onClearError }: CharacterProfil
         />
         <Form.StringList
           label={t('dislikesLabel')}
+          hint={t('listHint', { itemMax: PROFILE_LINE_MAX_LENGTH, max: PROFILE_LIST_MAX_ITEMS })}
           placeholder={t('dislikesPlaceholder')}
           addLabel={t('personalityAdd')}
           removeLabel={t('personalityRemove')}

@@ -1,6 +1,7 @@
 'use client';
 
 import { formControlClass } from '@/components/Form/form-control';
+import { fieldHintClass, fieldLabelClass } from '@/components/Form/form-label';
 import { FormStringList } from '@/components/Form/FormStringList';
 import { cn } from '@/lib/client/cn';
 import {
@@ -23,12 +24,13 @@ interface FormProps extends FormHTMLAttributes<HTMLFormElement> {
 interface FormFieldProps {
   label: string;
   required?: boolean;
+  hint?: string;
   children: ReactNode;
   className?: string;
 }
 
 interface FormSectionProps {
-  title: string;
+  title?: string;
   children: ReactNode;
 }
 
@@ -115,13 +117,14 @@ function useFormField(): FormFieldContextValue {
 /* Subcomponents                                                              */
 /* -------------------------------------------------------------------------- */
 
-/** 表单字段：标签 + 控件。 */
-function FormField({ label, required, children, className }: FormFieldProps) {
+/** 表单字段：标签 + 控件 + 可选说明。 */
+function FormField({ label, required, hint, children, className }: FormFieldProps) {
   return (
     <FormFieldContext.Provider value={{ required }}>
       <label
         className={cn(
-          'mt-4 block text-xs font-medium text-muted-foreground first:mt-0',
+          'mt-4 block first:mt-0',
+          fieldLabelClass,
           className,
         )}
       >
@@ -132,22 +135,25 @@ function FormField({ label, required, children, className }: FormFieldProps) {
         )}
         {label}
         {children}
+        {hint && <span className={fieldHintClass}>{hint}</span>}
       </label>
     </FormFieldContext.Provider>
   );
 }
 
-/** 表单分段：横向铺满，段与段之间留缝。 */
+/** 表单分段：整块白底卡片，横向铺满；标题可选。 */
 function FormSection({ title, children }: FormSectionProps) {
   return (
     <section className={cn('mt-3 bg-background px-4 pb-4 pt-3 first:mt-0')}>
-      <h2
-        className={cn(
-          '-mx-4 border-b border-border px-4 pb-3 text-sm font-medium text-foreground',
-        )}
-      >
-        {title}
-      </h2>
+      {title && (
+        <h2
+          className={cn(
+            '-mx-4 border-b border-border px-4 pb-3 text-base font-semibold text-foreground',
+          )}
+        >
+          {title}
+        </h2>
+      )}
       {children}
     </section>
   );
@@ -223,7 +229,7 @@ function FormInput({
       readOnly={readOnly}
       className={cn(
         formControlClass,
-        readOnly && 'cursor-default bg-surface text-muted-foreground focus:border-border',
+        readOnly && 'cursor-default bg-transparent text-muted-foreground',
         className,
       )}
     />

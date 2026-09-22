@@ -12,13 +12,13 @@ describe('createCharacterBodySchema', () => {
   it('接受合法 slug、姓名、简介与性别', () => {
     expect(
       createCharacterBodySchema.parse({
-        slug: 'my-bot_1',
+        slug: 'my_bot_1',
         name: ' 小明 ',
         shortBio: ' 短句 ',
         gender: 'female',
       }),
     ).toEqual({
-      slug: 'my-bot_1',
+      slug: 'my_bot_1',
       name: '小明',
       shortBio: '短句',
       gender: 'female',
@@ -44,6 +44,9 @@ describe('createCharacterBodySchema', () => {
     expect(
       firstIssue({ slug: 'has space', name: 'x', shortBio: '短句', gender: 'female' }),
     ).toBe(API_ERROR_CODE.CHARACTER_SLUG_INVALID);
+    expect(firstIssue({ slug: 'my-bot', name: 'x', shortBio: '短句', gender: 'female' })).toBe(
+      API_ERROR_CODE.CHARACTER_SLUG_INVALID,
+    );
   });
 
   it('拒绝过长 slug', () => {

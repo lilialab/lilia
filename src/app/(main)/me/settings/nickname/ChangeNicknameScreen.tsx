@@ -18,6 +18,7 @@ export function ChangeNicknameScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const t = useTranslations('changeNickname');
+  const tCommon = useTranslations('common');
   const [draftNickname, setDraftNickname] = useState<string | null>(null);
   const nickname = draftNickname ?? user?.nickname ?? '';
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,14 +48,21 @@ export function ChangeNicknameScreen() {
         onBack={() => router.push('/me/settings', { transitionTypes: ['nav-back'] })}
       />
 
-      <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
+      <div className={cn('flex-1 overflow-y-auto py-3')}>
         <Form onSubmit={handleSubmit}>
-          <Form.Field label={t('nickname')}>
-            <Form.Input value={nickname} onChange={setDraftNickname} autoComplete="nickname" />
-          </Form.Field>
-          <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
-            {isSubmitting ? t('submitting') : t('submit')}
-          </Form.Submit>
+          <Form.Section>
+            <Form.Field label={t('nickname')}>
+              <Form.Input
+                value={nickname}
+                onChange={setDraftNickname}
+                placeholder={tCommon('fieldPlaceholder', { label: t('nickname') })}
+                autoComplete="nickname"
+              />
+            </Form.Field>
+            <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
+              {isSubmitting ? t('submitting') : t('submit')}
+            </Form.Submit>
+          </Form.Section>
         </Form>
       </div>
     </div>

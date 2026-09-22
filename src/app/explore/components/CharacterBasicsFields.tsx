@@ -4,7 +4,7 @@ import { AvatarPicker } from '@/components/Avatar';
 import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
-import { CHARACTER_GENDERS } from '@/schemas/shared/character';
+import { CHARACTER_GENDERS, CHARACTER_SHORT_BIO_MAX_LENGTH } from '@/schemas/shared/character';
 
 interface CharacterBasicsFieldsProps {
   avatarSrc: string;
@@ -41,6 +41,7 @@ export function CharacterBasicsFields({
   nameAutoFocus,
 }: CharacterBasicsFieldsProps) {
   const t = useTranslations('createCharacter');
+  const tCommon = useTranslations('common');
   const genderMessageKey = {
     female: 'genderFemale',
     male: 'genderMale',
@@ -76,7 +77,11 @@ export function CharacterBasicsFields({
           </Form.Field>
         </div>
       </div>
-      <Form.Field label={t('shortBioLabel')} required>
+      <Form.Field
+        label={t('shortBioLabel')}
+        required
+        hint={t('shortBioHint', { max: CHARACTER_SHORT_BIO_MAX_LENGTH })}
+      >
         <Form.Input
           value={shortBio}
           placeholder={t('shortBioPlaceholder')}
@@ -86,10 +91,14 @@ export function CharacterBasicsFields({
           }}
         />
       </Form.Field>
-      <Form.Field label={t('slugLabel')} required={slugEditable}>
+      <Form.Field
+        label={t('slugLabel')}
+        required={slugEditable}
+        hint={slugEditable ? t('slugHint') : undefined}
+      >
         <Form.Input
           value={slug}
-          placeholder={t('slugPlaceholder')}
+          placeholder={tCommon('fieldPlaceholder', { label: t('slugLabel') })}
           readOnly={!slugEditable}
           onChange={onSlugChange
             ? (value) => {

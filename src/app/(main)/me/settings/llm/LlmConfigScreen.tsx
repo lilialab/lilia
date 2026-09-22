@@ -87,50 +87,66 @@ export function LlmConfigScreen() {
         onBack={() => router.push('/me/settings', { transitionTypes: ['nav-back'] })}
       />
 
-      <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
+      <div className={cn('flex-1 overflow-y-auto py-3')}>
         {configQuery.isLoading && (
-          <p className={cn('text-sm text-muted-foreground')}>{tCommon('loading')}</p>
+          <p className={cn('px-4 text-sm text-muted-foreground')}>{tCommon('loading')}</p>
         )}
-        {configQuery.isError && <p className={cn('text-sm text-destructive')}>{t('loadError')}</p>}
+        {configQuery.isError && (
+          <p className={cn('px-4 text-sm text-destructive')}>{t('loadError')}</p>
+        )}
         {config && (
           <Form onSubmit={handleSubmit}>
-            <p className={cn('text-sm text-muted-foreground')}>{t('hint')}</p>
-            <p className={cn('mt-4 text-sm text-foreground/80')}>
-              {config.baseUrl?.trim() && config.model?.trim() && config.hasApiKey
-                ? t('statusEnabled')
-                : t('statusDisabled')}
-            </p>
-            <Form.Field label={t('baseUrl')}>
-              <Form.Input value={baseUrl} onChange={setDraftBaseUrl} autoComplete="off" />
-            </Form.Field>
-            <Form.Field label={t('model')}>
-              <Form.Input value={model} onChange={setDraftModel} autoComplete="off" />
-            </Form.Field>
-            <Form.Field label={t('apiKey')}>
-              <Form.Input
-                type="password"
-                value={apiKey}
-                onChange={setApiKey}
-                autoComplete="off"
-                placeholder={config.hasApiKey ? t('apiKeyConfigured') : undefined}
-              />
-            </Form.Field>
-            <Form.Submit disabled={isBusy} className={cn('mt-4')}>
-              {isSaving ? t('submitting') : t('submit')}
-            </Form.Submit>
-            {hasStoredConfig && (
-              <button
-                type="button"
-                disabled={isBusy}
-                onClick={handleClear}
-                className={cn(
-                  'mt-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium text-foreground',
-                  'hover:bg-surface disabled:opacity-40',
-                )}
-              >
-                {isClearing ? t('clearing') : t('clear')}
-              </button>
-            )}
+            <Form.Section>
+              <p className={cn('text-sm text-muted-foreground')}>{t('hint')}</p>
+              <p className={cn('mt-4 text-sm text-foreground/80')}>
+                {config.baseUrl?.trim() && config.model?.trim() && config.hasApiKey
+                  ? t('statusEnabled')
+                  : t('statusDisabled')}
+              </p>
+              <Form.Field label={t('baseUrl')}>
+                <Form.Input
+                  value={baseUrl}
+                  onChange={setDraftBaseUrl}
+                  placeholder={tCommon('fieldPlaceholder', { label: t('baseUrl') })}
+                  autoComplete="off"
+                />
+              </Form.Field>
+              <Form.Field label={t('model')}>
+                <Form.Input
+                  value={model}
+                  onChange={setDraftModel}
+                  placeholder={tCommon('fieldPlaceholder', { label: t('model') })}
+                  autoComplete="off"
+                />
+              </Form.Field>
+              <Form.Field label={t('apiKey')}>
+                <Form.Input
+                  type="password"
+                  value={apiKey}
+                  onChange={setApiKey}
+                  autoComplete="off"
+                  placeholder={config.hasApiKey
+                    ? t('apiKeyConfigured')
+                    : tCommon('fieldPlaceholder', { label: t('apiKey') })}
+                />
+              </Form.Field>
+              <Form.Submit disabled={isBusy} className={cn('mt-4')}>
+                {isSaving ? t('submitting') : t('submit')}
+              </Form.Submit>
+              {hasStoredConfig && (
+                <button
+                  type="button"
+                  disabled={isBusy}
+                  onClick={handleClear}
+                  className={cn(
+                    'mt-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium text-foreground',
+                    'hover:bg-surface disabled:opacity-40',
+                  )}
+                >
+                  {isClearing ? t('clearing') : t('clear')}
+                </button>
+              )}
+            </Form.Section>
           </Form>
         )}
       </div>

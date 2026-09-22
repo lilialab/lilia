@@ -1,13 +1,13 @@
 import { API_ERROR_CODE } from '@/types/api-error';
 import { z } from 'zod';
 
-/** 角色 slug：群 @ / 唯一账号名；仅字母数字下划线连字符。 */
+/** 角色 slug：群 @ / 唯一账号名；仅字母数字下划线。 */
 export const characterSlugSchema = z
   .string({ error: API_ERROR_CODE.CHARACTER_SLUG_REQUIRED })
   .trim()
   .min(1, API_ERROR_CODE.CHARACTER_SLUG_REQUIRED)
   .max(32, API_ERROR_CODE.CHARACTER_SLUG_TOO_LONG)
-  .regex(/^[a-zA-Z0-9_-]+$/, API_ERROR_CODE.CHARACTER_SLUG_INVALID);
+  .regex(/^[a-zA-Z0-9_]+$/, API_ERROR_CODE.CHARACTER_SLUG_INVALID);
 
 /** 角色展示名。 */
 export const characterNameSchema = z

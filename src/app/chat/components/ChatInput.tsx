@@ -1,8 +1,10 @@
 'use client';
 
+import { fieldSurfaceClass } from '@/components/Form/form-control';
 import { useTranslations } from '@/components/I18nProvider';
 import { cn } from '@/lib/client/cn';
 import { showMessageToast } from '@/lib/client/toast';
+import { ChevronDown } from 'lucide-react';
 import { useLayoutEffect, useRef } from 'react';
 
 interface ChatInputProps {
@@ -92,12 +94,13 @@ export function ChatInput({
             aria-label={t('mentionAria', { name: mentionDisplayName ?? '' })}
             onClick={onMentionClick}
             className={cn(
-              'min-h-11 max-w-28 shrink-0 truncate rounded-md border border-border bg-background px-2',
+              'flex min-h-11 max-w-28 shrink-0 items-center gap-1 rounded-md border border-border bg-chat px-2',
               'text-sm font-medium text-foreground/80 transition-colors',
-              'hover:bg-surface',
+              'hover:bg-border',
             )}
           >
-            @{mentionDisplayName}
+            <span className={cn('min-w-0 truncate')}>@{mentionDisplayName}</span>
+            <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground')} aria-hidden />
           </button>
         )}
         <textarea
@@ -109,9 +112,8 @@ export function ChatInput({
           enterKeyHint="send"
           placeholder={t('placeholder')}
           className={cn(
-            'min-h-11 max-h-36 flex-1 resize-none overflow-y-auto px-3 py-2',
-            'border border-border rounded-md text-base leading-normal text-foreground',
-            'outline-none focus:border-muted-foreground',
+            'min-h-11 max-h-36 flex-1 resize-none overflow-y-auto leading-normal',
+            fieldSurfaceClass,
           )}
         />
         <button

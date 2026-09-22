@@ -22,6 +22,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
   const router = useRouter();
   const t = useTranslations('register');
   const tAuth = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const [username, setUsername] = useState('');
   const [nickname, setNickname] = useState('');
@@ -95,16 +96,27 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
     >
       <Form onSubmit={handleSubmit}>
         <Form.Field label={tAuth('username')}>
-          <Form.Input value={username} onChange={setUsername} autoComplete="username" />
+          <Form.Input
+            value={username}
+            onChange={setUsername}
+            placeholder={tCommon('fieldPlaceholder', { label: tAuth('username') })}
+            autoComplete="username"
+          />
         </Form.Field>
         <Form.Field label={t('nickname')}>
-          <Form.Input value={nickname} onChange={setNickname} autoComplete="nickname" />
+          <Form.Input
+            value={nickname}
+            onChange={setNickname}
+            placeholder={tCommon('fieldPlaceholder', { label: t('nickname') })}
+            autoComplete="nickname"
+          />
         </Form.Field>
         <Form.Field label={tAuth('password')}>
           <Form.Input
             type="password"
             value={password}
             onChange={setPassword}
+            placeholder={tCommon('fieldPlaceholder', { label: tAuth('password') })}
             autoComplete="new-password"
           />
         </Form.Field>
@@ -113,6 +125,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
             type="password"
             value={confirmPassword}
             onChange={setConfirmPassword}
+            placeholder={tCommon('fieldPlaceholder', { label: t('confirmPassword') })}
             autoComplete="new-password"
           />
         </Form.Field>

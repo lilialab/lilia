@@ -1,11 +1,13 @@
 'use client';
 
 import { formControlClass } from '@/components/Form/form-control';
+import { fieldHintClass, fieldLabelClass } from '@/components/Form/form-label';
 import { cn } from '@/lib/client/cn';
 import { Plus, X } from 'lucide-react';
 
 interface FormStringListProps {
   label: string;
+  hint?: string;
   items: string[];
   draft: string;
   placeholder: string;
@@ -20,6 +22,7 @@ interface FormStringListProps {
 /** 可增删的字符串列表（已加项为标签）。 */
 export function FormStringList({
   label,
+  hint,
   items,
   draft,
   placeholder,
@@ -34,7 +37,7 @@ export function FormStringList({
 
   return (
     <fieldset className={cn('mt-4')}>
-      <legend className={cn('text-xs font-medium text-muted-foreground')}>{label}</legend>
+      <legend className={fieldLabelClass}>{label}</legend>
       {items.length > 0 && (
         <ul className={cn('mt-1.5 flex flex-wrap gap-1.5')}>
           {items.map((item, index) => (
@@ -88,6 +91,7 @@ export function FormStringList({
           </button>
         </div>
       )}
+      {hint && <span className={fieldHintClass}>{hint}</span>}
     </fieldset>
   );
 }

@@ -16,6 +16,7 @@ export function DeleteAccountScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const t = useTranslations('deleteAccount');
+  const tCommon = useTranslations('common');
   const [currentPassword, setCurrentPassword] = useState('');
   const [confirmDeletion, setConfirmDeletion] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,28 +46,31 @@ export function DeleteAccountScreen() {
         onBack={() => router.push('/me/settings', { transitionTypes: ['nav-back'] })}
       />
 
-      <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
-        <p className={cn('text-sm text-muted-foreground')}>{t('warning')}</p>
+      <div className={cn('flex-1 overflow-y-auto py-3')}>
+        <p className={cn('px-4 text-sm text-muted-foreground')}>{t('warning')}</p>
 
         <Form onSubmit={handleSubmit} className={cn('mt-4')}>
-          <Form.Field label={t('currentPassword')}>
-            <Form.Input
-              type="password"
-              value={currentPassword}
-              onChange={setCurrentPassword}
-              autoComplete="current-password"
-            />
-          </Form.Field>
-          <Form.Checkbox checked={confirmDeletion} onChange={setConfirmDeletion}>
-            {t('confirmLabel')}
-          </Form.Checkbox>
-          <Form.Submit
-            variant="danger"
-            disabled={isSubmitting || !confirmDeletion}
-            className={cn('mt-4')}
-          >
-            {isSubmitting ? t('submitting') : t('submit')}
-          </Form.Submit>
+          <Form.Section>
+            <Form.Field label={t('currentPassword')}>
+              <Form.Input
+                type="password"
+                value={currentPassword}
+                onChange={setCurrentPassword}
+                placeholder={tCommon('fieldPlaceholder', { label: t('currentPassword') })}
+                autoComplete="current-password"
+              />
+            </Form.Field>
+            <Form.Checkbox checked={confirmDeletion} onChange={setConfirmDeletion}>
+              {t('confirmLabel')}
+            </Form.Checkbox>
+            <Form.Submit
+              variant="danger"
+              disabled={isSubmitting || !confirmDeletion}
+              className={cn('mt-4')}
+            >
+              {isSubmitting ? t('submitting') : t('submit')}
+            </Form.Submit>
+          </Form.Section>
         </Form>
       </div>
     </div>

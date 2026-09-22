@@ -13,6 +13,7 @@ import { useState } from 'react';
 export function ChangePasswordScreen() {
   const router = useRouter();
   const t = useTranslations('changePassword');
+  const tCommon = useTranslations('common');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -42,35 +43,40 @@ export function ChangePasswordScreen() {
         onBack={() => router.push('/me/settings', { transitionTypes: ['nav-back'] })}
       />
 
-      <div className={cn('flex-1 overflow-y-auto px-4 py-4')}>
+      <div className={cn('flex-1 overflow-y-auto py-3')}>
         <Form onSubmit={handleSubmit}>
-          <Form.Field label={t('currentPassword')}>
-            <Form.Input
-              type="password"
-              value={currentPassword}
-              onChange={setCurrentPassword}
-              autoComplete="current-password"
-            />
-          </Form.Field>
-          <Form.Field label={t('newPassword')}>
-            <Form.Input
-              type="password"
-              value={newPassword}
-              onChange={setNewPassword}
-              autoComplete="new-password"
-            />
-          </Form.Field>
-          <Form.Field label={t('confirmNewPassword')}>
-            <Form.Input
-              type="password"
-              value={confirmNewPassword}
-              onChange={setConfirmNewPassword}
-              autoComplete="new-password"
-            />
-          </Form.Field>
-          <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
-            {isSubmitting ? t('submitting') : t('submit')}
-          </Form.Submit>
+          <Form.Section>
+            <Form.Field label={t('currentPassword')}>
+              <Form.Input
+                type="password"
+                value={currentPassword}
+                onChange={setCurrentPassword}
+                placeholder={tCommon('fieldPlaceholder', { label: t('currentPassword') })}
+                autoComplete="current-password"
+              />
+            </Form.Field>
+            <Form.Field label={t('newPassword')}>
+              <Form.Input
+                type="password"
+                value={newPassword}
+                onChange={setNewPassword}
+                placeholder={tCommon('fieldPlaceholder', { label: t('newPassword') })}
+                autoComplete="new-password"
+              />
+            </Form.Field>
+            <Form.Field label={t('confirmNewPassword')}>
+              <Form.Input
+                type="password"
+                value={confirmNewPassword}
+                onChange={setConfirmNewPassword}
+                placeholder={tCommon('fieldPlaceholder', { label: t('confirmNewPassword') })}
+                autoComplete="new-password"
+              />
+            </Form.Field>
+            <Form.Submit disabled={isSubmitting} className={cn('mt-4')}>
+              {isSubmitting ? t('submitting') : t('submit')}
+            </Form.Submit>
+          </Form.Section>
         </Form>
       </div>
     </div>

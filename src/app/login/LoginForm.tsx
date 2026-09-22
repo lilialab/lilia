@@ -15,6 +15,7 @@ export function LoginForm() {
   const router = useRouter();
   const t = useTranslations('login');
   const tAuth = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,13 +58,19 @@ export function LoginForm() {
     >
       <Form onSubmit={handleSubmit}>
         <Form.Field label={tAuth('username')}>
-          <Form.Input value={username} onChange={setUsername} autoComplete="username" />
+          <Form.Input
+            value={username}
+            onChange={setUsername}
+            placeholder={tCommon('fieldPlaceholder', { label: tAuth('username') })}
+            autoComplete="username"
+          />
         </Form.Field>
         <Form.Field label={tAuth('password')}>
           <Form.Input
             type="password"
             value={password}
             onChange={setPassword}
+            placeholder={tCommon('fieldPlaceholder', { label: tAuth('password') })}
             autoComplete="current-password"
           />
         </Form.Field>
