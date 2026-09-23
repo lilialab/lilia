@@ -1,5 +1,6 @@
 'use client';
 
+import { CharacterFacts } from '@/app/explore/components/CharacterFacts';
 import { ExploreAddButton } from '@/app/explore/components/ExploreAddButton';
 import { ExploreCommentComposer, ExploreComments } from '@/app/explore/components/ExploreComments';
 import { ExploreDeleteButton } from '@/app/explore/components/ExploreDeleteButton';
@@ -74,6 +75,7 @@ export function ExploreCharacterScreen({ characterId }: ExploreCharacterScreenPr
                   </div>
                 </div>
                 <p className={cn('mt-3 text-sm text-muted-foreground')}>{character.shortBio}</p>
+                <CharacterFacts character={character} />
                 <div className={cn('mt-4 flex items-center gap-3 border-t border-border pt-3')}>
                   <ExploreAddButton
                     characterId={character.id}

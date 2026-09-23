@@ -52,6 +52,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 命令与环境
 
 - Shell（WSL / NixOS）：一律 `nix develop --command …`（例：`nix develop --command pnpm lint`）
+- **DSH 沙箱里跑 nix/pnpm**（`workspace-write` 只可写工作区与 `/tmp`）：
+  - 命令前置 `XDG_CACHE_HOME=/tmp/dsh-nix-cache` —— 否则 nix 写不了 `~/.cache/nix`，报 `attempt to write a readonly database`
+  - 每个 pnpm 调用加 `--config.verify-deps-before-run=false` —— 否则依赖检查要 purge `node_modules`，非 TTY 报 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`（`npm_config_*` 环境变量形式无效，必须 CLI flag）
+  - 例：`XDG_CACHE_HOME=/tmp/dsh-nix-cache nix develop --command bash -c 'pnpm --config.verify-deps-before-run=false format && pnpm --config.verify-deps-before-run=false lint'`
+  - 别在沙箱里跑 `pnpm install`：全局 store（`~/.local/share/pnpm/store`）在工作区外不可写，pnpm 会降级到项目内 `/.pnpm-store/`（已 gitignore），且与 `node_modules/.modules.yaml` 记录的 `storeDir` 不一致，触发 purge 重装并报 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`。要装依赖就在沙箱外跑
 - 改完：`pnpm format`、`pnpm lint`（eslint + `tsc --noEmit`）、`pnpm test:run`
 - 本地记忆联调：`pnpm dev:all`（Next + extract/maintain Worker；需 Redis）
 - 生产同机联调：先 `pnpm build`，再 `pnpm start:all`

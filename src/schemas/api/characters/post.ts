@@ -30,7 +30,11 @@ const optionalAttitude = z
   .optional()
   .transform((value) => value || undefined);
 
-function optionalDigitInRange(min: number, max: number, error: string) {
+/**
+ * 校验纯数字输入落在 min~max 内。入参始终是数字（表单数字键盘 + 范围校验）；
+ * `unit` 用于把单位固化进存储值——身高存 "147cm" 而非 "147"，直接进 prompt 时不含糊。
+ */
+function optionalDigitInRange(min: number, max: number, error: string, unit = '') {
   return z
     .string()
     .trim()
@@ -42,7 +46,7 @@ function optionalDigitInRange(min: number, max: number, error: string) {
       const n = Number(value);
       return n >= min && n <= max;
     }, error)
-    .transform((value) => (value === undefined ? undefined : String(Number(value))));
+    .transform((value) => (value === undefined ? undefined : `${Number(value)}${unit}`));
 }
 
 function optionalStringList(itemMax: number, listMax: number) {
@@ -70,6 +74,7 @@ export const createCharacterBodySchema = z.object({
     CHARACTER_HEIGHT_MIN,
     CHARACTER_HEIGHT_MAX,
     API_ERROR_CODE.CHARACTER_HEIGHT_INVALID,
+    'cm',
   ),
   occupation: optionalLine,
   relation: optionalLine,

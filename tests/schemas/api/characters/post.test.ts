@@ -115,7 +115,8 @@ describe('createCharacterBodySchema', () => {
       shortBio: '短句',
       gender: 'female',
       age: '17',
-      height: '147',
+      // 入参是纯数字（数字键盘 + 范围校验），落库时固化单位，直接进 prompt 不含糊
+      height: '147cm',
       occupation: '学生',
       relation: '朋友',
       personality: ['话短'],
