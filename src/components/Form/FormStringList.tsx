@@ -81,13 +81,16 @@ export function FormStringList({
             type="button"
             onClick={onAdd}
             disabled={!canAdd}
-            aria-label={addLabel}
             className={cn(
-              'flex w-10 shrink-0 items-center justify-center rounded-md border border-border',
-              'text-foreground hover:bg-row-hover disabled:cursor-not-allowed disabled:opacity-40',
+              // hover 走 border 而非 row-hover：底色是 bg-chat(#f4f4f5)，row-hover(#fafafa) 更浅，
+              // 悬停会像在淡出；--border 在明暗两种模式下都是「深/浅一档」，方向正确
+              'flex shrink-0 items-center justify-center gap-1 rounded-md bg-chat px-3',
+              'text-sm font-medium text-foreground hover:bg-border',
+              'disabled:cursor-not-allowed disabled:opacity-60',
             )}
           >
             <Plus className={cn('h-4 w-4')} aria-hidden />
+            {addLabel}
           </button>
         </div>
       )}

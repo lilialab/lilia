@@ -1,6 +1,6 @@
 'use client';
 
-import { formControlClass } from '@/components/Form/form-control';
+import { fieldSurfaceClass, formControlClass } from '@/components/Form/form-control';
 import { fieldHintClass, fieldLabelClass } from '@/components/Form/form-label';
 import { FormStringList } from '@/components/Form/FormStringList';
 import { cn } from '@/lib/client/cn';
@@ -77,6 +77,8 @@ interface FormNumberProps {
   onChange: (value: string) => void;
   placeholder?: string;
   max?: number;
+  /** 输入框右侧固定单位（如 cm / 岁）；纯展示，不进 value。 */
+  unit?: string;
   className?: string;
 }
 
@@ -285,31 +287,46 @@ function FormTextarea({
   );
 }
 
-/** 非负整数输入（空串表示未填）。 */
+/**
+ * 非负整数输入（空串表示未填）。`unit` 只做右侧固定展示：手机仍走数字键盘，
+ * 输入框只收纯数字，单位不进 value、不影响校验。
+ */
 function FormNumber({
   value,
   onChange,
   placeholder,
   max,
+  unit,
   className,
 }: FormNumberProps) {
   const { required } = useFormField();
 
   return (
-    <input
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
-      value={value}
-      placeholder={placeholder}
-      aria-required={required}
-      maxLength={max === undefined ? undefined : String(max).length}
-      onChange={(e) => {
-        const next = e.target.value;
-        if (next === '' || /^\d+$/.test(next)) onChange(next);
-      }}
-      className={cn(formControlClass, className)}
-    />
+    <div className={cn('relative mt-1.5')}>
+      <input
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        value={value}
+        placeholder={placeholder}
+        aria-required={required}
+        maxLength={max === undefined ? undefined : String(max).length}
+        onChange={(e) => {
+          const next = e.target.value;
+          if (next === '' || /^\d+$/.test(next)) onChange(next);
+        }}
+        className={cn(fieldSurfaceClass, 'w-full', unit && 'pr-10', className)}
+      />
+      {unit && (
+        <span
+          className={cn(
+            'pointer-events-none absolute inset-y-0 right-3 flex items-center text-base text-muted-foreground',
+          )}
+        >
+          {unit}
+        </span>
+      )}
+    </div>
   );
 }
 

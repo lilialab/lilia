@@ -177,6 +177,7 @@ export function CharacterProfileFields({ fields, onClearError }: CharacterProfil
               value={fields.height}
               placeholder={t('heightPlaceholder')}
               max={CHARACTER_HEIGHT_MAX}
+              unit={t('heightUnit')}
               onChange={(value) => {
                 fields.setHeight(value);
                 onClearError();
