@@ -198,7 +198,7 @@ export function GuestChatScreen({ characterId, turnstileSiteKey }: GuestChatScre
             onClick={() => void handleTurnstileContinue()}
             className={cn(
               'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-              'hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
+              'hover:bg-primary-hover active:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40',
             )}
           >
             {t('startChat')}
@@ -218,7 +218,7 @@ export function GuestChatScreen({ characterId, turnstileSiteKey }: GuestChatScre
             href="/register"
             className={cn(
               'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-              'hover:bg-primary-hover',
+              'hover:bg-primary-hover active:bg-primary-hover',
             )}
           >
             {t('goRegister')}
@@ -232,7 +232,7 @@ export function GuestChatScreen({ characterId, turnstileSiteKey }: GuestChatScre
           <button
             type="button"
             onClick={goBack}
-            className={cn('text-sm text-primary hover:underline')}
+            className={cn('text-sm text-primary hover:underline active:underline')}
           >
             {t('backToExplore')}
           </button>

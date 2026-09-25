@@ -34,6 +34,8 @@ export function TabBar() {
             transitionTypes={['tab']}
             className={cn(
               'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs',
+              // 选中态没有 hover 可镜像，统一用按下变淡；触屏按 Tab 也有反馈
+              'active:opacity-70',
               active ? 'text-primary' : 'text-muted-foreground hover:text-foreground/70',
             )}
           >

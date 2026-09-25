@@ -189,7 +189,7 @@ function FormSegmented({ value, onChange, options, className }: FormSegmentedPro
               'rounded-md border py-2 text-sm font-medium',
               selected
                 ? 'border-foreground bg-foreground text-background'
-                : 'border-border text-foreground hover:bg-row-hover',
+                : 'border-border text-foreground hover:bg-row-hover active:bg-row-hover',
             )}
           >
             {option.label}
@@ -340,8 +340,8 @@ function FormSubmit({ children, disabled, variant = 'default', className }: Form
         'w-full rounded-md py-2.5 text-sm font-medium',
         'disabled:cursor-not-allowed disabled:opacity-40',
         variant === 'danger'
-          ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover'
-          : 'bg-primary text-primary-foreground hover:bg-primary-hover',
+          ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover active:bg-destructive-hover'
+          : 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
         className,
       )}
     >

@@ -45,8 +45,8 @@ export function PageStatus({
             onClick={onAction}
             className={cn(
               actionVariant === 'button'
-                && 'rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground/80 hover:bg-surface',
-              actionVariant === 'link' && 'text-sm text-primary hover:underline',
+                && 'rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground/80 hover:bg-surface active:bg-surface',
+              actionVariant === 'link' && 'text-sm text-primary hover:underline active:underline',
             )}
           >
             {actionLabel}

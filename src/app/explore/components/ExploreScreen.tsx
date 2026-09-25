@@ -32,7 +32,7 @@ function ExploreCreateButton() {
         className={cn(
           'flex w-full items-center justify-center gap-2 rounded-md border border-border',
           'bg-background py-2.5 text-sm font-medium text-foreground',
-          'hover:bg-row-hover',
+          'hover:bg-row-hover active:bg-row-hover',
         )}
       >
         <span

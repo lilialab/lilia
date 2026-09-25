@@ -40,7 +40,7 @@ export function ScreenHeader({
             aria-label={resolvedBackAriaLabel}
             className={cn(
               'flex min-h-10 min-w-10 items-center justify-center rounded-md text-foreground/70',
-              'hover:bg-surface',
+              'hover:bg-surface active:bg-surface',
             )}
           >
             <ChevronLeft className={cn('h-5 w-5')} aria-hidden />
@@ -81,7 +81,7 @@ export function HeaderIconButton({
       aria-label={ariaLabel}
       className={cn(
         'flex min-h-10 min-w-10 items-center justify-center rounded-md text-muted-foreground transition-colors',
-        'hover:bg-row-hover hover:text-foreground/80 disabled:pointer-events-none disabled:opacity-40',
+        'hover:bg-row-hover hover:text-foreground/80 active:bg-row-hover active:text-foreground/80 disabled:pointer-events-none disabled:opacity-40',
       )}
     >
       {children}

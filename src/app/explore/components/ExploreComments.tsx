@@ -111,7 +111,7 @@ function CommentComposer({ value, pending, onChange, onSubmit }: CommentComposer
           type="submit"
           disabled={pending || !value.trim()}
           className={cn(
-            'min-h-11 shrink-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover',
+            'min-h-11 shrink-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
             'disabled:bg-muted-foreground rounded-md text-sm font-medium transition-colors',
           )}
         >

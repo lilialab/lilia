@@ -47,7 +47,7 @@ export function ExploreDeleteButton({ characterId, characterName }: ExploreDelet
         onClick={() => setConfirmOpen(true)}
         className={cn(
           'inline-flex shrink-0 items-center justify-center rounded-md px-4 py-2',
-          'text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive-hover',
+          'text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive-hover active:bg-destructive-hover',
           'disabled:cursor-not-allowed disabled:opacity-40',
         )}
       >

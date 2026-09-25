@@ -73,7 +73,7 @@ export function MeScreen() {
             disabled={isLoggingOut}
             className={cn(
               'flex w-full items-center justify-center gap-2 px-4 py-3.5 text-sm text-destructive',
-              'hover:bg-row-hover disabled:opacity-40',
+              'hover:bg-row-hover active:bg-row-hover disabled:opacity-40',
             )}
           >
             <LogOut className={cn('h-4 w-4')} aria-hidden />

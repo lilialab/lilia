@@ -54,7 +54,7 @@ function ActionSheetItem({
         }}
         className={cn(
           'flex min-h-12 w-full items-center px-4 text-base transition-colors',
-          'hover:bg-surface disabled:pointer-events-none disabled:opacity-40',
+          'hover:bg-surface active:bg-surface disabled:pointer-events-none disabled:opacity-40',
           align === 'start' ? 'justify-start gap-3 py-2 text-left' : 'justify-center',
           variant === 'danger' ? 'text-destructive' : 'text-foreground',
         )}
@@ -121,7 +121,7 @@ function ActionSheetRoot({
             className={cn(
               'mt-2 flex min-h-12 w-full items-center justify-center rounded-xl',
               'border border-border bg-background text-base font-medium text-foreground shadow-lg',
-              'transition-colors hover:bg-surface',
+              'transition-colors hover:bg-surface active:bg-surface',
             )}
           >
             {resolvedCancelLabel}

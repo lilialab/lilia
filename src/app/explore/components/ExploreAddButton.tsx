@@ -48,8 +48,8 @@ export function ExploreAddButton({
         'inline-flex shrink-0 items-center gap-1 rounded-md',
         'disabled:cursor-not-allowed disabled:opacity-40',
         variant === 'primary'
-          ? 'justify-center gap-1.5 bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover'
-          : 'border border-border px-2.5 py-1.5 text-xs text-foreground/80 hover:bg-row-hover',
+          ? 'justify-center gap-1.5 bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover active:bg-primary-hover'
+          : 'border border-border px-2.5 py-1.5 text-xs text-foreground/80 hover:bg-row-hover active:bg-row-hover',
         className,
       )}
     >

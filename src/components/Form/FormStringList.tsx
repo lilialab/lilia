@@ -54,7 +54,7 @@ export function FormStringList({
                 aria-label={removeLabel}
                 className={cn(
                   'flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground',
-                  'hover:bg-row-hover hover:text-foreground',
+                  'hover:bg-row-hover hover:text-foreground active:bg-row-hover active:text-foreground',
                 )}
               >
                 <X className={cn('h-3.5 w-3.5')} aria-hidden />
@@ -85,7 +85,7 @@ export function FormStringList({
               // hover 走 border 而非 row-hover：底色是 bg-chat(#f4f4f5)，row-hover(#fafafa) 更浅，
               // 悬停会像在淡出；--border 在明暗两种模式下都是「深/浅一档」，方向正确
               'flex shrink-0 items-center justify-center gap-1 rounded-md bg-chat px-3',
-              'text-sm font-medium text-foreground hover:bg-border',
+              'text-sm font-medium text-foreground hover:bg-border active:bg-border',
               'disabled:cursor-not-allowed disabled:opacity-60',
             )}
           >

@@ -27,7 +27,7 @@ export function MemberPickerList({ contacts, selectedIds, onToggle }: MemberPick
             key={contact.id}
             className={cn(
               'flex cursor-pointer items-center gap-3 border-b border-border/50 px-4 py-3',
-              'hover:bg-row-hover',
+              'hover:bg-row-hover active:bg-row-hover',
             )}
           >
             <input

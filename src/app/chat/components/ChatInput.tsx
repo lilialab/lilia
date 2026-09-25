@@ -96,7 +96,7 @@ export function ChatInput({
             className={cn(
               'flex min-h-11 max-w-28 shrink-0 items-center gap-1 rounded-md border border-border bg-chat px-2',
               'text-sm font-medium text-foreground/80 transition-colors',
-              'hover:bg-border',
+              'hover:bg-border active:bg-border',
             )}
           >
             <span className={cn('min-w-0 truncate')}>@{mentionDisplayName}</span>
@@ -121,7 +121,7 @@ export function ChatInput({
           disabled={!value.trim()}
           onMouseDown={keepTextareaFocus}
           className={cn(
-            'min-h-11 shrink-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover',
+            'min-h-11 shrink-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
             'disabled:bg-muted-foreground rounded-md text-base font-medium transition-colors',
           )}
         >

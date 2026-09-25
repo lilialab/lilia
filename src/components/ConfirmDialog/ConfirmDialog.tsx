@@ -59,7 +59,7 @@ export function ConfirmDialog({
           onClick={onCancel}
           className={cn(
             'min-h-10 rounded-md px-4 text-sm font-medium text-muted-foreground',
-            'transition-colors hover:bg-surface hover:text-foreground',
+            'transition-colors hover:bg-surface hover:text-foreground active:bg-surface active:text-foreground',
           )}
         >
           {resolvedCancelLabel}
@@ -70,8 +70,8 @@ export function ConfirmDialog({
           className={cn(
             'min-h-10 rounded-md px-4 text-sm font-medium transition-colors',
             variant === 'danger'
-              ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover'
-              : 'bg-primary text-primary-foreground hover:bg-primary-hover',
+              ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover active:bg-destructive-hover'
+              : 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
           )}
         >
           {resolvedConfirmLabel}

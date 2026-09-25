@@ -53,7 +53,7 @@ export function AvatarPicker({
         disabled={disabled}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          'relative shrink-0 rounded-lg hover:opacity-80 disabled:opacity-40',
+          'relative shrink-0 rounded-lg hover:opacity-80 active:opacity-80 disabled:opacity-40',
           className,
         )}
       >

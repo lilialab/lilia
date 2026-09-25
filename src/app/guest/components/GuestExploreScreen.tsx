@@ -26,7 +26,9 @@ function GuestCharacterList({ characters }: GuestCharacterListProps) {
           <Link
             href={`/guest/chat/${character.id}`}
             transitionTypes={['nav-forward']}
-            className={cn('flex items-center gap-3 px-4 py-3 hover:bg-row-hover')}
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 hover:bg-row-hover active:bg-row-hover',
+            )}
           >
             <Avatar
               src={characterAvatarUrl(character.id, character.avatarUpdatedAt)}
