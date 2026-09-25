@@ -19,6 +19,10 @@
   --destructive: #dc2626;
   --destructive-hover: #b91c1c;
   --destructive-foreground: #ffffff;
+  /* 低量告警（橙），比 destructive 轻一档 */
+  --warning: #d97706;
+  /* 正常态（充裕） */
+  --success: #16a34a;
   /* 弹窗遮罩：中性黑，不跟强调主色 */
   --overlay: color-mix(in srgb, var(--foreground) 40%, transparent);
   --duration-exit: 150ms;
@@ -41,6 +45,8 @@
     --destructive: #f87171;
     --destructive-hover: #fca5a5;
     --destructive-foreground: #450a0a;
+    --warning: #fbbf24;
+    --success: #4ade80;
     --overlay: rgb(0 0 0 / 0.55);
   }
 }
@@ -59,6 +65,8 @@
   --color-destructive: var(--destructive);
   --color-destructive-hover: var(--destructive-hover);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
   --color-overlay: var(--overlay);
   --font-sans:
     'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;

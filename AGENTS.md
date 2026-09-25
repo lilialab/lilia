@@ -145,6 +145,7 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/debug/记忆/`；`/api/debug/memory/?username=`；memory workers |
 | 登录 / 注册 | `session` + `request-user`；`api/auth/`；`client-api/auth`；`login/`、`register/` |
 | 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / nickname / `delete-account`；`/me/settings` |
+| 日配额 / 今日体力 | `chat/quota.service.ts`（读与扣同一个 Redis key，429 文案在此）；`api/chat/quota`；`client-api/chat`；`/me` 卡片 `MeStaminaCard.tsx` |
 | 聊天 UI / 流 | `ChatScreen.tsx` + `api/chat` |
 | 探索 / 角色目录 | `catalog.service.ts`；`create.service.ts`；`/explore`、`/explore/[characterId]` |
 | 访客试聊 | `services/guest/`；`app/guest/`；`api/guest/`；`client-api/guest`；定稿 `.scratch/requirements/guest-trial-requirements.md` |

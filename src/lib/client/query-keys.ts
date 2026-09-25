@@ -7,6 +7,7 @@ export const queryKeys = {
   contacts: ['contacts'] as const,
   characterSession: (characterId: string) => ['contacts', characterId, 'session'] as const,
   messageHistory: (sessionId: string) => ['messages', sessionId, 'initial'] as const,
+  chatQuota: ['chat', 'quota'] as const,
   groups: ['groups'] as const,
   group: (groupSessionId: string) => ['groups', groupSessionId] as const,
   groupMessageHistory: (groupSessionId: string) => ['groups', groupSessionId, 'messages'] as const,

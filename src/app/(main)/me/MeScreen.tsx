@@ -13,6 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { LogOut, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { MeMenuLink } from './MeMenuLink';
+import { MeStaminaCard } from './MeStaminaCard';
 
 export function MeScreen() {
   const { user, logout, isLoggingOut } = useAuth();
@@ -58,6 +59,8 @@ export function MeScreen() {
             )}
           </div>
         </section>
+
+        <MeStaminaCard />
 
         <section className={cn('mt-3 bg-background')}>
           <MeMenuLink href="/me/settings" label={t('settings')} icon={Settings} />

@@ -32,6 +32,8 @@ export const en = {
     changeAvatar: 'Change profile photo',
     logout: 'Log out',
     loggingOut: 'Logging out...',
+    staminaTitle: 'Stamina today',
+    staminaResetsIn: 'Stamina restores in about {hours}h',
   },
   contacts: {
     title: 'Contacts',
@@ -270,7 +272,7 @@ export const en = {
     NOT_FOUND: 'Not found',
     CONFLICT: 'Conflict',
     RATE_LIMITED: 'Too many attempts. Please try again later',
-    CHAT_DAILY_TURN_LIMIT: 'Daily chat limit reached. Try again tomorrow',
+    CHAT_DAILY_TURN_LIMIT: 'Out of stamina for today. Come back tomorrow',
     CHARACTER_CREATE_DAILY_LIMIT: 'Daily character creation limit reached. Try again tomorrow',
     GUEST_TRIAL_DAILY_TURN_LIMIT:
       'Daily trial limit reached. Sign up to chat freely, create characters, and unlock the full app',

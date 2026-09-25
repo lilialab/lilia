@@ -32,6 +32,8 @@ export const zh = {
     changeAvatar: '更换头像',
     logout: '退出登录',
     loggingOut: '退出中...',
+    staminaTitle: '今日体力',
+    staminaResetsIn: '体力值约 {hours} 小时后恢复',
   },
   contacts: {
     title: '通讯录',
@@ -266,7 +268,7 @@ export const zh = {
     NOT_FOUND: '未找到',
     CONFLICT: '操作冲突',
     RATE_LIMITED: '操作太频繁，请稍后再试',
-    CHAT_DAILY_TURN_LIMIT: '今日对话次数已用完，请明天再试',
+    CHAT_DAILY_TURN_LIMIT: '今天体力用光了，明天再来吧',
     CHARACTER_CREATE_DAILY_LIMIT: '今日新建角色次数已用完，请明天再试',
     GUEST_TRIAL_DAILY_TURN_LIMIT: '今日试聊次数已用完。注册即可畅聊、创建角色，解锁完整功能',
     TURNSTILE_TOKEN_REQUIRED: '请完成人机验证',
