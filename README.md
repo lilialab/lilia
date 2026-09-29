@@ -20,12 +20,6 @@
 - [Docker](https://www.docker.com/)（运行 MySQL、Chroma、Redis 等）
 - 第三方对话与 Embedding API Key（如 [硅基流动](https://siliconflow.cn) / [DeepSeek](https://platform.deepseek.com)）
 
-可选：使用项目自带的 Nix flake 开发环境（Node 24 + pnpm）：
-
-```bash
-nix develop
-```
-
 ## 快速开始
 
 ### 1. 安装依赖
@@ -145,7 +139,7 @@ pnpm dev
 - 本项目使用 **Next.js 16**，部分 API 与常见版本存在差异，编写代码前建议查阅 `node_modules/next/dist/docs/`。
 - Prisma Client 输出到 `src/generated/prisma`（已 gitignore）。Prisma 7 的 `migrate` / `db push` / `db seed` **都不会**自动 `generate`；clone 或改 schema 后先执行 `pnpm exec prisma generate`。`seed` 会 import 该 Client，没 generate 会失败。
 
-## Prisma / 数据库
+### Prisma / 数据库
 
 迁移文件在 `prisma/migrations/`。本地调试可以先 `db push` 试 schema；**定稿后必须留下迁移**，生产只跑 `migrate deploy`。不要在生产使用 `db push`、`migrate dev` 或 `migrate reset`。
 
@@ -188,6 +182,7 @@ pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
 pnpm start:all    # 生产 Next + extract/maintain Worker（需先 build；需 Redis）
 pnpm lint         # ESLint 检查
+pnpm test:run     # 单元测试
 pnpm worker:memory-extract  # 记忆整理 Worker（需 Redis；另开终端）
 pnpm worker:memory-maintain  # maintain→profile 闲置窗口（需 Redis；另开终端）
 ```

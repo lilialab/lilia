@@ -21,7 +21,11 @@
 /build
 
 # misc
+.vscode/
+.idea/
+*.iml
 .DS_Store
+Thumbs.db
 *.pem
 
 # personal scratch (TODO, requirements drafts)

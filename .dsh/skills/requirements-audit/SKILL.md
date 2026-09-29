@@ -67,7 +67,7 @@ description: >-
 - [ ] **S2** …（验收：…）（依赖：S1）
 ```
 
-默认与定稿同主题：`.scratch/requirements/<主题>-slices.md`（也可写在定稿文件末尾「切片清单」节，听用户的）。开干口令示例：「做 S1」「按 slices 做下一项」。
+默认与定稿同主题：`.scratch/requirements/<主题>.slices.md`（也可写在定稿文件末尾「切片清单」节，听用户的）。开干口令示例：「做 S1」「按 slices 做下一项」。
 
 ## 落盘（定稿摘要）
 
@@ -79,8 +79,10 @@ description: >-
 
 默认路径：
 
-- 定稿：`.scratch/requirements/<简短英文或拼音主题>-requirements.md`
-- 切片：`.scratch/requirements/<同主题>-slices.md`（若拆了）
+- 定稿：`.scratch/requirements/<简短英文或拼音主题>.md`
+- 切片：`.scratch/requirements/<同主题>.slices.md`（若拆了）
+
+目录名已含 `requirements/`，文件名不再重复该词；点号让同主题的定稿与切片相邻排序，读作同一份的变体。
 
 `.scratch/` 已 gitignore，仅本地。定稿用「已澄清需求」模板；已有文件则**整份更新为最新定稿**，并在文首可加一行「上次更新：YYYY-MM-DD」。
 

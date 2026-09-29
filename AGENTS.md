@@ -8,14 +8,17 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 带长期记忆的本地聊天应用（Next.js + Prisma + Chroma + OpenAI 兼容 LLM/Embedding）。
 
-**读代码**：Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止全仓 explore、整目录 Read、全仓 subagent，或一次串读 chat + memory + group 全链路。
+## 读文件
 
-## 协作方式
+读多少由任务决定，不由文件大小决定。
 
-- **讨论 ≠ 执行**：用户提问、比较方案、问「麻不麻烦 / 好不好实现 / 你觉得呢」时，只回答，不改文件、不跑有副作用的命令。哪怕方案已聊得很具体、看起来可以直接做，也先停下等一句确认。
-- **明确的动作指令才落盘**：用户说「改 / 做 / 实现 / 开干 / 帮我加上」这类才是开工信号。
-- **不确定就先问**：拿不准是讨论还是让做，先问一句，不要默认开工。
-- **只读排查不受限**：为回答问题而读代码、搜索、查日志、看文档，随时可做。
+Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止全仓 explore、整目录 Read、全仓 subagent，或一次串读 chat + memory + group 全链路。大范围探查（多文件、一条链路）交给 subagent，主上下文只收结论。
+
+- **评审改动**：读改动本身（`git diff` 或改动处），不整读文件 —— 未改动的部分不是评审对象。
+- **评审整体设计 / 可读性**：整读目标文件（或整套模块）再下结论。
+- 提问没点明范围时（「你觉得怎么样」）：按最小够用读，并说明读了什么范围。
+
+理由：`read` 不受 spill 保护（上限 `readLimit` 2000 行 / `readMaxBytes` 51200 字节），读进来的内容此后每轮都要重发。
 
 ## 代码导航
 
@@ -28,7 +31,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | 浏览器 HTTP 封装 | `src/client-api/`（auth、sessions、groups…） |
 | 客户端基础设施 | `src/lib/client/`（`api-fetch`、`query-keys`、cn、toast） |
 | 同构纯函数 | `src/utils/`（无 I/O、不依赖 Next/Prisma/env；前后端可共用） |
-| 前端页面 | `src/app/(main)/`、`src/app/chat/`、`src/app/groups/`、`src/app/guest/`、`login/`、`register/` |
+| 前端页面 | `src/app/(main)/`、`src/app/chat/`、`src/app/groups/`、`src/app/guest/`、`src/app/login/`、`src/app/register/` |
 | 路由保护 | `src/proxy.ts`（Next.js 16；**不是** `middleware.ts`） |
 | 通用组件 | `src/components/` |
 | 单测 | `tests/` 镜像 `src/`；**不**在 `src/` 内 co-locate |
@@ -49,21 +52,34 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 同域 import：`./`；跨域：`@/services/{domain}/...`。**不要**恢复 `src/services/` 根目录平铺旧路径。
 - 有域语义的纯函数跟域走：`services/**/**.utils.ts`（勿塞进 `src/utils/`）。
 
+## 任务入口
+
+记法：`/xxx` 是 URL 路由（可带方法）；其余引用一律仓库根全路径。校验见 `tests/agents-md.test.ts`。
+
+| 任务 | 先读 |
+|------|------|
+| 聊天 / system prompt | `src/services/chat/prompt.service.ts`；`src/prompts/` |
+| 群聊 | `src/services/group/chat.service.ts` / `src/services/group/message.service.ts` / `src/services/group/prompt.service.ts`；@ 见 [`docs/groups/mention-turn-cue.md`](docs/groups/mention-turn-cue.md) |
+| 记忆提取 | `src/services/memory/extract.service.ts` + `src/services/memory/extract.utils.ts` |
+| 记忆维护 | `src/services/memory/maintain.service.ts` + `src/services/memory/maintain.utils.ts` |
+| 记忆检索 / 衰减 | `src/services/memory/vector.service.ts` + `src/services/memory/decay.utils.ts` + `src/services/memory/metadata.utils.ts` |
+| 用户画像 | `src/services/memory/user-profile.service.ts` |
+| 单聊会话 / 历史 | `src/services/session/sessions.service.ts` + `src/services/chat/message.service.ts` |
+| 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/debug/记忆/`；`/api/debug/memory/?username=`；`src/workers/memory-extract.worker.ts` / `src/workers/memory-maintain.worker.ts` |
+| 登录 / 注册 | `src/lib/server/session.ts` + `src/lib/server/request-user.ts`；`src/app/api/auth/`；`src/client-api/auth.ts`；`src/app/login/`、`src/app/register/` |
+| 账号设置 | `src/services/user/users.service.ts`；`PATCH /api/auth/me`（昵称等）；`src/app/api/auth/change-password/`、`src/app/api/auth/delete-account/`；`/me/settings` |
+| 日配额 / 今日体力 | `src/services/chat/quota.service.ts`（读与扣同一个 Redis key，429 文案在此）；`src/app/api/chat/quota/`；`src/client-api/chat.ts`；`/me` 卡片 `src/app/(main)/me/MeStaminaCard.tsx` |
+| 聊天 UI / 流 | `src/app/chat/components/ChatScreen.tsx` + `src/app/api/chat/` |
+| 探索 / 角色目录 | `src/services/character/catalog.service.ts`；`src/services/character/create.service.ts`；`/explore`、`/explore/[characterId]` |
+| 访客试聊 | `src/services/guest/`；`src/app/guest/`；`src/app/api/guest/`；`src/client-api/guest.ts` |
+| 通讯录 | `src/services/character/contacts.service.ts`；`/contacts`、`/chat/[characterId]` |
+
 ## 命令与环境
 
-- Shell（WSL / NixOS）：一律 `nix develop --command …`（例：`nix develop --command pnpm lint`）
-- **DSH 沙箱里跑 nix/pnpm**（`workspace-write` 只可写工作区与 `/tmp`）：
-  - 命令前置 `XDG_CACHE_HOME=/tmp/dsh-nix-cache` —— 否则 nix 写不了 `~/.cache/nix`，报 `attempt to write a readonly database`
-  - 每个 pnpm 调用加 `--config.verify-deps-before-run=false` —— 否则依赖检查要 purge `node_modules`，非 TTY 报 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`（`npm_config_*` 环境变量形式无效，必须 CLI flag）
-  - 例：`XDG_CACHE_HOME=/tmp/dsh-nix-cache nix develop --command bash -c 'pnpm --config.verify-deps-before-run=false format && pnpm --config.verify-deps-before-run=false lint'`
-  - 别在沙箱里跑 `pnpm install`：全局 store（`~/.local/share/pnpm/store`）在工作区外不可写，pnpm 会降级到项目内 `/.pnpm-store/`（已 gitignore），且与 `node_modules/.modules.yaml` 记录的 `storeDir` 不一致，触发 purge 重装并报 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`。要装依赖就在沙箱外跑
-- 改完：`pnpm format`、`pnpm lint`（eslint + `tsc --noEmit`）、`pnpm test:run`
-- 本地记忆联调：`pnpm dev:all`（Next + extract/maintain Worker；需 Redis）
-- 生产同机联调：先 `pnpm build`，再 `pnpm start:all`
-- 单测需完整 `.env`（含 `AUTH_SESSION_*`、`MEMORY_MAINTAIN_*` 等）；无 fallback
-- Prisma schema 变更：`pnpm exec prisma generate`；必要时 `pnpm exec prisma db push`
-- **已上线**：schema 变更必须留迁移（`pnpm exec prisma migrate dev` 生成并随代码提交，生产 `pnpm exec prisma migrate deploy`），不写读路径别名等旧数据兼容；破坏性变更也走迁移，不要 `db push --force-reset` 或动 `docker-volumes/`
-- **禁止**：改 `docker-volumes/`；提交 `.env`；用户未要求时 `git commit` / 扩 scope 的无关重构；编辑 `.cursor/plans/` 下的 plan
+- 沙箱只放行工作区写入：pnpm 加 `COREPACK_HOME=/tmp/corepack`，dprint 加 `DPRINT_CACHE_DIR=/tmp/dprint-cache`（默认 `~/.cache` 会被拦）
+- 命令：`pnpm format`、`pnpm lint`、`pnpm test:run`、`pnpm exec prisma generate`
+- 边界：`docker-volumes/`、`.env` 由用户维护
+- Prisma schema 变更：**已上线，一律走迁移**。`pnpm exec prisma migrate dev` 生成迁移并随代码提交，生产 `pnpm exec prisma migrate deploy`；破坏性变更也走迁移。**不做旧数据兼容**：结构变更迁移到位，不在读路径留别名或兜底分支（单机部署，没有新旧版本并存期）
 
 ## 前后端约定
 
@@ -130,23 +146,3 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 ## 测试
 
 改纯函数 / utils：同步更新 `tests/` 对应用例。依赖 Ollama / Chroma / MySQL 的路径不强制 E2E（验证命令见上）。
-
-## 任务入口
-
-| 任务 | 先读 |
-|------|------|
-| 聊天 / system prompt | `chat/prompt.service.ts`；`src/prompts/` |
-| 群聊 | `group/chat` / `group/message` / `group/prompt`；@ 见 [`docs/groups/mention-turn-cue.md`](docs/groups/mention-turn-cue.md) |
-| 记忆提取 | `extract.service.ts` + `extract.utils.ts` |
-| 记忆维护 | `maintain.service.ts` + `maintain.utils.ts` |
-| 记忆检索 / 衰减 | `vector` + `decay.utils` + `metadata.utils` |
-| 用户画像 | `user-profile.service.ts` |
-| 会话 / 历史 | `sessions.service.ts` + `message.service.ts` |
-| 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/debug/记忆/`；`/api/debug/memory/?username=`；memory workers |
-| 登录 / 注册 | `session` + `request-user`；`api/auth/`；`client-api/auth`；`login/`、`register/` |
-| 账号设置 | `users.service.ts`；`PATCH /api/auth/me`；`change-password` / nickname / `delete-account`；`/me/settings` |
-| 日配额 / 今日体力 | `chat/quota.service.ts`（读与扣同一个 Redis key，429 文案在此）；`api/chat/quota`；`client-api/chat`；`/me` 卡片 `MeStaminaCard.tsx` |
-| 聊天 UI / 流 | `ChatScreen.tsx` + `api/chat` |
-| 探索 / 角色目录 | `catalog.service.ts`；`create.service.ts`；`/explore`、`/explore/[characterId]` |
-| 访客试聊 | `services/guest/`；`app/guest/`；`api/guest/`；`client-api/guest`；定稿 `.scratch/requirements/guest-trial-requirements.md` |
-| 通讯录 | `contacts.service.ts`；`/contacts`、`/chat/[characterId]` |

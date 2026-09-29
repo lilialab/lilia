@@ -13,7 +13,6 @@
     "format": "dprint fmt",
     "test": "vitest",
     "test:run": "vitest run",
-    "verify": "pnpm format && pnpm lint && pnpm test:run",
     "worker:memory-extract": "tsx src/workers/memory-extract.worker.ts",
     "worker:memory-maintain": "tsx src/workers/memory-maintain.worker.ts"
   },
