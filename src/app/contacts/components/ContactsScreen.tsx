@@ -6,7 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +15,32 @@ import { useRouter } from 'next/navigation';
 /* -------------------------------------------------------------------------- */
 /* Subcomponents                                                              */
 /* -------------------------------------------------------------------------- */
+
+interface SaveAccountBannerProps {
+  onPress: () => void;
+}
+
+/** 匿名账号引导条：未设密码时展示，点进「保存账号」。 */
+function SaveAccountBanner({ onPress }: SaveAccountBannerProps) {
+  const t = useTranslations('account');
+
+  return (
+    <section className={cn('bg-background px-4 py-3')}>
+      <p className={cn('text-sm text-foreground')}>{t('anonymousBannerTitle')}</p>
+      <p className={cn('mt-1 text-xs text-muted-foreground')}>{t('anonymousBannerHint')}</p>
+      <button
+        type="button"
+        onClick={onPress}
+        className={cn(
+          'mt-3 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
+          'hover:bg-primary-hover active:bg-primary-hover',
+        )}
+      >
+        {t('saveAccount')}
+      </button>
+    </section>
+  );
+}
 
 function ContactsEmpty() {
   const router = useRouter();
@@ -81,7 +107,8 @@ export function ContactsScreen() {
   /* State & data                                                               */
   /* -------------------------------------------------------------------------- */
 
-  const { user } = useAuth();
+  const user = useRequiredUser();
+  const router = useRouter();
   const t = useTranslations('contacts');
 
   const contactsQuery = useQuery({
@@ -99,6 +126,12 @@ export function ContactsScreen() {
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
       <ScreenHeader title={t('title')} />
+
+      {!user.hasPassword && (
+        <SaveAccountBanner
+          onPress={() => router.push('/me/settings/account', { transitionTypes: ['nav-forward'] })}
+        />
+      )}
 
       <PageStatus
         loading={contactsQuery.isLoading}

@@ -11,7 +11,7 @@ import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -36,7 +36,7 @@ export function EditCharacterScreen({ characterId }: EditCharacterScreenProps) {
   /* -------------------------------------------------------------------------- */
 
   const router = useRouter();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('createCharacter');
   const tExplore = useTranslations('explore');
   const tErrors = useTranslations('errors');

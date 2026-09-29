@@ -93,7 +93,7 @@ interface FormTextareaProps {
 interface FormSubmitProps {
   children: ReactNode;
   disabled?: boolean;
-  variant?: 'default' | 'danger';
+  variant?: 'default' | 'secondary' | 'danger';
   className?: string;
 }
 
@@ -330,18 +330,25 @@ function FormNumber({
   );
 }
 
-/** 主操作提交按钮。 */
+/** 提交按钮外观：`default` 实心主操作，`secondary` 描边次级，`danger` 破坏性操作。 */
+const submitVariantClass: Record<NonNullable<FormSubmitProps['variant']>, string> = {
+  default: 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
+  secondary:
+    'border border-border bg-transparent text-foreground hover:bg-row-hover active:bg-row-hover',
+  danger:
+    'bg-destructive text-destructive-foreground hover:bg-destructive-hover active:bg-destructive-hover',
+};
+
+/** 主操作提交按钮；同一屏有两个动作时，次要的那个用 `secondary`。 */
 function FormSubmit({ children, disabled, variant = 'default', className }: FormSubmitProps) {
   return (
     <button
       type="submit"
       disabled={disabled}
       className={cn(
-        'w-full rounded-md py-2.5 text-sm font-medium',
+        'w-full rounded-md py-2.5 text-sm font-medium transition-colors',
         'disabled:cursor-not-allowed disabled:opacity-40',
-        variant === 'danger'
-          ? 'bg-destructive text-destructive-foreground hover:bg-destructive-hover active:bg-destructive-hover'
-          : 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
+        submitVariantClass[variant],
         className,
       )}
     >

@@ -6,15 +6,12 @@ import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
-import { queryKeys } from '@/lib/client/query-keys';
 import { showErrorToast } from '@/lib/client/toast';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export function DeleteAccountScreen() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const t = useTranslations('deleteAccount');
   const tCommon = useTranslations('common');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -28,8 +25,8 @@ export function DeleteAccountScreen() {
     setIsSubmitting(true);
     try {
       await deleteAccount({ currentPassword, confirmDeletion: true });
-      await queryClient.cancelQueries({ queryKey: queryKeys.authMe });
-      queryClient.removeQueries({ queryKey: queryKeys.authMe });
+      // 刻意不清 authMe 缓存：清掉后受保护树若再渲染一次就会读到已消失的 user。
+      // 缓存留给下一次 fetch 覆盖（已删除的账号一定 401 → 清 Cookie → 回登录）。
       router.push('/login', { transitionTypes: ['nav-back'] });
       router.refresh();
     } catch (err) {

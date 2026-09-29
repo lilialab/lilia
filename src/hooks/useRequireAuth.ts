@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 /**
  * 基于 useAuth，暴露 isUnauthenticated 供 RequireAuth 门闸。
- * 未登录跳转由 apiFetchJson 在任意 401 时统一处理。
+ * 跳转不由这里负责：任意 401 由 apiFetchJson 清会话并跳 /login，主动登出由 useAuth 自己跳。
  */
 export function useRequireAuth() {
   const auth = useAuth();

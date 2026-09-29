@@ -23,6 +23,7 @@ vi.mock('@/lib/server/session', () => ({
 
 import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { prisma } from '@/lib/server/prisma';
+import { ANONYMOUS_ACCOUNT_MESSAGE } from '@/services/user/anonymous-account';
 import { changeUserPassword } from '@/services/user/users.service';
 
 describe('changeUserPassword', () => {
@@ -90,5 +91,23 @@ describe('changeUserPassword', () => {
 
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(revokeAllAuthSessionsMock).not.toHaveBeenCalled();
+  });
+
+  it('匿名账号（无密码哈希）抛 403，且不校验密码', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: 'user-1',
+      passwordHash: null,
+    } as never);
+
+    await expect(
+      changeUserPassword('user-1', { currentPassword: 'anything', newPassword: 'new-password' }),
+    ).rejects.toMatchObject({
+      status: 403,
+      code: API_ERROR_CODE.FORBIDDEN,
+      message: ANONYMOUS_ACCOUNT_MESSAGE,
+    });
+
+    expect(verifyPassword).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 });

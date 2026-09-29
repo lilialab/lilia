@@ -10,6 +10,7 @@ vi.mock('@/lib/server/rate-limit', () => ({
 }));
 
 import {
+  assertAnonymousRateLimit,
   assertLoginRateLimit,
   assertRegisterRateLimit,
 } from '@/services/user/auth-rate-limit.service';
@@ -28,6 +29,29 @@ describe('auth-rate-limit.service', () => {
     });
 
     await assertRegisterRateLimit(req);
+
+    expect(assertRateLimitsMock).toHaveBeenCalledWith([
+      {
+        key: 'ratelimit:auth:register:ip:203.0.113.9:1h',
+        limit: expect.any(Number),
+        windowSeconds: 3600,
+      },
+      {
+        key: 'ratelimit:auth:register:ip:203.0.113.9:1d',
+        limit: expect.any(Number),
+        windowSeconds: 86400,
+      },
+    ]);
+  });
+
+  it('匿名建号与注册共用同一 key 与额度', async () => {
+    const req = new NextRequest('http://localhost/api/auth/anonymous', {
+      headers: {
+        'x-forwarded-for': '203.0.113.9',
+      },
+    });
+
+    await assertAnonymousRateLimit(req);
 
     expect(assertRateLimitsMock).toHaveBeenCalledWith([
       {

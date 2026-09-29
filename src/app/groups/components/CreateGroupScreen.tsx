@@ -7,7 +7,7 @@ import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -23,7 +23,7 @@ export function CreateGroupScreen() {
 
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('createGroup');
   const [title, setTitle] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

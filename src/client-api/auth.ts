@@ -1,15 +1,19 @@
 import type { Locale } from '@/i18n/config';
 import { apiFetchJson } from '@/lib/client/api-fetch';
+import type { AnonymousBody } from '@/schemas/api/auth/anonymous';
 import type { ChangePasswordBody } from '@/schemas/api/auth/change-password';
 import type { DeleteAccountBody } from '@/schemas/api/auth/delete-account';
 import type { LoginBody } from '@/schemas/api/auth/login';
 import type { RegisterBody } from '@/schemas/api/auth/register';
+import type { UpgradeAccountBody } from '@/schemas/api/auth/upgrade-account';
 
 export interface AuthUser {
   id: string;
   account: string;
   nickname: string;
   hasAvatar: boolean;
+  /** 是否已设密码；false 表示匿名账号（未「保存账号」） */
+  hasPassword: boolean;
   locale: Locale;
   createdAt: string;
   updatedAt: string;
@@ -24,6 +28,22 @@ export async function fetchCurrentUser(): Promise<AuthUser> {
 /** 登录并写入 session Cookie。 */
 export async function login(input: LoginBody): Promise<void> {
   await apiFetchJson('/api/auth/login', {
+    method: 'POST',
+    json: input,
+  });
+}
+
+/** 一键创建匿名账号并直接登录（无密码）。 */
+export async function createAnonymousAccount(input: AnonymousBody): Promise<void> {
+  await apiFetchJson('/api/auth/anonymous', {
+    method: 'POST',
+    json: input,
+  });
+}
+
+/** 把当前匿名账号升级为可登录账号（补密码，账号名与昵称可就地改）。 */
+export async function upgradeAccount(input: UpgradeAccountBody): Promise<void> {
+  await apiFetchJson('/api/auth/upgrade-account', {
     method: 'POST',
     json: input,
   });

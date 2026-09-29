@@ -10,7 +10,7 @@ import {
 } from '@/client-api/characters';
 import { Avatar } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -127,7 +127,7 @@ function CommentComposer({ value, pending, onChange, onSubmit }: CommentComposer
 /* -------------------------------------------------------------------------- */
 
 export function ExploreComments({ characterId }: ExploreCommentsProps) {
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('explore');
   const tCommon = useTranslations('common');
 

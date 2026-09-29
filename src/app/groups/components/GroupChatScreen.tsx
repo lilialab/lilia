@@ -17,9 +17,9 @@ import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
-import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError, translateChatApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -50,7 +50,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
 
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('groupChat');
   const tChat = useTranslations('chat');
   const [input, setInput] = useState('');
@@ -177,7 +177,7 @@ export function GroupChatScreen({ groupSessionId }: GroupChatScreenProps) {
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || inputLocked || !selectedMember || !user) return;
+    if (!text || inputLocked || !selectedMember) return;
 
     const outbound = buildUserOutboundMessage(text, selectedMember.slug, user);
     writeStoredMentionSlug(groupSessionId, selectedMember.slug);

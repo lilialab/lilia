@@ -4,7 +4,7 @@ import { updateUserNickname } from '@/client-api/auth';
 import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -16,11 +16,11 @@ import { useState } from 'react';
 export function ChangeNicknameScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('changeNickname');
   const tCommon = useTranslations('common');
   const [draftNickname, setDraftNickname] = useState<string | null>(null);
-  const nickname = draftNickname ?? user?.nickname ?? '';
+  const nickname = draftNickname ?? user.nickname;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
@@ -29,6 +29,7 @@ export function ChangeNicknameScreen() {
 
     setIsSubmitting(true);
     try {
+      await queryClient.cancelQueries({ queryKey: queryKeys.authMe });
       await updateUserNickname(nickname.trim());
       await queryClient.invalidateQueries({ queryKey: queryKeys.authMe });
       showSuccessToast(t('success'), 'change-nickname');

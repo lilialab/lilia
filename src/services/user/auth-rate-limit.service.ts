@@ -1,3 +1,4 @@
+import { getRequestClientIp } from '@/lib/server/client-ip';
 import { env } from '@/lib/server/env';
 import { assertRateLimits, type RateLimitWindow } from '@/lib/server/rate-limit';
 import { type NextRequest } from 'next/server';
@@ -9,20 +10,6 @@ const DAY_SECONDS = 24 * HOUR_SECONDS;
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
-
-/** 从反向代理头解析客户端 IP；无法识别时返回 `unknown`。 */
-function getRequestClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    const first = forwarded.split(',')[0]?.trim();
-    if (first) return first;
-  }
-
-  const realIp = req.headers.get('x-real-ip')?.trim();
-  if (realIp) return realIp;
-
-  return 'unknown';
-}
 
 function registerRateLimitWindows(clientIp: string): RateLimitWindow[] {
   return [
@@ -62,6 +49,12 @@ function loginRateLimitWindows(clientIp: string, account: string): RateLimitWind
 
 /** 注册接口限流（按 IP）。 */
 export async function assertRegisterRateLimit(req: NextRequest): Promise<void> {
+  const clientIp = getRequestClientIp(req);
+  await assertRateLimits(registerRateLimitWindows(clientIp));
+}
+
+/** 匿名建号限流：与注册同 key 同额度，共用一份配额。 */
+export async function assertAnonymousRateLimit(req: NextRequest): Promise<void> {
   const clientIp = getRequestClientIp(req);
   await assertRateLimits(registerRateLimitWindows(clientIp));
 }

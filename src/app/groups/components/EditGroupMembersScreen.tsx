@@ -7,7 +7,7 @@ import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -27,7 +27,7 @@ export function EditGroupMembersScreen({ groupSessionId }: EditGroupMembersScree
 
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('groupMembers');
   /** null = 尚未本地改动，勾选跟随群详情；非 null = 用户已编辑 */
   const [editedIds, setEditedIds] = useState<Set<string> | null>(null);

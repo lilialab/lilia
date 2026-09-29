@@ -31,7 +31,7 @@ Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止�
 | 浏览器 HTTP 封装 | `src/client-api/`（auth、sessions、groups…） |
 | 客户端基础设施 | `src/lib/client/`（`api-fetch`、`query-keys`、cn、toast） |
 | 同构纯函数 | `src/utils/`（无 I/O、不依赖 Next/Prisma/env；前后端可共用） |
-| 前端页面 | `src/app/(main)/`、`src/app/chat/`、`src/app/groups/`、`src/app/guest/`、`src/app/login/`、`src/app/register/` |
+| 前端页面 | `src/app/(main)/`、`src/app/chat/`、`src/app/groups/`、`src/app/login/`、`src/app/register/` |
 | 路由保护 | `src/proxy.ts`（Next.js 16；**不是** `middleware.ts`） |
 | 通用组件 | `src/components/` |
 | 单测 | `tests/` 镜像 `src/`；**不**在 `src/` 内 co-locate |
@@ -46,7 +46,6 @@ Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止�
 | `session/` | 会话 |
 | `character/` | AI 角色、通讯录、联系人 session |
 | `debug/` | 本地调试（Chroma、提取/维护/画像试运行） |
-| `guest/` | 访客试聊（凭证、日限额、公开目录、独立消息表；不跑记忆） |
 | `user/` | 注册登录、账号资料（改密/昵称/删号）、`resolveUserIdByAccount` |
 
 - 同域 import：`./`；跨域：`@/services/{domain}/...`。**不要**恢复 `src/services/` 根目录平铺旧路径。
@@ -71,7 +70,6 @@ Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止�
 | 日配额 / 今日体力 | `src/services/chat/quota.service.ts`（读与扣同一个 Redis key，429 文案在此）；`src/app/api/chat/quota/`；`src/client-api/chat.ts`；`/me` 卡片 `src/app/(main)/me/MeStaminaCard.tsx` |
 | 聊天 UI / 流 | `src/app/chat/components/ChatScreen.tsx` + `src/app/api/chat/` |
 | 探索 / 角色目录 | `src/services/character/catalog.service.ts`；`src/services/character/create.service.ts`；`/explore`、`/explore/[characterId]` |
-| 访客试聊 | `src/services/guest/`；`src/app/guest/`；`src/app/api/guest/`；`src/client-api/guest.ts` |
 | 通讯录 | `src/services/character/contacts.service.ts`；`/contacts`、`/chat/[characterId]` |
 
 ## 命令与环境

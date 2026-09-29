@@ -4,7 +4,7 @@ import { fetchGroups, type GroupDetail } from '@/client-api/groups';
 import { type TranslationFn, useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
-import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
 import { useQuery } from '@tanstack/react-query';
@@ -102,7 +102,7 @@ export function GroupsScreen() {
   /* -------------------------------------------------------------------------- */
 
   const router = useRouter();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('groups');
 
   const groupsQuery = useQuery({

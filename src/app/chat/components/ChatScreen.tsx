@@ -8,9 +8,9 @@ import { useTranslations } from '@/components/I18nProvider';
 import { PageStatus } from '@/components/PageStatus';
 import { HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { SyncPendingReplyBanner } from '@/components/SyncPendingReplyBanner';
-import { useAuth } from '@/hooks/useAuth';
 import { useGeneratingStatusQuery } from '@/hooks/useGeneratingStatusQuery';
 import { useOnServerGenerationIdle } from '@/hooks/useOnServerGenerationIdle';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError, translateChatApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -37,7 +37,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const user = useRequiredUser();
   const t = useTranslations('chat');
   const [input, setInput] = useState('');
   const [scrollToBottomKey, setScrollToBottomKey] = useState(0);
@@ -135,7 +135,7 @@ export function ChatScreen({ characterId }: ChatScreenProps) {
 
   const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!input.trim() || inputLocked || !sessionId || !user) return;
+    if (!input.trim() || inputLocked || !sessionId) return;
 
     const currentInput = input;
     setInput('');

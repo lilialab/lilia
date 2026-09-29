@@ -18,6 +18,8 @@ export interface PublicUser {
   account: string;
   nickname: string;
   hasAvatar: boolean;
+  /** 是否已设密码；false 表示匿名账号（未「保存账号」） */
+  hasPassword: boolean;
   locale: Locale;
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +34,7 @@ export const publicUserSelect = {
   account: true,
   nickname: true,
   avatarKey: true,
+  passwordHash: true,
   locale: true,
   createdAt: true,
   updatedAt: true,
@@ -48,6 +51,7 @@ export function toPublicUser(row: PublicUserRow): PublicUser {
     account: row.account,
     nickname: row.nickname,
     hasAvatar: Boolean(row.avatarKey),
+    hasPassword: row.passwordHash !== null,
     locale: parseLocale(row.locale),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -143,6 +147,67 @@ export async function registerUser(input: {
   });
 
   return user;
+}
+
+/** 创建匿名用户；不设密码（passwordHash 空），后续由「保存账号」补上。 */
+export async function createAnonymousUser(input: {
+  account: string;
+  nickname: string;
+  locale: Locale;
+  timeZone: string;
+}): Promise<{ id: string }> {
+  const user = await prisma.user.create({
+    data: {
+      account: input.account,
+      nickname: input.nickname,
+      passwordHash: null,
+      locale: input.locale,
+      timeZone: input.timeZone,
+    },
+    select: { id: true },
+  });
+
+  return user;
+}
+
+/** 把匿名账号升级为可登录的真账号：补密码、可改账号名与昵称，仍落在同一个 userId 上。 */
+export async function upgradeAnonymousAccount(
+  userId: string,
+  input: { account: string; nickname: string; password: string },
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, passwordHash: true },
+  });
+
+  if (!user) {
+    throw AppError.unauthorized('用户不存在');
+  }
+
+  if (user.passwordHash !== null) {
+    throw AppError.conflict('该账号已设置密码');
+  }
+
+  const occupied = await prisma.user.findUnique({
+    where: { account: input.account },
+    select: { id: true },
+  });
+
+  if (occupied && occupied.id !== userId) {
+    throw AppError.badRequest('账号已被占用', API_ERROR_CODE.ACCOUNT_TAKEN);
+  }
+
+  const passwordHash = await hashPassword(input.password);
+
+  // 条件写：把「仍是匿名」压在 update 的 where 上，避免并发请求重复升级
+  const updated = await prisma.user.updateMany({
+    where: { id: userId, passwordHash: null },
+    data: { account: input.account, nickname: input.nickname, passwordHash },
+  });
+
+  if (updated.count === 0) {
+    throw AppError.conflict('该账号已设置密码');
+  }
 }
 
 /** 聊天请求覆盖设备 IANA 时区；与当前值相同则不写库。 */

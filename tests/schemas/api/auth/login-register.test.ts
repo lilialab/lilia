@@ -8,6 +8,7 @@ describe('loginBodySchema', () => {
     const result = loginBodySchema.safeParse({
       account: 'tomuser',
       password: 'password123',
+      turnstileToken: 'turnstile-token',
     });
     expect(result.success).toBe(true);
   });
@@ -16,6 +17,7 @@ describe('loginBodySchema', () => {
     const result = loginBodySchema.safeParse({
       account: 'tom',
       password: 'short',
+      turnstileToken: 'turnstile-token',
     });
     expect(result.success).toBe(false);
     if (result.success) return;
@@ -27,6 +29,27 @@ describe('loginBodySchema', () => {
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.ACCOUNT_REQUIRED);
+  });
+
+  it('缺少 turnstileToken 为 TURNSTILE_TOKEN_REQUIRED', () => {
+    const result = loginBodySchema.safeParse({
+      account: 'tomuser',
+      password: 'password123',
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.TURNSTILE_TOKEN_REQUIRED);
+  });
+
+  it('turnstileToken 为空串解析失败', () => {
+    const result = loginBodySchema.safeParse({
+      account: 'tomuser',
+      password: 'password123',
+      turnstileToken: '   ',
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.TURNSTILE_TOKEN_REQUIRED);
   });
 });
 

@@ -5,6 +5,7 @@ import { AvatarPicker } from '@/components/Avatar';
 import { useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAuth } from '@/hooks/useAuth';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { translateApiError } from '@/i18n/client';
 import { cn } from '@/lib/client/cn';
 import { queryKeys } from '@/lib/client/query-keys';
@@ -16,7 +17,8 @@ import { MeMenuLink } from './MeMenuLink';
 import { MeStaminaCard } from './MeStaminaCard';
 
 export function MeScreen() {
-  const { user, logout, isLoggingOut } = useAuth();
+  const user = useRequiredUser();
+  const { logout, isLoggingOut } = useAuth();
   const t = useTranslations('me');
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
@@ -24,6 +26,7 @@ export function MeScreen() {
   async function handleAvatarFile(file: File) {
     setUploading(true);
     try {
+      await queryClient.cancelQueries({ queryKey: queryKeys.authMe });
       await uploadUserAvatar(file);
       await queryClient.invalidateQueries({ queryKey: queryKeys.authMe });
     } catch (err) {
@@ -40,9 +43,9 @@ export function MeScreen() {
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 flex items-center gap-4 bg-background px-4 py-4')}>
           <AvatarPicker
-            src={user ? userAvatarUrl(user.id, user.updatedAt) : ''}
-            hasAvatar={user?.hasAvatar ?? false}
-            name={user?.nickname ?? ''}
+            src={userAvatarUrl(user.id, user.updatedAt)}
+            hasAvatar={user.hasAvatar}
+            name={user.nickname}
             ariaLabel={t('changeAvatar')}
             disabled={uploading}
             onFile={handleAvatarFile}
@@ -51,12 +54,10 @@ export function MeScreen() {
             }}
           />
           <div className={cn('min-w-0')}>
-            <p className={cn('text-base font-medium text-foreground')}>
-              {user?.nickname ?? '...'}
+            <p className={cn('text-base font-medium text-foreground')}>{user.nickname}</p>
+            <p className={cn('mt-1 truncate text-xs text-muted-foreground')}>
+              {t('accountLabel')}: {user.account}
             </p>
-            {user?.account && (
-              <p className={cn('mt-1 text-sm text-muted-foreground')}>@{user.account}</p>
-            )}
           </div>
         </section>
 

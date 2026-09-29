@@ -47,7 +47,7 @@ export function PrivacyPolicyZh() {
           </li>
         </ul>
         <p>
-          注册时我们使用 Cloudflare Turnstile 区分人与机器人。Cloudflare
+          登录、注册与创建匿名账号时我们使用 Cloudflare Turnstile 区分人与机器人。Cloudflare
           是一家美国公司，验证所需信息会发送至中国境外。见{' '}
           <ExternalLink href={CLOUDFLARE_PRIVACY}>Cloudflare 的隐私政策</ExternalLink>。
         </p>
@@ -122,7 +122,10 @@ export function PrivacyPolicyZh() {
         <p>
           我们设置一枚第一方 Cookie：用于保持登录的 HTTP-only 会话 Cookie。生产环境会标记为 Secure。
         </p>
-        <p>注册时 Cloudflare Turnstile 可能会设置自己的 Cookie（同样可能位于中国境外）。</p>
+        <p>
+          登录、注册与创建匿名账号时 Cloudflare Turnstile 可能会设置自己的
+          Cookie（同样可能位于中国境外）。
+        </p>
       </PrivacySection>
 
       <PrivacySection title="未成年人">

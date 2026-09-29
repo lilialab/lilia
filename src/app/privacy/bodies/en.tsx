@@ -61,8 +61,9 @@ export function PrivacyPolicyEn() {
           </li>
         </ul>
         <p>
-          On sign-up we use Cloudflare Turnstile to tell humans from bots. Cloudflare is a US
-          company; information needed for that check is sent outside mainland China. See{' '}
+          When you log in, sign up, or create an anonymous account we use Cloudflare Turnstile to
+          tell humans from bots. Cloudflare is a US company; information needed for that check is
+          sent outside mainland China. See{' '}
           <ExternalLink href={CLOUDFLARE_PRIVACY}>Cloudflare’s privacy policy</ExternalLink>.
         </p>
       </PrivacySection>
@@ -157,8 +158,8 @@ export function PrivacyPolicyEn() {
           production it is marked Secure.
         </p>
         <p>
-          Cloudflare Turnstile may set its own cookies during registration (those may also be
-          outside mainland China).
+          Cloudflare Turnstile may set its own cookies when you log in, sign up, or create an
+          anonymous account (those may also be outside mainland China).
         </p>
       </PrivacySection>
 

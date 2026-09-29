@@ -5,10 +5,12 @@ import { register } from '@/client-api/auth';
 import { AuthShell, TurnstileWidget, type TurnstileWidgetHandle } from '@/components/auth';
 import { Form } from '@/components/Form';
 import { useTranslations } from '@/components/I18nProvider';
+import { useResetAuthCache } from '@/hooks/useResetAuthCache';
 import { translateApiError } from '@/i18n/client';
 import { localeFromBrowserLanguage } from '@/i18n/config';
 import { cn } from '@/lib/client/cn';
 import { showErrorToast } from '@/lib/client/toast';
+import { TURNSTILE_ACTION } from '@/lib/turnstile';
 import { getBrowserTimeZone } from '@/utils/timezone';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,6 +22,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
   const router = useRouter();
+  const resetAuthCache = useResetAuthCache();
   const t = useTranslations('register');
   const tAuth = useTranslations('auth');
   const tCommon = useTranslations('common');
@@ -55,6 +58,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
         locale: localeFromBrowserLanguage(navigator.language),
         timeZone: getBrowserTimeZone(),
       });
+      resetAuthCache();
       router.push('/contacts');
       router.refresh();
     } catch (err) {
@@ -75,11 +79,6 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
             {t('hasAccount')}{' '}
             <Link href="/login" className={cn('text-primary underline')}>
               {t('goLogin')}
-            </Link>
-          </p>
-          <p>
-            <Link href="/guest" className={cn('text-primary underline')}>
-              {t('tryWithoutAccount')}
             </Link>
           </p>
           <p>
@@ -133,6 +132,7 @@ export function RegisterForm({ turnstileSiteKey }: RegisterFormProps) {
           <TurnstileWidget
             ref={turnstileRef}
             siteKey={turnstileSiteKey}
+            action={TURNSTILE_ACTION.REGISTER}
             onTokenChange={handleTurnstileTokenChange}
           />
         </div>

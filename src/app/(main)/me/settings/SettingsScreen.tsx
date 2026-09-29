@@ -4,6 +4,7 @@ import { languagePageHref } from '@/app/language/language-return';
 import { privacyPageHref } from '@/app/privacy/privacy-return';
 import { useI18n, useTranslations } from '@/components/I18nProvider';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { useRequiredUser } from '@/hooks/useRequiredUser';
 import { localeLabels } from '@/i18n/config';
 import { cn } from '@/lib/client/cn';
 import { ChevronRight } from 'lucide-react';
@@ -50,7 +51,11 @@ interface SettingsScreenProps {
 export function SettingsScreen({ version }: SettingsScreenProps) {
   const router = useRouter();
   const t = useTranslations('settings');
+  const tAccount = useTranslations('account');
+  const user = useRequiredUser();
   const { locale } = useI18n();
+
+  const isAnonymous = !user.hasPassword;
 
   return (
     <div className={cn('flex h-full flex-col bg-surface text-foreground')}>
@@ -61,8 +66,11 @@ export function SettingsScreen({ version }: SettingsScreenProps) {
 
       <div className={cn('flex-1 overflow-y-auto')}>
         <section className={cn('mt-3 divide-y divide-border/50 bg-background')}>
+          {isAnonymous && (
+            <SettingsRow href="/me/settings/account" label={tAccount('saveAccount')} />
+          )}
           <SettingsRow href="/me/settings/nickname" label={t('changeNickname')} />
-          <SettingsRow href="/me/settings/password" label={t('changePassword')} />
+          {!isAnonymous && <SettingsRow href="/me/settings/password" label={t('changePassword')} />}
           <SettingsRow href="/me/settings/llm" label={t('llmConfig')} />
           <SettingsRow
             href={languagePageHref('/me/settings')}
@@ -80,13 +88,15 @@ export function SettingsScreen({ version }: SettingsScreenProps) {
           <SettingsRow href={privacyPageHref('/me/settings')} label={t('privacyPolicy')} />
         </section>
 
-        <section className={cn('mt-3 bg-background')}>
-          <SettingsRow
-            href="/me/settings/delete-account"
-            label={t('deleteAccount')}
-            destructive
-          />
-        </section>
+        {!isAnonymous && (
+          <section className={cn('mt-3 bg-background')}>
+            <SettingsRow
+              href="/me/settings/delete-account"
+              label={t('deleteAccount')}
+              destructive
+            />
+          </section>
+        )}
 
         <p className={cn('px-4 py-6 text-center text-xs text-muted-foreground')}>
           {t('appVersion', { version })}

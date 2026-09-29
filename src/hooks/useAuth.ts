@@ -18,11 +18,11 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      // 掐掉在途的 authMe 请求，免得它在登出之后才返回并把 user 写回缓存
       await queryClient.cancelQueries({ queryKey: queryKeys.authMe });
       await logout();
-    },
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: queryKeys.authMe });
+      // 刻意不清 authMe 缓存：清掉后受保护树若再渲染一次就会读到已消失的 user。
+      // 缓存留给下一次 fetch 覆盖（并在登录 / 建号成功时由 useResetAuthCache 丢弃）。
       router.push('/login');
       router.refresh();
     },

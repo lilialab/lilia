@@ -10,7 +10,34 @@ vi.mock('@/lib/server/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/server/prisma';
-import { authenticateUser, resolveUserIdByAccount } from '@/services/user/users.service';
+import {
+  authenticateUser,
+  resolveUserIdByAccount,
+  toPublicUser,
+} from '@/services/user/users.service';
+
+const baseRow = {
+  id: 'user-1',
+  account: 'u_ABC',
+  nickname: '安静的猫',
+  avatarKey: null,
+  locale: 'zh',
+  createdAt: new Date('2026-09-01T00:00:00Z'),
+  updatedAt: new Date('2026-09-02T00:00:00Z'),
+};
+
+describe('toPublicUser', () => {
+  it('有密码哈希时为 true，且不暴露哈希本身', () => {
+    const user = toPublicUser({ ...baseRow, passwordHash: 'bcrypt-hash' });
+
+    expect(user.hasPassword).toBe(true);
+    expect(user).not.toHaveProperty('passwordHash');
+  });
+
+  it('无密码哈希（匿名账号）时为 false', () => {
+    expect(toPublicUser({ ...baseRow, passwordHash: null }).hasPassword).toBe(false);
+  });
+});
 
 describe('authenticateUser', () => {
   it('匿名账号（无密码哈希）不通过密码登录', async () => {
