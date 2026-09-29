@@ -1,9 +1,9 @@
+import { accountSchema } from '@/schemas/shared/account';
 import { passwordSchema } from '@/schemas/shared/password';
-import { usernameSchema } from '@/schemas/shared/username';
 import { z } from 'zod';
 
 export const loginBodySchema = z.object({
-  username: usernameSchema,
+  account: accountSchema,
   password: passwordSchema,
 });
 

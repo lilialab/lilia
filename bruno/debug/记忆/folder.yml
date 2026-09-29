@@ -6,7 +6,7 @@ info:
 vars:
   - name: jobId
     value: ''
-  - name: username
+  - name: account
     value: tom
 
 request:

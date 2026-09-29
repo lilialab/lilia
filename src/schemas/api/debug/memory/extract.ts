@@ -1,9 +1,9 @@
-import { usernameSchema } from '@/schemas/shared/username';
+import { accountSchema } from '@/schemas/shared/account';
 import { z } from 'zod';
 
 export const memoryExtractQuerySchema = z
   .object({
-    username: usernameSchema,
+    account: accountSchema,
     sessionId: z.string().trim().min(1).optional(),
     groupSessionId: z.string().trim().min(1).optional(),
   })

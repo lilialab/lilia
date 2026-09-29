@@ -32,7 +32,7 @@ const jpegBytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0]);
 
 const publicRow = {
   id: 'user-1',
-  username: 'tom',
+  account: 'tom',
   nickname: '小明',
   avatarKey: 'avatars/user-1/new.jpg',
   locale: 'zh',

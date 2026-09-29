@@ -24,7 +24,7 @@ system prompt：`<user_profile_rules>`（`jobs/user-profile.md`）。无角色 o
 ### 何时触发
 
 - **管线**：某角色 maintain 成功后串行跑该角色 profile（见 [pipeline](./pipeline.md)）
-- **立即触发（测试，仅 development）**：`POST /api/debug/memory/profile?username=&characterId=`；须为通讯录好友；本进程异步跑，返回 `jobId`
+- **立即触发（测试，仅 development）**：`POST /api/debug/memory/profile?account=&characterId=`；须为通讯录好友；本进程异步跑，返回 `jobId`
 
 ### 参考记忆
 

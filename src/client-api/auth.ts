@@ -7,7 +7,7 @@ import type { RegisterBody } from '@/schemas/api/auth/register';
 
 export interface AuthUser {
   id: string;
-  username: string;
+  account: string;
   nickname: string;
   hasAvatar: boolean;
   locale: Locale;

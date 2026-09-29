@@ -39,8 +39,8 @@ function registerRateLimitWindows(clientIp: string): RateLimitWindow[] {
   ];
 }
 
-function loginRateLimitWindows(clientIp: string, username: string): RateLimitWindow[] {
-  const normalizedUsername = username.trim().toLowerCase();
+function loginRateLimitWindows(clientIp: string, account: string): RateLimitWindow[] {
+  const normalizedAccount = account.trim().toLowerCase();
 
   return [
     {
@@ -49,8 +49,8 @@ function loginRateLimitWindows(clientIp: string, username: string): RateLimitWin
       windowSeconds: MINUTE_SECONDS,
     },
     {
-      key: `ratelimit:auth:login:user:${normalizedUsername}:15m`,
-      limit: env.AUTH_RATE_LIMIT_LOGIN_PER_USERNAME_15MIN,
+      key: `ratelimit:auth:login:account:${normalizedAccount}:15m`,
+      limit: env.AUTH_RATE_LIMIT_LOGIN_PER_ACCOUNT_15MIN,
       windowSeconds: 15 * MINUTE_SECONDS,
     },
   ];
@@ -66,8 +66,8 @@ export async function assertRegisterRateLimit(req: NextRequest): Promise<void> {
   await assertRateLimits(registerRateLimitWindows(clientIp));
 }
 
-/** 登录接口限流（按 IP 与用户名）。 */
-export async function assertLoginRateLimit(req: NextRequest, username: string): Promise<void> {
+/** 登录接口限流（按 IP 与账号）。 */
+export async function assertLoginRateLimit(req: NextRequest, account: string): Promise<void> {
   const clientIp = getRequestClientIp(req);
-  await assertRateLimits(loginRateLimitWindows(clientIp, username));
+  await assertRateLimits(loginRateLimitWindows(clientIp, account));
 }

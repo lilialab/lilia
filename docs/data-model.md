@@ -29,7 +29,7 @@ erDiagram
 
   User {
     string id PK
-    string username
+    string account
   }
 
   Character {

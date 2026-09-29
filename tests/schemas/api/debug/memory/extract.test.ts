@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 describe('memoryExtractQuerySchema', () => {
   it('接受 sessionId', () => {
     const result = memoryExtractQuerySchema.safeParse({
-      username: 'tom',
+      account: 'tom',
       sessionId: 'sess-1',
     });
     expect(result.success).toBe(true);
@@ -16,7 +16,7 @@ describe('memoryExtractQuerySchema', () => {
 
   it('接受 groupSessionId', () => {
     const result = memoryExtractQuerySchema.safeParse({
-      username: 'tom',
+      account: 'tom',
       groupSessionId: 'group-1',
     });
     expect(result.success).toBe(true);
@@ -27,13 +27,13 @@ describe('memoryExtractQuerySchema', () => {
   });
 
   it('拒绝同时缺省', () => {
-    expect(memoryExtractQuerySchema.safeParse({ username: 'tom' }).success).toBe(false);
+    expect(memoryExtractQuerySchema.safeParse({ account: 'tom' }).success).toBe(false);
   });
 
   it('拒绝同时指定两者', () => {
     expect(
       memoryExtractQuerySchema.safeParse({
-        username: 'tom',
+        account: 'tom',
         sessionId: 'sess-1',
         groupSessionId: 'group-1',
       }).success,

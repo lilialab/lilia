@@ -16,17 +16,17 @@ export function LoginForm() {
   const t = useTranslations('login');
   const tAuth = useTranslations('auth');
   const tCommon = useTranslations('common');
-  const [username, setUsername] = useState('');
+  const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password) return;
+    if (!account.trim() || !password) return;
 
     setIsSubmitting(true);
     try {
-      await login({ username: username.trim(), password });
+      await login({ account: account.trim(), password });
       router.push('/contacts');
       router.refresh();
     } catch (err) {
@@ -57,11 +57,11 @@ export function LoginForm() {
       }
     >
       <Form onSubmit={handleSubmit}>
-        <Form.Field label={tAuth('username')}>
+        <Form.Field label={tAuth('account')}>
           <Form.Input
-            value={username}
-            onChange={setUsername}
-            placeholder={tCommon('fieldPlaceholder', { label: tAuth('username') })}
+            value={account}
+            onChange={setAccount}
+            placeholder={tCommon('fieldPlaceholder', { label: tAuth('account') })}
             autoComplete="username"
           />
         </Form.Field>

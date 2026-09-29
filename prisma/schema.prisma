@@ -12,8 +12,10 @@ datasource db {
  */
 model User {
   id              String   @id @default(uuid())
-  username        String   @unique
-  passwordHash    String   @map("password_hash")
+  /// 账号标识（登录用）
+  account         String   @unique
+  /// 密码哈希；空表示匿名账号（未设密码，只能靠当前浏览器会话使用）
+  passwordHash    String?  @map("password_hash")
   nickname        String   @map("nickname")
   /// 头像在对象存储中的 key；空表示未上传
   avatarKey       String?  @map("avatar_key")

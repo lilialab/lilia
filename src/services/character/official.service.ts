@@ -14,7 +14,7 @@ export async function isOfficialCharacter(ownerId: string | null): Promise<boole
   }
   if (!officialUserId) {
     const row = await prisma.user.findUnique({
-      where: { username: env.OFFICIAL_USERNAME },
+      where: { account: env.OFFICIAL_ACCOUNT },
       select: { id: true },
     });
     officialUserId = row?.id;

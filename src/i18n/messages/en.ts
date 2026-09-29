@@ -232,7 +232,7 @@ export const en = {
     submitting: 'Deleting...',
   },
   auth: {
-    username: 'Username',
+    account: 'Account',
     password: 'Password',
     languageAria: 'Language',
   },
@@ -280,6 +280,7 @@ export const en = {
     TURNSTILE_VERIFICATION_FAILED: 'Verification failed. Please try again',
     GUEST_TRIAL_REQUIRED: 'Complete trial verification first',
     INTERNAL_ERROR: 'Server error',
+    FORBIDDEN: 'This account has no password yet. Save the account first',
     USERNAME_REQUIRED: 'Username is required',
     USERNAME_TOO_SHORT: 'Username must be at least 3 characters',
     USERNAME_TOO_LONG: 'Username must be at most 32 characters',

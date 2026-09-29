@@ -4,23 +4,23 @@ import { describe, expect, it } from 'vitest';
 
 describe('listMemoryQuerySchema', () => {
   it('缺省 limit 时使用 limit=20', () => {
-    const result = safeParseQueryParams(listMemoryQuerySchema, { username: 'tom' });
+    const result = safeParseQueryParams(listMemoryQuerySchema, { account: 'tom' });
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.data).toEqual({
-      username: 'tom',
+      account: 'tom',
       limit: 20,
     });
   });
 
-  it('缺少 username 时解析失败', () => {
+  it('缺少 account 时解析失败', () => {
     const result = safeParseQueryParams(listMemoryQuerySchema, { limit: '20' });
     expect(result.success).toBe(false);
   });
 
   it('isMaintained 字符串转为 boolean', () => {
     const trueResult = safeParseQueryParams(listMemoryQuerySchema, {
-      username: 'tom',
+      account: 'tom',
       isMaintained: 'true',
     });
     expect(trueResult.success).toBe(true);
@@ -29,7 +29,7 @@ describe('listMemoryQuerySchema', () => {
     }
 
     const falseResult = safeParseQueryParams(listMemoryQuerySchema, {
-      username: 'tom',
+      account: 'tom',
       isMaintained: 'false',
     });
     expect(falseResult.success).toBe(true);
@@ -39,7 +39,7 @@ describe('listMemoryQuerySchema', () => {
   });
 
   it('空 text= 解析为 undefined', () => {
-    const result = safeParseQueryParams(listMemoryQuerySchema, { username: 'tom', text: '' });
+    const result = safeParseQueryParams(listMemoryQuerySchema, { account: 'tom', text: '' });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.text).toBeUndefined();
@@ -48,7 +48,7 @@ describe('listMemoryQuerySchema', () => {
 
   it('非法 type 解析失败', () => {
     const result = safeParseQueryParams(listMemoryQuerySchema, {
-      username: 'tom',
+      account: 'tom',
       type: 'invalid',
     });
     expect(result.success).toBe(false);
@@ -56,16 +56,16 @@ describe('listMemoryQuerySchema', () => {
 
   it('limit=0 或 limit=101 解析失败', () => {
     expect(
-      safeParseQueryParams(listMemoryQuerySchema, { username: 'tom', limit: '0' }).success,
+      safeParseQueryParams(listMemoryQuerySchema, { account: 'tom', limit: '0' }).success,
     ).toBe(false);
     expect(
-      safeParseQueryParams(listMemoryQuerySchema, { username: 'tom', limit: '101' }).success,
+      safeParseQueryParams(listMemoryQuerySchema, { account: 'tom', limit: '101' }).success,
     ).toBe(false);
   });
 
   it('合法 type 与 limit 通过校验', () => {
     const result = safeParseQueryParams(listMemoryQuerySchema, {
-      username: 'tom',
+      account: 'tom',
       text: '  hello  ',
       type: 'fact',
       limit: '50',
@@ -73,7 +73,7 @@ describe('listMemoryQuerySchema', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data).toEqual({
-        username: 'tom',
+        account: 'tom',
         text: 'hello',
         type: 'fact',
         limit: 50,
@@ -83,7 +83,7 @@ describe('listMemoryQuerySchema', () => {
 
   it('非法 isMaintained 解析失败', () => {
     const result = safeParseQueryParams(listMemoryQuerySchema, {
-      username: 'tom',
+      account: 'tom',
       isMaintained: 'yes',
     });
     expect(result.success).toBe(false);

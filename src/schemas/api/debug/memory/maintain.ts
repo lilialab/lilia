@@ -1,8 +1,8 @@
-import { usernameSchema } from '@/schemas/shared/username';
+import { accountSchema } from '@/schemas/shared/account';
 import { z } from 'zod';
 
 export const memoryMaintainQuerySchema = z.object({
-  username: usernameSchema,
+  account: accountSchema,
   characterId: z.string().trim().min(1),
 });
 

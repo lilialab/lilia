@@ -6,18 +6,18 @@ import { memoryMaintainQuerySchema } from '@/schemas/api/debug/memory/maintain';
 import { assertIsContact } from '@/services/character/contacts.service';
 import { prepareMemoryJob } from '@/services/memory/job.service';
 import { runMaintain } from '@/services/memory/maintain.service';
-import { resolveUserIdByUsername } from '@/services/user/users.service';
+import { resolveUserIdByAccount } from '@/services/user/users.service';
 import { randomUUID } from 'crypto';
 import { type NextRequest } from 'next/server';
 
 /** 立即跑 maintain（不经 Bull）；development 专用。 */
 export const POST = withApiHandler(async (req: NextRequest) => {
   assertDevelopmentDebug();
-  const { username, characterId } = parseSearchParams(
+  const { account, characterId } = parseSearchParams(
     memoryMaintainQuerySchema,
     req.nextUrl.searchParams,
   );
-  const userId = await resolveUserIdByUsername(username);
+  const userId = await resolveUserIdByAccount(account);
   await assertIsContact(userId, characterId);
 
   const jobId = randomUUID();
@@ -25,7 +25,7 @@ export const POST = withApiHandler(async (req: NextRequest) => {
 
   runMaintain(job, userId, characterId).catch((err) => {
     logger.error(
-      { jobId, userId, characterId, username, err },
+      { jobId, userId, characterId, account, err },
       '[API] runMaintain uncaught error',
     );
   });

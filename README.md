@@ -147,7 +147,7 @@ pnpm dev
 |------|------|
 | 生成 Client | `pnpm exec prisma generate` |
 | 本地反复改表（不写迁移） | `pnpm exec prisma db push` |
-| 按 slug 覆盖官方角色目录（属用户自建的同名角色跳过）；非 production 还会建用户 `tom` | `pnpm exec prisma db seed` |
+| 按 slug 覆盖官方角色目录（属用户自建的同名角色跳过）；| `pnpm exec prisma db seed` |
 | 生产 / 空库：执行尚未应用的迁移 | `pnpm exec prisma migrate deploy` |
 
 ### 本地开发 → 准备上线

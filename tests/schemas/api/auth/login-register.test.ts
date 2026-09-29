@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 describe('loginBodySchema', () => {
   it('合法登录 body 通过校验', () => {
     const result = loginBodySchema.safeParse({
-      username: 'tomuser',
+      account: 'tomuser',
       password: 'password123',
     });
     expect(result.success).toBe(true);
@@ -14,7 +14,7 @@ describe('loginBodySchema', () => {
 
   it('密码过短解析失败', () => {
     const result = loginBodySchema.safeParse({
-      username: 'tom',
+      account: 'tom',
       password: 'short',
     });
     expect(result.success).toBe(false);
@@ -22,18 +22,18 @@ describe('loginBodySchema', () => {
     expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.PASSWORD_TOO_SHORT);
   });
 
-  it('缺少 username 为 USERNAME_REQUIRED', () => {
+  it('缺少 account 为 ACCOUNT_REQUIRED', () => {
     const result = loginBodySchema.safeParse({});
     expect(result.success).toBe(false);
     if (result.success) return;
-    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.USERNAME_REQUIRED);
+    expect(result.error.issues[0]?.message).toBe(API_ERROR_CODE.ACCOUNT_REQUIRED);
   });
 });
 
 describe('registerBodySchema', () => {
   it('合法注册 body 通过校验', () => {
     const result = registerBodySchema.safeParse({
-      username: 'tomuser',
+      account: 'tomuser',
       nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
@@ -46,7 +46,7 @@ describe('registerBodySchema', () => {
 
   it('缺少 turnstileToken 为 TURNSTILE_TOKEN_REQUIRED', () => {
     const result = registerBodySchema.safeParse({
-      username: 'tomuser',
+      account: 'tomuser',
       nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password123',
@@ -60,7 +60,7 @@ describe('registerBodySchema', () => {
 
   it('两次密码不一致解析失败', () => {
     const result = registerBodySchema.safeParse({
-      username: 'tomuser',
+      account: 'tomuser',
       nickname: 'Tom',
       password: 'password123',
       confirmPassword: 'password456',

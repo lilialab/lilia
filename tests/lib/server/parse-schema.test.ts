@@ -8,7 +8,7 @@ import { z } from 'zod';
 describe('parseInput', () => {
   it('已知 code 的 issue：error 与 code 都是该 code', () => {
     try {
-      parseInput(loginBodySchema, { username: 'tom', password: 'short' });
+      parseInput(loginBodySchema, { account: 'tom', password: 'short' });
       expect.unreachable();
     } catch (error) {
       expect(error).toMatchObject({

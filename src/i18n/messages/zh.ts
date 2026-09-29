@@ -229,7 +229,7 @@ export const zh = {
     submitting: '删除中...',
   },
   auth: {
-    username: '账号',
+    account: '账号',
     password: '密码',
     languageAria: '语言',
   },
@@ -275,6 +275,7 @@ export const zh = {
     TURNSTILE_VERIFICATION_FAILED: '人机验证失败，请重试',
     GUEST_TRIAL_REQUIRED: '请先完成试聊验证',
     INTERNAL_ERROR: '服务器异常',
+    FORBIDDEN: '该账号尚未设置密码，请先保存账号',
     USERNAME_REQUIRED: '请输入账号',
     USERNAME_TOO_SHORT: '账号至少 3 个字符',
     USERNAME_TOO_LONG: '账号最多 32 个字符',

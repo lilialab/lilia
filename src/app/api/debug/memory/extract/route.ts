@@ -7,18 +7,18 @@ import { assertGroupOwnedByUser } from '@/services/group/groups.service';
 import { runExtract } from '@/services/memory/extract.service';
 import { prepareMemoryJob } from '@/services/memory/job.service';
 import { assertSessionOwnedByUser } from '@/services/session/sessions.service';
-import { resolveUserIdByUsername } from '@/services/user/users.service';
+import { resolveUserIdByAccount } from '@/services/user/users.service';
 import { randomUUID } from 'crypto';
 import { type NextRequest } from 'next/server';
 
 /** 立即跑 extract（不经 Bull）；development 专用。 */
 export const POST = withApiHandler(async (req: NextRequest) => {
   assertDevelopmentDebug();
-  const { username, sessionId, groupSessionId } = parseSearchParams(
+  const { account, sessionId, groupSessionId } = parseSearchParams(
     memoryExtractQuerySchema,
     req.nextUrl.searchParams,
   );
-  const userId = await resolveUserIdByUsername(username);
+  const userId = await resolveUserIdByAccount(account);
 
   if (sessionId) {
     await assertSessionOwnedByUser(sessionId, userId);
@@ -31,7 +31,7 @@ export const POST = withApiHandler(async (req: NextRequest) => {
 
   runExtract(job, { sessionId, groupSessionId, userId }).catch((err) => {
     logger.error(
-      { jobId, sessionId, groupSessionId, userId, username, err },
+      { jobId, sessionId, groupSessionId, userId, account, err },
       '[API] runExtract uncaught error',
     );
   });

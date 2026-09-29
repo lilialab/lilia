@@ -5,9 +5,9 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3000/api/debug/memory/list?username=tom&limit=20
+  url: http://localhost:3000/api/debug/memory/list?account=tom&limit=20
   params:
-    - name: username
+    - name: account
       value: tom
       type: query
     - name: text

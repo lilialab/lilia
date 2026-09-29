@@ -6,6 +6,7 @@ import { prisma } from '@/lib/server/prisma';
 import { deleteS3Object } from '@/lib/server/s3';
 import { revokeAllAuthSessions } from '@/lib/server/session';
 import { VectorService } from '@/services/memory/vector.service';
+import { ANONYMOUS_ACCOUNT_MESSAGE } from '@/services/user/anonymous-account';
 import { API_ERROR_CODE } from '@/types/api-error';
 
 /* -------------------------------------------------------------------------- */
@@ -14,7 +15,7 @@ import { API_ERROR_CODE } from '@/types/api-error';
 
 export interface PublicUser {
   id: string;
-  username: string;
+  account: string;
   nickname: string;
   hasAvatar: boolean;
   locale: Locale;
@@ -28,7 +29,7 @@ export interface PublicUser {
 
 export const publicUserSelect = {
   id: true,
-  username: true,
+  account: true,
   nickname: true,
   avatarKey: true,
   locale: true,
@@ -44,7 +45,7 @@ type PublicUserRow = Prisma.UserGetPayload<{
 export function toPublicUser(row: PublicUserRow): PublicUser {
   return {
     id: row.id,
-    username: row.username,
+    account: row.account,
     nickname: row.nickname,
     hasAvatar: Boolean(row.avatarKey),
     locale: parseLocale(row.locale),
@@ -77,34 +78,34 @@ export async function requireUserById(id: string): Promise<PublicUser> {
 }
 
 /** 按账号解析用户 ID；不存在时 404。 */
-export async function resolveUserIdByUsername(username: string): Promise<string> {
+export async function resolveUserIdByAccount(account: string): Promise<string> {
   const user = await prisma.user.findUnique({
-    where: { username },
+    where: { account },
     select: { id: true },
   });
 
   if (!user) {
-    throw AppError.notFound(`用户不存在: ${username}`);
+    throw AppError.notFound(`用户不存在: ${account}`);
   }
 
   return user.id;
 }
 
 /** 按账号查询用户（含密码哈希，仅供登录校验）。 */
-async function findUserForAuth(username: string) {
+async function findUserForAuth(account: string) {
   return prisma.user.findUnique({
-    where: { username },
+    where: { account },
     select: { id: true, passwordHash: true },
   });
 }
 
 /** 校验账号密码；失败 400，成功返回 userId。 */
 export async function authenticateUser(
-  username: string,
+  account: string,
   password: string,
 ): Promise<{ id: string }> {
-  const user = await findUserForAuth(username);
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  const user = await findUserForAuth(account);
+  if (!user?.passwordHash || !(await verifyPassword(password, user.passwordHash))) {
     throw AppError.badRequest('账号或密码错误', API_ERROR_CODE.INVALID_CREDENTIALS);
   }
 
@@ -113,26 +114,26 @@ export async function authenticateUser(
 
 /** 注册新用户。 */
 export async function registerUser(input: {
-  username: string;
+  account: string;
   nickname: string;
   password: string;
   locale: Locale;
   timeZone: string;
 }): Promise<{ id: string }> {
   const existing = await prisma.user.findUnique({
-    where: { username: input.username },
+    where: { account: input.account },
     select: { id: true },
   });
 
   if (existing) {
-    throw AppError.badRequest('账号已被占用', API_ERROR_CODE.USERNAME_TAKEN);
+    throw AppError.badRequest('账号已被占用', API_ERROR_CODE.ACCOUNT_TAKEN);
   }
 
   const passwordHash = await hashPassword(input.password);
 
   const user = await prisma.user.create({
     data: {
-      username: input.username,
+      account: input.account,
       nickname: input.nickname,
       passwordHash,
       locale: input.locale,
@@ -189,6 +190,10 @@ export async function changeUserPassword(
     throw AppError.unauthorized('用户不存在');
   }
 
+  if (!user.passwordHash) {
+    throw AppError.forbidden(ANONYMOUS_ACCOUNT_MESSAGE);
+  }
+
   if (!(await verifyPassword(input.currentPassword, user.passwordHash))) {
     throw AppError.badRequest('当前密码错误', API_ERROR_CODE.INVALID_CURRENT_PASSWORD);
   }
@@ -217,6 +222,10 @@ export async function deleteUserAccount(userId: string, currentPassword: string)
 
   if (!user) {
     throw AppError.unauthorized('用户不存在');
+  }
+
+  if (!user.passwordHash) {
+    throw AppError.forbidden(ANONYMOUS_ACCOUNT_MESSAGE);
   }
 
   if (!(await verifyPassword(currentPassword, user.passwordHash))) {

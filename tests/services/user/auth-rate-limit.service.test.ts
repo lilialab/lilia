@@ -43,7 +43,7 @@ describe('auth-rate-limit.service', () => {
     ]);
   });
 
-  it('登录限流按 IP 与规范化用户名检查', async () => {
+  it('登录限流按 IP 与规范化账号检查', async () => {
     const req = new NextRequest('http://localhost/api/auth/login', {
       headers: {
         'x-real-ip': '198.51.100.3',
@@ -59,7 +59,7 @@ describe('auth-rate-limit.service', () => {
         windowSeconds: 60,
       },
       {
-        key: 'ratelimit:auth:login:user:alice:15m',
+        key: 'ratelimit:auth:login:account:alice:15m',
         limit: expect.any(Number),
         windowSeconds: 900,
       },

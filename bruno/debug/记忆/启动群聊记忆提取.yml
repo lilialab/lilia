@@ -5,9 +5,9 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/debug/memory/extract?username=tom&groupSessionId=
+  url: http://localhost:3000/api/debug/memory/extract?account=tom&groupSessionId=
   params:
-    - name: username
+    - name: account
       value: tom
       type: query
     - name: groupSessionId

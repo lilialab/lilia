@@ -7,9 +7,9 @@ import { authenticateUser } from '@/services/user/users.service';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const POST = withApiHandler(async (req: NextRequest) => {
-  const { username, password } = await parseJsonBody(loginBodySchema, req);
-  await assertLoginRateLimit(req, username);
-  const { id } = await authenticateUser(username, password);
+  const { account, password } = await parseJsonBody(loginBodySchema, req);
+  await assertLoginRateLimit(req, account);
+  const { id } = await authenticateUser(account, password);
 
   const token = await createAuthSession(id);
   const response = NextResponse.json({ success: true, data: {} });

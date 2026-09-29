@@ -19,7 +19,7 @@ describe('updateUserNickname', () => {
   it('更新 nickname 并返回公开用户字段', async () => {
     vi.mocked(prisma.user.update).mockResolvedValue({
       id: 'user-1',
-      username: 'tom',
+      account: 'tom',
       nickname: '新昵称',
       avatarKey: null,
       locale: 'zh',

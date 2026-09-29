@@ -47,7 +47,7 @@ Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止�
 | `character/` | AI 角色、通讯录、联系人 session |
 | `debug/` | 本地调试（Chroma、提取/维护/画像试运行） |
 | `guest/` | 访客试聊（凭证、日限额、公开目录、独立消息表；不跑记忆） |
-| `user/` | 注册登录、账号资料（改密/昵称/删号）、`resolveUserIdByUsername` |
+| `user/` | 注册登录、账号资料（改密/昵称/删号）、`resolveUserIdByAccount` |
 
 - 同域 import：`./`；跨域：`@/services/{domain}/...`。**不要**恢复 `src/services/` 根目录平铺旧路径。
 - 有域语义的纯函数跟域走：`services/**/**.utils.ts`（勿塞进 `src/utils/`）。
@@ -65,7 +65,7 @@ Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止�
 | 记忆检索 / 衰减 | `src/services/memory/vector.service.ts` + `src/services/memory/decay.utils.ts` + `src/services/memory/metadata.utils.ts` |
 | 用户画像 | `src/services/memory/user-profile.service.ts` |
 | 单聊会话 / 历史 | `src/services/session/sessions.service.ts` + `src/services/chat/message.service.ts` |
-| 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/debug/记忆/`；`/api/debug/memory/?username=`；`src/workers/memory-extract.worker.ts` / `src/workers/memory-maintain.worker.ts` |
+| 记忆流水线 | [`docs/memory/pipeline.md`](docs/memory/pipeline.md)；`bruno/debug/记忆/`；`/api/debug/memory/?account=`；`src/workers/memory-extract.worker.ts` / `src/workers/memory-maintain.worker.ts` |
 | 登录 / 注册 | `src/lib/server/session.ts` + `src/lib/server/request-user.ts`；`src/app/api/auth/`；`src/client-api/auth.ts`；`src/app/login/`、`src/app/register/` |
 | 账号设置 | `src/services/user/users.service.ts`；`PATCH /api/auth/me`（昵称等）；`src/app/api/auth/change-password/`、`src/app/api/auth/delete-account/`；`/me/settings` |
 | 日配额 / 今日体力 | `src/services/chat/quota.service.ts`（读与扣同一个 Redis key，429 文案在此）；`src/app/api/chat/quota/`；`src/client-api/chat.ts`；`/me` 卡片 `src/app/(main)/me/MeStaminaCard.tsx` |
@@ -78,8 +78,7 @@ Grep / Glob 定位 → 再 Read。按下方「任务入口」定点读；禁止�
 
 - 沙箱只放行工作区写入：pnpm 加 `COREPACK_HOME=/tmp/corepack`，dprint 加 `DPRINT_CACHE_DIR=/tmp/dprint-cache`（默认 `~/.cache` 会被拦）
 - 命令：`pnpm format`、`pnpm lint`、`pnpm test:run`、`pnpm exec prisma generate`
-- 边界：`docker-volumes/`、`.env` 由用户维护
-- Prisma schema 变更：**已上线，一律走迁移**。`pnpm exec prisma migrate dev` 生成迁移并随代码提交，生产 `pnpm exec prisma migrate deploy`；破坏性变更也走迁移。**不做旧数据兼容**：结构变更迁移到位，不在读路径留别名或兜底分支（单机部署，没有新旧版本并存期）
+- 边界：`docker-volumes/`、`.env` 由用户维护；只允许执行上面「命令」列出的命令，迁移与连库由用户自己来
 
 ## 前后端约定
 
@@ -106,7 +105,7 @@ UI → `src/client-api/*` → `apiFetchJson` → `/api/*`。React Query 用 `que
 | 方式 | 用法 | 适用 |
 |------|------|------|
 | Cookie | `resolveRequestUserId(req)`；页面由 `proxy.ts` 保护 | chat、sessions、`/api/auth/*`；需登录页 |
-| username | `resolveUserIdByUsername` + `?username=` | `/api/debug/memory/*`；Bruno「debug / 记忆」 |
+| account | `resolveUserIdByAccount` + `?account=` | `/api/debug/memory/*`；Bruno「debug / 记忆」 |
 
 **禁止**：`/api/debug/memory/*` 使用 `resolveRequestUserId`。
 

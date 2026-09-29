@@ -5,9 +5,9 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/debug/memory/extract?username=tom&sessionId=502d3282-58d7-4cee-b9cc-a4194ccaf87c
+  url: http://localhost:3000/api/debug/memory/extract?account=tom&sessionId=502d3282-58d7-4cee-b9cc-a4194ccaf87c
   params:
-    - name: username
+    - name: account
       value: tom
       type: query
     - name: sessionId
