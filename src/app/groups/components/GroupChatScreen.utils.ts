@@ -11,18 +11,19 @@ export const MAX_TURN_CUE_HOPS = 5;
 const GROUP_MENTION_STORAGE_PREFIX = 'lilia:group-mention:';
 
 /**
- * 从文本中提取第一个 @slug（精确匹配用）。
- * 规则：/@([a-zA-Z0-9_-]+)/ 取第一处。
- * 仅用于助手正文 → turn_cue；用户出站不再解析正文。
+ * turn_cue 触发语：本轮是谁、该谁说话都由 system prompt 交代，这里只留一个系统标记。
+ * 不随界面语言变化，避免「每跳注入的文案」把模型带进某种语气或语言。
  */
-function extractFirstMentionSlug(text: string): string | null {
-  const match = /@([a-zA-Z0-9_-]+)/.exec(text);
-  return match?.[1] ?? null;
-}
+export const TURN_CUE_TEXT = '[system] Your turn. Carry on as yourself.';
 
-/** 群聊续聊触发语文案（turn_cue 正文）。 */
-function buildTurnCueText(characterSlug: string): string {
-  return `[system] You (@${characterSlug}) were called on. Continue as yourself, based on the conversation above.`;
+/**
+ * 取正文结尾的 @handle（交棒行）。
+ * 规则：\s*@(\S+)\s*$ —— 只认结尾，句中出现的不算；紧跟中文标点（`…呢？@rin`）也算。
+ * 仅用于助手正文 → turn_cue；用户出站不解析正文（`metadata.slug` 来自单选）。
+ */
+function extractTrailingMentionSlug(text: string): string | null {
+  const match = /\s*@([^\s@]+)\s*$/.exec(text);
+  return match?.[1] ?? null;
 }
 
 export type TurnCueSendMessage = (message: {
@@ -75,8 +76,8 @@ export function buildUserOutboundMessage(
 export type SendTurnCueResult = 'sent' | 'noop' | 'capped';
 
 /**
- * 助手一轮结束后：若正文 @ 了群内成员，则发送 turn_cue 触发其续聊。
- * 无有效 @、或不在成员列表时 noop；已达 hop 上限时 capped（不发送）。
+ * 助手一轮结束后：若正文**结尾**@ 了群内成员，则发送 turn_cue 触发其续聊。
+ * 结尾 handle 不在成员列表（含人类昵称、未知 slug）时 noop；已达 hop 上限时 capped。
  */
 export function sendTurnCueIfMentioned(options: {
   assistantParts: unknown;
@@ -93,13 +94,13 @@ export function sendTurnCueIfMentioned(options: {
     hopCount,
     maxHops = MAX_TURN_CUE_HOPS,
   } = options;
-  const slug = extractFirstMentionSlug(extractTextFromParts(assistantParts));
+  const slug = extractTrailingMentionSlug(extractTextFromParts(assistantParts));
   if (!slug || !members.some((m) => m.slug === slug)) return 'noop';
 
   if (hopCount >= maxHops) return 'capped';
 
   void sendMessage({
-    text: buildTurnCueText(slug),
+    text: TURN_CUE_TEXT,
     metadata: { kind: MESSAGE_KIND_TURN_CUE, slug, name: null, ...EMPTY_SPEAKER_AVATAR },
   });
   return 'sent';

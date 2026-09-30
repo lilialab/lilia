@@ -1,4 +1,5 @@
 import {
+  collectSpokenSlugsSinceLastUser,
   extractLatestContextTextForRag,
   stripLeadingSpeakerLabels,
   withGroupSpeakerLabelsForModel,
@@ -61,5 +62,35 @@ describe('extractLatestContextTextForRag', () => {
 
   it('空列表返回空串', () => {
     expect(extractLatestContextTextForRag([])).toBe('');
+  });
+});
+
+describe('collectSpokenSlugsSinceLastUser', () => {
+  const user = { id: 'u1', role: 'user' as const, parts: [{ type: 'text' as const, text: '问' }] };
+  const assistant = (slug?: string) => ({
+    id: `a-${slug ?? 'none'}`,
+    role: 'assistant' as const,
+    parts: [{ type: 'text' as const, text: '答' }],
+    metadata: { kind: null, slug: slug ?? null },
+  });
+
+  it('只取最后一条用户消息之后发言的成员，去重且保序', () => {
+    expect(
+      collectSpokenSlugsSinceLastUser([
+        assistant('einstein'),
+        user,
+        assistant('rin'),
+        assistant('lilia'),
+        assistant('rin'),
+      ]),
+    ).toEqual(['rin', 'lilia']);
+  });
+
+  it('没有用户消息时从头算；无 slug 的助手消息跳过', () => {
+    expect(collectSpokenSlugsSinceLastUser([assistant(), assistant('rin')])).toEqual(['rin']);
+  });
+
+  it('空列表返回空数组', () => {
+    expect(collectSpokenSlugsSinceLastUser([])).toEqual([]);
   });
 });

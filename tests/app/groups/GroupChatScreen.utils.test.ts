@@ -3,6 +3,7 @@ import {
   groupMentionStorageKey,
   MAX_TURN_CUE_HOPS,
   sendTurnCueIfMentioned,
+  TURN_CUE_TEXT,
 } from '@/app/groups/components/GroupChatScreen.utils';
 import { MESSAGE_KIND_TURN_CUE } from '@/types/message-kind';
 import { describe, expect, it, vi } from 'vitest';
@@ -50,10 +51,10 @@ describe('buildUserOutboundMessage', () => {
 describe('sendTurnCueIfMentioned', () => {
   const members = [{ slug: 'lilia' }, { slug: 'einstein' }];
 
-  it('助手 @ 群成员时发送 turn_cue', () => {
+  it('助手结尾一行 @ 群成员时发送 turn_cue', () => {
     const sendMessage = vi.fn();
     const result = sendTurnCueIfMentioned({
-      assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
+      assistantParts: [{ type: 'text', text: '这事他比我清楚。\n@einstein' }],
       members,
       sendMessage,
       hopCount: 0,
@@ -61,8 +62,7 @@ describe('sendTurnCueIfMentioned', () => {
 
     expect(result).toBe('sent');
     expect(sendMessage).toHaveBeenCalledWith({
-      text:
-        '[system] You (@einstein) were called on. Continue as yourself, based on the conversation above.',
+      text: TURN_CUE_TEXT,
       metadata: {
         kind: MESSAGE_KIND_TURN_CUE,
         slug: 'einstein',
@@ -74,7 +74,33 @@ describe('sendTurnCueIfMentioned', () => {
     });
   });
 
-  it('无 @ 或不在成员列表时不发送', () => {
+  it('紧跟中文标点的结尾 handle 也算交棒', () => {
+    const sendMessage = vi.fn();
+    expect(
+      sendTurnCueIfMentioned({
+        assistantParts: [{ type: 'text', text: '你觉得呢？@einstein' }],
+        members,
+        sendMessage,
+        hopCount: 0,
+      }),
+    ).toBe('sent');
+    expect(sendMessage).toHaveBeenCalledOnce();
+  });
+
+  it('句中出现 @、结尾不是 handle 时不发送', () => {
+    const sendMessage = vi.fn();
+    expect(
+      sendTurnCueIfMentioned({
+        assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
+        members,
+        sendMessage,
+        hopCount: 0,
+      }),
+    ).toBe('noop');
+    expect(sendMessage).not.toHaveBeenCalled();
+  });
+
+  it('无 @ 或结尾 handle 不在成员列表时不发送（含人类昵称）', () => {
     const sendMessage = vi.fn();
     expect(
       sendTurnCueIfMentioned({
@@ -92,13 +118,21 @@ describe('sendTurnCueIfMentioned', () => {
         hopCount: 0,
       }),
     ).toBe('noop');
+    expect(
+      sendTurnCueIfMentioned({
+        assistantParts: [{ type: 'text', text: '十六号。\n@小明' }],
+        members,
+        sendMessage,
+        hopCount: 0,
+      }),
+    ).toBe('noop');
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
   it(`hopCount 达 ${MAX_TURN_CUE_HOPS} 时 capped 且不发送`, () => {
     const sendMessage = vi.fn();
     const result = sendTurnCueIfMentioned({
-      assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
+      assistantParts: [{ type: 'text', text: '交给你了\n@einstein' }],
       members,
       sendMessage,
       hopCount: MAX_TURN_CUE_HOPS,
@@ -110,7 +144,7 @@ describe('sendTurnCueIfMentioned', () => {
   it('hopCount 未达上限时可继续发送', () => {
     const sendMessage = vi.fn();
     const result = sendTurnCueIfMentioned({
-      assistantParts: [{ type: 'text', text: '交给 @einstein 吧' }],
+      assistantParts: [{ type: 'text', text: '交给你了\n@einstein' }],
       members,
       sendMessage,
       hopCount: MAX_TURN_CUE_HOPS - 1,

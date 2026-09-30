@@ -37,3 +37,27 @@ export function extractLatestContextTextForRag(messages: UIMessage[]): string {
   const last = messages.at(-1);
   return last ? extractTextFromParts(last.parts) : '';
 }
+
+/**
+ * 本轮（用户最近一条消息之后）已发过言的成员 slug，按发言顺序去重。
+ * 供花名册标注「已发言」，让模型换人而不是在两人之间来回撞。
+ */
+export function collectSpokenSlugsSinceLastUser(messages: UIMessage[]): string[] {
+  let lastUserIndex = -1;
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === 'user') {
+      lastUserIndex = i;
+      break;
+    }
+  }
+
+  const spoken: string[] = [];
+  for (const message of messages.slice(lastUserIndex + 1)) {
+    if (message.role !== 'assistant') continue;
+    const slug = (message.metadata as MessageMetadata | undefined)?.slug;
+    if (typeof slug === 'string' && slug.length > 0 && !spoken.includes(slug)) {
+      spoken.push(slug);
+    }
+  }
+  return spoken;
+}

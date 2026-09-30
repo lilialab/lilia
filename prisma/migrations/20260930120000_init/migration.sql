@@ -1,8 +1,8 @@
 -- CreateTable
 CREATE TABLE `users` (
     `id` VARCHAR(191) NOT NULL,
-    `username` VARCHAR(191) NOT NULL,
-    `password_hash` VARCHAR(191) NOT NULL,
+    `account` VARCHAR(191) NOT NULL,
+    `password_hash` VARCHAR(191) NULL,
     `nickname` VARCHAR(191) NOT NULL,
     `avatar_key` VARCHAR(191) NULL,
     `locale` VARCHAR(191) NOT NULL DEFAULT 'zh',
@@ -13,7 +13,7 @@ CREATE TABLE `users` (
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `users_username_key`(`username`),
+    UNIQUE INDEX `users_account_key`(`account`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -25,7 +25,7 @@ CREATE TABLE `characters` (
     `short_bio` VARCHAR(191) NOT NULL,
     `avatar_key` VARCHAR(191) NULL,
     `owner_id` VARCHAR(191) NULL,
-    `is_listed` BOOLEAN NOT NULL DEFAULT true,
+    `deleted_at` DATETIME(3) NULL,
     `profile` JSON NOT NULL,
     `skills` JSON NOT NULL,
     `extract` TEXT NOT NULL,
@@ -250,3 +250,4 @@ ALTER TABLE `user_profiles` ADD CONSTRAINT `user_profiles_user_id_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `user_profiles` ADD CONSTRAINT `user_profiles_character_id_fkey` FOREIGN KEY (`character_id`) REFERENCES `characters`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+

@@ -1,3 +1,4 @@
+import { parseLocale } from '@/i18n/config';
 import { AppError } from '@/lib/server/app-error';
 import { logger } from '@/lib/server/logger';
 import { prisma } from '@/lib/server/prisma';
@@ -29,7 +30,12 @@ import {
   getGroupContextMessages,
   saveGroupAssistantResponse,
 } from './message.service';
-import { extractLatestContextTextForRag, withGroupSpeakerLabelsForModel } from './message.utils';
+import {
+  collectSpokenSlugsSinceLastUser,
+  extractLatestContextTextForRag,
+  stripLeadingSpeakerLabels,
+  withGroupSpeakerLabelsForModel,
+} from './message.utils';
 import { buildGroupSystemPrompt } from './prompt.service';
 
 /* -------------------------------------------------------------------------- */
@@ -37,7 +43,10 @@ import { buildGroupSystemPrompt } from './prompt.service';
 /* -------------------------------------------------------------------------- */
 
 type GroupSpeaker = { characterId: string; slug: string };
-type GroupMemberRef = { characterId: string; character: { slug: string } };
+type GroupMemberRef = {
+  characterId: string;
+  character: { slug: string; name: string; shortBio: string };
+};
 
 /** 调度群聊 extract 与 maintain pipeline；入队失败只记日志，不阻断聊天。 */
 async function scheduleGroupMemoryJobsBestEffort(
@@ -128,7 +137,9 @@ export async function streamGroupAssistantReply({
     characterSlug: speaker.slug,
     characterName: definition.name,
     persona: definition.persona,
-    memberSlugs: members.map((m) => m.character.slug),
+    members: members.map((m) => m.character),
+    locale: parseLocale(user?.locale),
+    spokenSlugs: collectSpokenSlugsSinceLastUser(contextMessages),
     lastUserContent: ragQueryText,
     timeZone,
     previousMessageAt,
@@ -174,9 +185,10 @@ export async function streamGroupAssistantReply({
           });
         }
 
+        // 模型偶尔会模仿历史里的 (slug): 前缀把标注写进正文；库内与气泡只留纯正文
         assistantParts.push({
           type: 'text',
-          text,
+          text: stripLeadingSpeakerLabels(text),
         });
 
         const { messageId: assistantMessageId } = await saveGroupAssistantResponse(
@@ -289,7 +301,10 @@ export async function streamGroupChatFlow(
     );
     const members = await prisma.groupMember.findMany({
       where: { groupSessionId },
-      select: { characterId: true, character: { select: { slug: true } } },
+      select: {
+        characterId: true,
+        character: { select: { slug: true, name: true, shortBio: true } },
+      },
       orderBy: { createdAt: 'asc' },
     });
     await scheduleGroupMemoryJobsBestEffort(groupSessionId, userId, members);
